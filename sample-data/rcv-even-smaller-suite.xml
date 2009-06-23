@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<suite name="RCV_Small_20081206" nctest="IGNORE" nctrain="ADD" version="0.5.006">
+    <discrimination defaultclass="other" leftoversclass="other" name="topic_CCAT" qrel="rcv1-v2.topics.qrels">
+        <classes>CCAT other</classes>
+    </discrimination>
+
+    <discrimination defaultclass="other" leftoversclass="other" name="topic_GCAT" qrel="rcv1-v2.topics.qrels">
+        <classes>GCAT other</classes>
+    </discrimination>
+    <discrimination defaultclass="other" leftoversclass="other" name="topic_MCAT" qrel="rcv1-v2.topics.qrels">
+        <classes>MCAT other</classes>
+    </discrimination>
+
+    <discrimination defaultclass="other" leftoversclass="other" name="topic_ECAT" qrel="rcv1-v2.topics.qrels">
+        <classes>ECAT other</classes>
+    </discrimination>
+
+    <discrimination defaultclass="other" leftoversclass="other" name="topic_GPOL"  qrel="rcv1-v2.topics.qrels">
+        <classes>GPOL other</classes>
+    </discrimination>
+
+    <discrimination defaultclass="none" leftoversclass="other" name="industry" qrel="rcv1-v2.industries.qrels">
+        <classes>I81402 I13000 other none</classes>
+    </discrimination>
+
+    <discrimination defaultclass="other" leftoversclass="other" name="region" qrel="rcv1-v2.regions.qrels">
+        <classes>USA RUSS AFRICA AUSTR INDIA EEC CHINA other</classes>
+    </discrimination>
+</suite>
