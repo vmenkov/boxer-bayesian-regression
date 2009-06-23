@@ -2,8 +2,8 @@
 
 = Introduction =
 
-To put the code in, one apparently needs to install an SVN client locally. 
-For an MS Windows machine, trying to get one from here: http://subversion.tigris.org/getting.html#windows
+To put the code in, one apparently needs to install a Subversion (SVN) client locally. 
+For an MS Windows machine, trying to get "CollabNet Subversion Client v1.6.3"  from here: http://subversion.tigris.org/getting.html#windows
 
 = Details =
 
