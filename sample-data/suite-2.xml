@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<suite-of-classifiers name="SuiteOnly" nctest="ERROR" nctrain="REPLACE" version="0.1">
-    <discrimination name="Countries" defaultclass="overseas">
-        <classes>US Canada</classes>
-    </discrimination>
-    <discrimination name="Climate">
-        <classes>temperate subtropical</classes>
-    </discrimination>
-</suite-of-classifiers>
