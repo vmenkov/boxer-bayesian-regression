@@ -1,0 +1,13 @@
+#Using Google code
+
+= Introduction =
+
+To put the code in, one apparently needs to install an SVN client locally. 
+For an MS Windows machine, trying to get one from here: http://subversion.tigris.org/getting.html#windows
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
