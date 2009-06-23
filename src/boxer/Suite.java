@@ -215,6 +215,10 @@ public class Suite {
     public void setNdTrain( ND nd) {  ndTrain = nd; }
     public void setNdTest( ND nd) {  ndTest = nd; }
 
+    public static enum HowToHandleMissingIDs {
+	Error , Create; }
+
+    HowToHandleMissingIDs  howToHandleMissingIDs = HowToHandleMissingIDs.Error;
 
     /** Gets the {@link boxer.FeatureDictionary feature dictionary}
        associated with this suite */
@@ -804,6 +808,8 @@ public class Suite {
 	root.setAttribute(ParseXML.ATTR.SUITE.NC_TRAIN, ncTrain.toString());
 	root.setAttribute(ParseXML.ATTR.SUITE.NC_TEST, ncTest.toString());
 	root.setAttribute(ParseXML.ATTR.SUITE.SUPPORTS_SIMPLE_LABELS, supportsSimpleLabels.toString());
+	root.setAttribute(ParseXML.ATTR.SUITE.HOW_TO_HANDLE_MISSING_IDS,
+			  howToHandleMissingIDs.toString());
 
 	int disCnt = disCnt();
        
@@ -954,6 +960,10 @@ public class Suite {
 	a = e.getAttribute(ParseXML.ATTR.SUITE.SUPPORTS_SIMPLE_LABELS);
 	supportsSimpleLabels = (XMLUtil.nonempty(a)) ? 
 	    SupportsSimpleLabels.valueOf(a) :  SysDefaults.supportsSimpleLabels;
+
+	a = e.getAttribute(ParseXML.ATTR.SUITE.HOW_TO_HANDLE_MISSING_IDS);
+	howToHandleMissingIDs = (XMLUtil.nonempty(a)) ? 
+	    HowToHandleMissingIDs.valueOf(a): HowToHandleMissingIDs.Error;
 
 	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
 	    int type = n.getNodeType();
