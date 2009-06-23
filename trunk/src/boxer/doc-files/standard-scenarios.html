@@ -1,0 +1,1144 @@
+<html>
+<head>
+<title>Standard Discrimination Handling Scenarios</title>
+</head>
+<body>
+
+<h1>Standard Discrimination Handling Scenarios</h1>
+
+<p align=center><em>Date: 2009-06-17; for BOXER ver. 0.6.004</em></p>
+
+<p>This document lists a number of major patterns of use of BOXER
+("use case").  It briefly describes the sequence of actions an API user can use
+for each, including when and how many times parsing is done, whether
+it'done to single examples or a batch of them at each parsing
+step, whether parsing is definitional or not, etc.<p>
+
+<h2>Notes</h2> 
+
+
+<p>Most exampes in this document assume that the XML input is well-formed, and
+that is consistent with BOXER's XML syntax and semantics. If that is
+not the case, an ,tt>org.xml.sax.SAXException</tt>
+or <a href="../BoxerXMLException.html">BoxerXMLException</a>,
+respectively, will be thrown by BOXER. If desired, these exception can
+be caught by the user's code using the appropriate Java try/catch syntax.
+
+<p>
+In the examples in this document where a series of XML datapoint
+definitions are handled, we will assume, for simplicity, that the
+examples have been supplied in an array <tt>org.w3c.dom.Element[]
+elements</tt>, where each element has the type <tt>datapoint</tt>. In
+practice, of course, it will be more common to read examples from a
+single XML file (containing a single <tt>dataset</tt> element), and
+process datapoint elements as they are encountered. Thus, the more
+likely overall framework for such processing may look like this:
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // start reading and validating individual examples from a "datapoint" element
+  org.w3c.dom.Element e = ParseXML.readFileToElement("dataset.xml"); 
+  Vector<Element> dpElements = new Vector<Element>;
+
+  int cnt = 0;
+  boolean error = false;
+  for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+    int type = n.getNodeType();
+    String val = n.getNodeValue();
+	    
+    if (type == Node.ELEMENT_NODE && 
+        n.getNodeName().equals(ParseXML.NODE.DATAPOINT)) {
+       // parse a data point with its labels against the "validator" suite
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          dpElements.add(pe);  // save the "datapoint" element, if desired
+          .... <em>process the datapoint element here</em> ...
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+    } else {
+       // extraneous stuff found in XML - may report parsing warning, if desired
+    }
+
+   // This is the array of "data point" elements which, 
+   // in individual scenarios, we will assume already exists:
+   Element elements[]= dpElements.toArray(new Element[0]);
+</pre>
+
+<h2>1. Validation Scenarios:<h2>
+
+<h3>Scenario 1.1</h3>
+<p>
+
+Scenario: User wants to check the validity of a set of XML
+examples against Suite Foo. They care in a yes/no way whether the
+entire set of examples is valid. If the set is not valid they would
+like as much information as possible about each invalid example in the
+set.  No further use of the examples happens at that time. Suite Foo
+should not be changed by this process.
+
+<P>In cases where the only invalidity is that we run out of
+anonymous classes in a DCS2/Bounded discrimination before running out
+of examples, the identified "invalid"  examples are dependent
+on the order in which examples are processed. Other types of
+invalidity, however, are not dependent on order. So it seems
+desirable to have an option to issue warning-style exceptions and keep
+processing.
+
+<p><strong>Implementation</strong>
+
+<p>
+<em>Solution (a).</em> If the entire set of example is contained in a
+single "dataset" XML element (typically, the top level element of a
+dataset XML file), <strong>and</strong> the user only wants to learn
+about the first invalid example (without parsing the rest of the set),
+one can validate it as follows:
+
+<pre>
+  import boxer.*;
+
+  ...
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, true);
+  if (n &gt; 0) {
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a training set in the current "+
+        "suite. It contains " + n + " data points");
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a training set in the current suite. Please see a warning "+
+         "message in the log for detals");
+  }
+
+</pre>	
+
+<p> In the example above, method
+<tt>ParseXML.validateDatasetElement(e, suite, true)</tt> creates
+(internally) a "light-weight copy" of the suite, and tries to carry
+out "definitional parsing" of the <tt>dataset</tt> element <tt>e</tt>
+against that copy (i.e., modifying it - adding classes etc - as it
+goes, whenever necessary and appropriate). If the process fails (e.g.,
+trying to add a class to a DCS1 (=Fixed) discrimination), an exception
+is caught within this method, and it returns -1.
+
+<p><em>Solution (b).</em> To validate <em>all</em> examples - even the
+ones the follow the first problematic one - one can use the method
+ParseXML.validateDatasetElement2(e, suite, true), as follows:
+
+
+<pre>
+  import boxer.*;
+
+  ...
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  Vector&lt;Object&gt; v=ParseXML.validateDatasetElement2(e, suite, true);
+
+  // scan the list of the results
+  int nGood = 0, nBad = 0;
+  for(int i=0; i &lt; v.size(); i++) {
+     Object o = v.elementAt(i);
+     if (o instanceof DataPoint) {
+        nGood ++;
+     } elsif (o instanceof Exception) {			   
+        nBad ++;
+        System.out.println("Example No. " + i + " is problematic: " + o);
+     }
+  }
+    
+  if (nBad==0) {
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a training set in the current "+
+        "suite. It contains " + nGood + " data points");
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a training set in the current suite. Found " + nGood + 
+         " acceptable examples, and " + nBad + " unacceptable ones. " +
+         "See messages above for details");
+  }
+</pre>	
+
+
+<p><em>Solution (c).</em> If you need to validate a sequence of
+examples (e.g., spread over 3 dataset elements), but, again, only want to learn about the first invalid example in the sequence, you will have to
+explicitly carry out the same process
+that <tt>ParseXML.validateDatasetElement(...)</tt>  does internally,
+viz.:
+<pre>
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  String filenames[] = { "dataset1.xml", "dataset2.xml", ...};
+  for( String f : filenames) {
+    try {
+      Element e=ParseXML.readFileToElement("dataset.xml");
+      Vector&lt;DataPoint&gt; v = parseDatasetElement(e, validator, isDefinitional);
+       int  n = v.size();
+       System.out.println("All " + n + " examples from file " + f + 
+       " can be definitionally parsed");
+    } catch (Exception ex) {
+	    Logging.warning("It would not be possible to parse the entire data set "+
+            f+" in the context of suite '"+suite.getName()+
+            "' , because of the following problem: "  + ex);
+    }
+</pre>
+
+<p>Note that, in all examples above, only the suite <tt>validator</tt>
+(the "lightweight copy" of the "main suite" <tt>suite</tt>) is
+modified. Therefore, once the validation has completed, you still need
+to parse the dataset against the main suite.
+
+
+<h3>Scenario 1.2</h3>
+
+Scenario: User wants to process a series of XML examples one at a time. None of the example processing should change Suite Foo. For each example they want to:
+<pre>
+ IF the example is valid
+     i) keep going 
+ ELSE
+     i') Stop processing with a useful exception message.
+</pre>
+
+<strong>Implementation.</strong> In the example below, all examples
+being validated will be obtained by the user's application from
+parsing a single <tt>dataset</tt> element; but in general, they can
+come from any source (e.g., each one from a single small XML file; or,
+from an input stream formatted in some special way).
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          final boolean isDefinitional=true;
+          DataPoint p=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+  }
+
+ if (!error) logger.info("All " + cnt + " examples validated successfully");
+
+</pre>
+
+
+<h2>2. Validation &amp; Definition</h2>
+
+<h3>
+Scenario 2.1.</h3>
+
+<p>
+Like 1.1, but if and only if the entire set of examples is valid with
+respect to Suite Foo, user wants to update Discrimination definitions
+using these examples.
+
+<p><strong>Implementation</strong>
+
+<p>For simplicity, we assume below that the entire set comes in a
+single "dataset" XML element, and pattern the code on "Solution (a)" in
+Scenario 1.1. Otherwise, you can model the code on "Solution (c)" there.
+
+<pre>
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  boolean isDefinitional = true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &gt; 0) {
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a training set in the current suite."+
+        " It contains " + n + " data points");
+        // now, parse the date with the "real" suite. Definitional parsing is
+        // used, so the suite is updated as we go
+        Vector &lt;DataPoint&gt; v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse the data set from file " +
+         f + " as a training set in the current suite. "+
+         "Please see a warning log message for detals");
+  }
+
+</pre>	
+
+<h3>Scenario 2.2</h3>
+
+Scenario: User wants to process a series of XML examples one at a time.  For each example they want to:
+<pre>
+       IF the example is valid
+               i) Update the Discrimination definitions of Suite Foo
+       ELSE
+               i&#39;) Stop processing.  The invalid example should have no impact on Suite Foo.
+</pre>
+
+
+<strong>Implementation.</strong> In the example below, all examples
+being validated will be obtained by the user's application from
+parsing a single <tt>dataset</tt> element; but in general, they can
+come from any source (e.g., each one from a single small XML file; or,
+from an input stream formatted in some special way).
+
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=true;
+          // Parse against the "validator"  suite. This will only affect the
+          // validator, and not the main suite
+          DataPoint dummy=ParseXML.parseDataPoint(pe,validator,isDefinitional);
+          // If no exception has been thrown on the validator, we can now parse
+          // it in the context of the main suite (which may experience any
+          // appropriate update
+           DataPoint p=ParseXML.parseDataPoint(pe,suite,isDefinitional);
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+ }
+
+ if (!error) logger.info("All " + cnt + " examples validated, and then applied to the main suite, successfully");
+</pre>
+
+<p>
+<strong>Discussion.</strong> 
+<ul>
+<li>In the example above, why do we need to use the validation suite?
+Would not it be possible to parse the example against the main suite
+right away and catch any exception? Surely ParseXML.parseDataPoint
+would throw an exception if it finds that a data point description is
+invalid in some way, or that the suite modification required by a data
+point descrion (e.g., adding a class to a discrimination that alreayd
+has as many classes as it can) is impossible? Although this normally
+will be the case, this "atomically failsafe" behavior is not generally
+guaranteed.  One could imagine, perhaps, a situiation when a
+"Discr_name:Class_name" label has triggered the (successful) creation
+of a new (empty) discrimination, but then some unexpected problem
+(say, the invalid class name) triggered an exception as the first was
+being added to the discrimination. Therefore, using a separate
+validation suite is recommended for an extra degree of safety.
+
+<li>Normally, the DataPoint object returned by the call to
+ParseXML.parseDataPoint(pe,suite,isDefinitional) will not be discarded
+by the application (as in the example above), but will be used for
+something else later on, e.g. as a training example. The code snippet
+shown above demonstrates parsing examples purely for the purpose of
+updating the suite (creating discriminations/adding classes) based on
+the labels associated with the data points in the data set.
+</ul>
+
+
+<h2>
+3. Validation &amp; Definition &amp; Training
+
+</h2>
+
+<h3>Scenario 3.1.</h3>
+
+<p>
+Like 1.1, but if and only if the entire set of examples is valid with
+respect to Suite Foo, user wants to update Discrimination definitions
+<em>and</em> update training state of Suite Foo using these examples.
+
+
+<p><strong>Implementation</strong>
+
+<p>For simplicity, we assume below that the entire set comes in a
+single "dataset" XML element, and pattern the code on "Solution (a)" in
+1.1. Otherwise, you can pattern the code on "Solution (c)" there.
+
+<pre>
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // add a learner to the suite somehow
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  boolean isDefinitional = true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &gt; 0) {
+	System.out.println("[VALIDATE] The data set from file " + f +
+        " appears to be fully acceptable as a training set in the current suite."+
+        " It contains " + n + " data points");
+        // now, parse the date with the "real" suite. Definitional parsing is
+        // used, so the suite is updated as we go
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Have the learner absorb all examples from v. 
+        learner.absorbExample(v);
+
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse the data set from file " + f +
+         " as a training set in the current suite. Please see a warning log message for detals");
+  }
+
+</pre>	
+
+<p>
+<strong>Discussion.</strong>  One may want to say that "Since training
+always updates Discrimination definitions, omitting updating of
+Discrimination definitions is not an option", but with Boxer 0.6.003
+(and earlier) versions this is <strong>not</strong>, strictly speaking, the
+case. For example, one may have already has read a complete suite
+definition from "foo.xml", and therefore feel that any
+"non-conforming" discr:class label in the data set file may only be an
+error. In this case, one can parse the data as above, but with 
+<pre>
+  isDefinitional=false,
+</pre>
+which means that no changes will be made to the suite, and all
+non-conforming labels (i.e. ones referring to disriminations or
+classes not occurring in the original suite definition) will either be
+ignored, or cause an exception.
+
+<h3>Scenario 3.2</h3>
+<p>
+ User wants to process a series of XML examples one at a time. For
+ each example they want to:
+
+
+<pre>
+IF the example is valid
+   i) Update the Discrimination definitions of Suite Foo
+   ii) Update the training state of Suite Foo
+ELSE
+   i&#39;) Stop processing. The invalid example should have no impact on Suite Foo.
+</pre>
+
+<strong>Implementation.</strong> In the code snippet below, just as in
+the one in Senario 1.2, all examples being processed will be obtained
+by the user's application from parsing a single <tt>dataset</tt>
+element; but in general, they can come from any source (e.g., each one
+from a single small XML file; or, from an input stream formatted in
+some special way).
+
+<pre>
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // Add any learners 
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=true;
+          // validate the examples from dataset XML
+          DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          // If we got here, the validator had no problems, so the real suite 
+          // should not either.
+          learner.absorbExample(pe);
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+ }
+
+ if (!error) logger.info("All " + cnt + " examples validated successfully");
+</pre>
+
+<h2>4. Validation &amp; Definition &amp; Model Application</h2>
+
+<h3>Scenario 4.1.</h3>
+
+<p>
+Like 1.1, but if and only if the entire set of examples is valid with
+respect to Suite Foo, user wants to update Discrimination definitions
+of Suite Foo <strong>and</strong> apply the model currently implicit
+in the training state of Suite Foo to these examples to make
+predictions.
+
+<p><strong>Implementation</strong>
+
+<p>For simplicity, we assume below that the entire set comes in a
+single "dataset" XML element, and pattern the code on "Solution (a)" in
+1.1. Otherwise, you can pattern the code on "Solution (c)" there.
+
+<pre>
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // add a learner to the suite somehow
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  boolean isDefinitional = true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &gt; 0) {
+	System.out.println("[VALIDATE] The data set from file " + f +
+        " appears to be fully acceptable as a training set in the current suite."+
+        " It contains " + n + " data points");
+        // now, parse the date with the "real" suite. Definitional parsing is
+        // used, so the suite is updated as we go
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Have the learner score each example
+        for(DataPoint p: v) {
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+        }
+
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse the data set from file " + f +
+         " as a training set in the current suite. Please see a warning log message for detals");
+  }
+</pre>	
+
+
+
+<h3>
+Scenario 4.2</h3> User wants to process a series of XML examples one
+ at a time.  For each example they want to:
+<pre>
+       IF the example is valid
+               i) Update the Discrimination definitions of Suite Foo
+               ii) Apply the model currently implicit in the training state of Suite Foo to the example to make predictions.
+       ELSE
+               i&#39;) Stop processing.  The invalid example should have no impact on Suite Foo.
+
+</pre>
+
+<strong>Implementation.</strong>
+
+<p>In a framework identical to that of scenarios 1.2, 2.2, and 3.2:
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // Add any learners 
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=true;
+          // validate the examples from dataset XML
+          DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          // If we got here, the validator had no problems, so the real suite 
+          // should not either.
+          DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+          // score the example
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+  }
+
+ logger.info((error? "Only " : "All ") + cnt + " examples validated, "+
+             "definitionally parsed, and scored successfully");
+</pre>
+
+
+<h2>
+5. Validation &amp; Model Application Only [ANOMALOUS?]
+
+</h2>
+
+<h3>
+Scenario 5.1.
+</h3>
+<p>
+Like 1.1, but if and only if the entire set of examples is valid with respect to Suite Foo, user wants to apply the model currently implicit in the training state of Suite Foo to these examples to make predictions, without first updating Discrimination Definitions.
+
+
+<p><strong>Implementaion</strong>
+
+<p>Here, one needs non-definitional parsing of the data with respect
+to the training set (i.e., ignoring or errorring out new labels,
+instead of creating new discr/classes). As to the validation, its mode
+has to be consistent with the real parsing mode, i.e., be
+non-definitional as well.
+
+
+<pre>
+  import boxer.*;
+
+  ...
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  boolean isDefinitional = false;
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitonal);
+  if (n &gt; 0) {
+        // parse the data against the main suite
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Score them all
+        for(DataPoint p: v) {
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+        }
+
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a test set in the current "+
+        "suite. It contains " + n + " data points, and we scored them all");
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a test set in the current suite. Please see a warning "+
+         "message in the log for detals");
+  }
+
+</pre>	
+
+
+
+<h3>
+Scenario 5.2
+</h3>
+
+<p>
+ User wants to process a series of XML examples one at a time.  For
+ each example they want to:
+<pre>
+       IF the example is valid
+               i) Apply the model currently implicit in the training state of 
+                  Suite Foo to the example to make predictions, but without
+                  updating the Discrimination definitions first.
+       ELSE
+               i&#39;) Stop processing.  The invalid example should have no 
+                  impact on Suite Foo.
+</pre>
+
+<strong>Implementation.</strong>
+
+<p>The solution is identical to 4.2, but with isDefinitional=false,
+since we don't want to update the discriminations.
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // Add any learners 
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=false;
+          // validate the examples from dataset XML
+          DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          // If we got here, the validator had no problems, so the real suite 
+          // should not either.
+          DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+          // score the example
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+  }
+
+
+ logger.info((error? "Only " : "All ") + cnt + " examples validated, "+
+             "definitionally parsed, and scored successfully");
+</pre>
+
+
+<h2>
+6. Validation Plus Classical Online Learning (&quot;Test, then Train&quot;)
+</h2>
+
+<h3>Scenario 6.1.</h3>
+
+<p>
+Like 1.1, but if and only if the entire set of examples is valid with
+respect to Suite Foo, user wants to process each example one at a
+time, doing the following for each example:
+<pre>
+       i. Update Discrimination definitions of Suite Foo,
+       ii. Apply the model currently implicit in the training state of 
+           Suite Foo to the examples to make predictions, THEN
+       iii. Update training state of Suite Foo using this example
+</pre>
+
+<p><strong>Implementaion</strong>
+
+<p>We use definitional parsing, since we want to update the
+discrimination definitions.  The actual score-and-train loop is 
+similar to what goes on inside Learner.absorbExample( Vector...).
+
+
+<pre>
+  import boxer.*;
+
+  ...
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  boolean isDefinitional = false;
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitonal);
+  if (n &gt; 0) {
+        // parse the data against the main suite
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Score each one, and then train the learner on it.
+        for(DataPoint p: v) {
+          // Have the learner score the example. In the result array,
+          // scores[i][j] will contain the learner-estimated probability 
+          // of the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite.
+          double[][] scores = learner.applyModel(p);
+          // Now, train the learner on the example
+          learner.absorbExample(p);
+        }
+
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a test set in the current "+
+        "suite. It contains " + n + " data points, and we had the learner " +
+        "score and then absord each one");
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a test set in the current suite. Please see a warning "+
+         "message in the log for detals");
+  }
+
+</pre>	
+
+
+
+<h3>Scenario 6.2</h3>
+
+<p>
+User wants to process a series of XML examples one at a time.  For
+each example they want to:
+
+<pre>
+       IF the example is valid
+               i) Update the Discrimination definitions of Suite Foo
+               ii) Apply the model currently implicit in the training state of Suite 
+                   Foo to the example to make predictions, and THEN
+               iii) Update training state of Suite Foo using this example
+       ELSE
+               i&#39;) Stop processing.  The invalid example should have no impact on Suite Foo.
+</pre>
+
+
+<p>
+<strong>Implementation.</strong> 
+This use case combines operations from scenarios 3.2 and 4.2.
+
+<pre>
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // Add any learners 
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+ 
+  final boolean isDefinitional = true;
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+
+  int cnt = 0;
+  boolean error = false;
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+      try {
+         // validate the example
+         DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+         // If we got here, the validator had no problems, so the real suite 
+         // should not either.
+
+          // (i) Parse the example's XML against the "real" suite, updating the latter
+         DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+          // (ii) Score the example
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+
+          // (iii) Train the learner on the example
+          learner.absorbExample(p);
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // (i') stop processing
+       }
+    }
+ }
+
+ if (!error) logger.info("All " + cnt + " examples validated successfully");
+</pre>
+
+<h2>7. Validation Plus TREC Filtering Style Online Learning</h2>
+
+<h3>Scenario 7.1.</h3>
+
+<p>
+Like 1.1, but if and only if the entire set of examples is valid with respect 
+to Suite Foo, user wants to process each example one at a time, 
+doing the following for each example:
+<pre>
+       i. Update Discrimination definitions of Suite Foo,
+       ii. Apply the model currently implicit in the training state of 
+           Suite Foo to the examples to make predictions
+       iii.    IF an appropriate prediction is made
+                       Update training state of Suite Foo using this example
+               ELSE
+                       Do not update training state
+</pre>         
+
+<p><strong>Assumptions.</strong> What is an "appropriate prediction" depends, of course, on the goals of the particular application. In the code snippet below we will assume that the application's criterion of appropriatensess for the learner's scoring of the example X is the following:
+<quote>
+For each discrimination D for which the example X is labeled (explicitly or implicitly) in the dataset file, let C(X,D) be the class to which the examples X is so assigned. The learner's predictions for example X will be deemed "appropriate" only if, for each discrimination D mentioned above, the learner gives the class C(D,X) the score now lower than the one given by it to any other class.
+</quote>
+The above definition is not very strong: for example, a trivial learner that assigns equal scores to each class within a discrimination will be always deemed to make "appropriate predictions". The rules, naturally, can be made more strict by requiring the learner to assign to the "correct" class a score <em>higher</em> than to any other class in the discrimination.
+
+
+<p><strong>Implementation</strong>
+
+<p>
+As in Solution (a) for Scenario 1.1, we will, for simplicity's sake,
+assume that 
+the entire set of example is contained in a
+single "dataset" XML element (typically, the top level element of a
+dataset XML file), <strong>and</strong> that, if the entire set can't be
+validly parsed in Suite Foo,  the user will only want to learn
+about the first invalid example (without parsing the rest of the set).
+
+<pre>
+import boxer.*;
+
+/** Applies an "appropriateness" criterion to the probability values returned
+    by the model
+*/
+static boolean predictionsAreAppropriate(Suite suite, DataPoint p, double prob[][]) {
+   boolean y[] = p.getY(suite);
+   boolean ysec[][] = suite.splitVectorByDiscrimination(y);
+
+   for(int did = 0; did &lt; ysec.length; did ++) {
+
+	double maxP =0;
+  	for(double p: prob[did]) {
+          if (p &gt; maxP) maxP=p;
+        }
+	for(int i=0; i &lt; prob[did].length; i++) {
+	   if (ysec[did][i]) {
+              // Is the estimated prob for the "correct" class is lower than for some
+              // other class? If it is, the prediction is not "appropriate"
+	      if (prob[did][i] &lt; maxP) return false;
+	   }
+	}
+        return true;
+    }
+
+}
+
+static void main(....) {
+  ...
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  final boolean isDefinitional=true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &lt; 0) {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a training set in the current suite. Please see a warning "+
+         "message in the log for detals");
+  }else if (n==0) {
+         // empty set
+  } else{
+        // Data looks OK
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a training set in the current "+
+        "suite. It contains " + n + " data points");
+
+        //Now we need to parse the "dataset" element into individual 
+        // datapoint elements and process them separately
+        for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+          if (n.getNodeType() == Node.ELEMENT_NODE && 
+             n.getNodeName().equals(ParseXML.NODE.DATAPOINT)) {
+             Element pe = (Element)n;  // the "datapoint" element 
+           
+             // (i) since the data have been validated already, we can parse 
+             // the example into the "real suite" right away 
+             DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+             // (ii) score the example
+             double[][] scores = learner.applyModel(p);
+             // Now, scores[i][j] contains the learner-estimated probability of
+             // the example p's belonging to the j-th class of the i-th 
+             // discrimination of the suite. We will compare it with 
+             if (predictionsAreAppropriate(suite, p, scores)) {
+                  // (iii) Train the learner on example p
+                  learner.absorbExample(p);
+             }
+             cnt ++; // keep going
+          }
+        }
+
+     }
+
+  }
+
+</pre>	
+
+
+<h3>Scenario 7.2</h3> 
+<p>
+User wants to process a series of XML examples one at a time.  
+For each example they want to:
+<pre>
+       IF the example is valid
+               i) Update the Discrimination definitions of Suite Foo
+               ii) Apply the model currently implicit in the training state 
+                   of Suite Foo to the example to make predictions,
+               iii)    IF an appropriate prediction is made
+                          Update training state of Suite Foo using this example
+                       ELSE
+                          Do not update training state                    
+       ELSE
+               i&#39;) Stop processing. The invalid example should have no impact on Suite Foo.
+</pre>
+
+<p><strong>Implementation</strong>
+
+<p>The code below uses the same appropriateness criterion, and the
+same method <tt>predictionsAreAppropriate</tt> as in the previous
+scenario.
+
+<pre> 
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  final boolean isDefinitional=true;
+  Suite validator = suite.lightweightCopyOf("Validator");
+
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+     try {
+         // validate the example
+         DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional);
+         // If we got here, the validator had no problems, so the real suite 
+         // should not either.
+
+
+         // (i) parse the example into the "real suite" 
+         DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+         // (ii) score the example
+         double[][] scores = learner.applyModel(p);
+         // Now, scores[i][j] contains the learner-estimated probability of
+         // the example p's belonging to the j-th class of the i-th 
+         // discrimination of the suite. We will compare it with 
+         if (predictionsAreAppropriate(suite, p, scores)) {
+                  // (iii) Train the learner on example p
+                  learner.absorbExample(p);
+         }
+         cnt ++; // keep going
+      } catch (Exception e) {
+          logger.error("Error when validating the "+(cnt+1)+"-th example: " +e);
+           error = true;
+           break; // stop processing
+      }
+  }
+
+
+</pre>	
+
+<h2>See also</h2>
+<ul>
+<li><a href="doc-files/boxer-user-guide.html">BOXER User Guide</a>
+<li><a href="doc-files/tags.html">Overview of the XML elements used by BOXER</a>
+<li><a href="doc-files/nd.html">Treatment of new discrimination/class labels when parsing a data set</a>
+</ul>
+
+
+</body>
+</html>

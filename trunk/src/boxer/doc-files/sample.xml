@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- An XML file contains a data set. The dataset tag may have some optional
+ attributes -->
+<dataset name="A sample dataset" boxerversion="0.1">
+<!-- A data set contains a number of data points (vectors). The "name" 
+  attribute is optional, and can be used for better human readability,
+  debugging etc. -->
+<datapoint name="Chicago">
+  <!-- List of class labels, from various discriminations, associated with the
+  data point. It will normally be present in the training set data points, but
+  may be absent in real-life test data points. Each label states what
+  discrimination it pertains to, and to what class within that discrimination
+  it assigns this data point. -->
+  <labels>
+    <label dis="Countries" class="US"/>
+    <label dis="Climate" class="temperate"/>
+  </labels>
+  <!-- list of features, with their names and values -->
+  <features>
+      <feature name="lat" value="41.9"/> 
+      <feature name="lon" value="-87.6"/> 
+      <feature name="elevation" value="179"/>
+  </features>
+</datapoint>
+<datapoint name="New Brunswick, NJ">
+  <labels>    Countries:US Climate:temperate  </labels>
+  <features>lat:40.5 lon:-74.5 seaside:0 elevation:21</features>
+</datapoint>
+<datapoint name="Penticton">
+  <!-- alternative compact format for labels and features, 
+       to save space and make files more readable -->
+  <labels>    Countries:Canada Climate:temperate  </labels>
+  <features>lat:50.5 lon:-119 seaside:0 elevation:300</features>
+</datapoint>
+<datapoint name="Adelaide">
+  <labels>
+    <label dis="Countries" class="Australia"/>
+    <label dis="Climate" class="subtropical"/>
+  </labels>
+  <features>
+      <feature name="lat" value="-35"/> 
+      <feature name="lon" value="138.5"/> 
+      <feature name="seaside" value="1"/>
+  </features>
+</datapoint>
+</dataset>
