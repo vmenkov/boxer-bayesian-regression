@@ -1,0 +1,65 @@
+<body>
+Utilities for preparing BOXER-compatible XML input files from the
+RCV1-v2 text categorization test collection.
+
+
+<!--
+<h2>David Lewis' plan</h2>
+<p>
+As per David Lewis' plan (December 2008):
+
+<p>
+One weakness of RCV1-v2 is that it doesn't have any multiclass or
+polytomous category sets, i.e. sets of categories such that each
+document belongs to exactly one category.  However, the Region
+categories are nearly polytomous, and the Industry categories are what
+one might call sub-polytomous (it's rare for a document to belong to
+more than one Industry category, and many documents belong to none).
+
+<p>
+Therefore, in order to produce a single data set that we can use to
+study both binary and polytomous classification, I suggest you do the
+following:
+<ol>
+  <li> Discard all documents that contain 2+ Region categories and/or 2+
+  Industry categories.
+
+  <li> Add a category NoIndustry to the Industry field if the document
+  does not have any Industry categories.  This will increase the
+  defined number of Industry categories from 354 to 355, of which
+  something less than 355 will be present in the data.
+
+<p>
+My guess is that this will still leave about 750000 documents.  The
+data set will be somewhat unnatural, in that we will be throwing out
+some of the more difficult documents.  But it seems worth it to have a
+single large data set we can do both polytomous and binary experiments
+on.
+
+<p>
+Since we're experimenting with online algorithms, the order in which
+examples are processed is important, and we will want a reproducible
+ordering of examples to work with.  However, since our focus is not on
+concept drift we explicitly do NOT want a chronological order.  So
+during this process add a new field RandIDa, to the documents.  Each
+of the documents remaining after Step 2 should get a distinct random
+ID between 000001 and the number of documents remaining after Step 2.
+
+<p>
+We'll reserve the 100000 documents with the last 100000 RandIDa IDs
+for testing, and the others for training.  I suggest breaking the data
+into a number of files small enough to be brought into your text
+editor completely.  It always helps to be able to actually look at the
+data files.
+
+<h2>Implementation</h2>
+
+....
+
+<h2>Usage</h2>
+
+....
+-->
+
+
+</body>

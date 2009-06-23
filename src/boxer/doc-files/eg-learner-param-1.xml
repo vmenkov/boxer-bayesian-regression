@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<learner name="boxer.ExponentiatedGradient" version="0.4.001">
+<parameters>
+                <parameter name="theta" value="0.0"/>
+                <parameter name="to" value="0.0"/>
+                <parameter name="f" value="ADJUST"/>
+                <parameter name="u" value="ADJUST"/>
+</parameters>
+</learner>

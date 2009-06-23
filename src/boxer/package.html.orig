@@ -1,0 +1,23 @@
+<body>
+The BOXER multi-discrimination classifier toolkit.
+
+<p>
+The BOXER toolkit includes a number of polytomous (multi-category)
+classifiers and the necessary support framework. The classifiers can
+classify "data points" (e.g., text documents converted into "bag of
+words" feature vectors) according to several "discriminations":
+partitions of the universe of the data points into non-overlapping classes.
+
+The main concepts are the following:
+<ul>
+<li>Data Point: a data point is a representation of an object being categorized, e.g. a tokenized document. Externally, a data point is represented by a section of a text file (e.g. in an XML format) that lists features of the object (e.g., words occurring in a document) and the values of those features (e.g. frequencies of those words in the document). Internally, feature labels are mapped to integer IDs.
+<li>Feature Dictionary: a map between string "feature labels" (e.g., tokens of  text documents) found in input files and internally-used integer IDs.
+<li>Discrimination: A discrimination is a list of Classes. A class is basically a category label that can be assigned to a data point being categorized. The classes of a discrimination are non-overlapping, i.e. each document is meant to be assigned to only one class.
+<li>Suite: A set of discriminations. E.g., new articles can be categorized with respect to the industry they are about (one discrimination) and the region they are about (another discrimination).
+<li>Learning Algorithm: a multi-category ("polytomous") classifier which has its inner ''state'' (awareness of a suite of discrimination, plus some data structures that it would use for categorizing data points). One can supply information to the algorithm .......
+</ul>
+
+<p>
+The classifier classes are all derived from the LearningAlgorithm class.
+
+</body>
