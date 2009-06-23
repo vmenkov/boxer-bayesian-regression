@@ -1,0 +1,401 @@
+<html>
+<head><title>BOXER User Guide</title>
+<body>
+<h1>BOXER User Guide</h1>
+
+<p>
+
+BOXER is a Java library for online anytime machine learning of
+polytomous logistic regression models. It uses XML as the main format
+for describing input data, but it is possible for the user to use API
+in other ways as well.
+<p>
+
+Please refer to the <a href="../package-summary.html">BOXER package summary</a> for the overall high-level description of BOXER.
+<p>
+
+To provide an example of using the BOXER API, as well as a convenient
+way of using BOXER without writing your own code, the distribution
+also includes a simple Java application named BORJ. BORJ has a simple
+command-line interface that can be used to perform most BOXER
+operations (such as creating, training, and applying a learner), which
+makes it possible to use it from a shell script.  Please refer to
+the <a href="../../borj/Driver.html">description of borj.Driver</a>
+for the overview of BORJ and its command interface.
+<p>
+
+The rest of this document provides general information about using
+BOXER in a Java application. One should refer to the
+appropriate <a href="../package-summary.html">API pages</a> for
+individual classes for the details on using each BOXER class.  You can
+also look at the use of various BOXER classes and methods in the BORJ
+source code.
+</p>
+
+<h2>Building blocks of a BOXER application</h2> 
+
+<p>
+This section describes the objects that you most likely will deal with
+when using the BOXER API.
+<p>
+
+<ul>
+
+<li>A <a href="../DataPoint.html">DataPoint</a> is a description of an
+object (example). As far as BOXER is concerned, a DataPoint is simply
+a sparse vector, with a number of "present" features, and a numerical
+value associated with each feature. For example, if your application
+classifies text documents, it can describe each document to BOXER by
+constructing a DataPoint whose features are terms present in the
+document, and the value corresponding to each feature (term) is the
+frequency (numbers of occurrences) of that term in the document,
+possibly normalized in some way.
+
+<li>A <a href="../Discrimination.html">Discrimination</a> describes a
+way to partition the universe of objects (data points) into a number of
+non-intersecting classes. A classification may be binary (having just
+two classes) or polytmous (more than two classes). For example, one
+may classify a set of mushrooms a binary classification consist of two
+classes {"POISONOUS", "NON-POISONOUS"} or a polytomous classification
+with three classes {"EDIBLE", "INEDIBLE-BUT-NOT-POISONOUS",
+"POISONOUS"}.
+
+<p>
+In BOXER, a discrimination may, beside the list of classes, also
+contain some additional information helpful in interpreting input data
+effectvely and efficiently, namely, the names of the discrimination's
+"default class" and/or the "leftovers class".
+
+<li>A <a href="../Suite.html">Suite</a> is a collection of several
+independent discriminations, each of which is meant to partition the
+same universe of objects in different ways. For example, if you are
+classifying a set of news reports each of which may be associated with
+one or more country, or with no country at all, there be the total of
+100 countries mentions anywhere in the document collections, you may
+choose to use a suite consisting of 100 binary dicriminations: {"USA",
+"NOT-USA"}, {"Canada", "NOT-Canada"}, etc. On the other hand, if you
+know that each document in the collection deals with exactly one
+country (or, you are just interested in the single "main" geographical
+topic of each article), you may have a single (polytomous)
+discrimination with 100 classes, {"USA", "Canada", "Mexico", ....}.
+
+In BOXER, several properties may be associated with each suite, to
+help BOXER interpret input data in more efficient ways.
+
+<li>A <a href="../Learner.html">Learner</a> is a class that implements
+a learning algorithm. The Learner class itself is abstract (i.e., you
+can't have an instance of simply "a learner", rather than of one of
+its concerete subclasses), while its concerete subclasses implement
+particular learning algorithms. An instance of a Learner subclass thus
+emobodies a partiucular algortithm, complete with a particular set of
+algorithm parameters.
+
+<p>
+A learner is always associated with a particular suite; internally, it includes a number of so-called "learner blocks": learning models associated with individual discirminations from this suite.
+
+<p>
+Once a Learner instance is created, you can "train" it (provide it
+with some labeled training examples (data points) to be "absorbed",
+i.e. for the learner to modify its inner state based on them), or
+"apply" it to a data point (i.e. to have the learner classify the data
+point, using the model it has built so far). Training and applying can
+be done any number of times, in any order.
+</ul>
+
+<p>
+All BOXER objects described above can be initialized based on a
+description in XML format ("deserialized") and saved as an XML element ("serialized").
+
+<h2>Typical data flow</h2> 
+
+<p>
+While one may use BOXER API classes in a variety of ways, this section
+presents a likely sequence of operations in a typical use case. Most
+likely, you will need to use all, or most, of them to get started with
+BOXER.
+
+
+<h3>Creating a Suite</h3>
+
+If you know in advance the structure of the classification system that
+you want to apply to the data (e.g., classifying documents into so
+many classes based on their contents), you may start your interaction
+with a boxer with creating a Suite describing the desired classification.
+An easy way to do is by creating an XML file containing this description,
+and reading it into BOXER:
+
+<pre>
+File f = new File("suite-definition-file-name.xml");
+Suite suite = Suite(f);
+</pre>
+
+<P>
+(There is also a similar constructor that takes an XML Element as
+argument, instead of the file name).
+
+<p>
+See <a href="./sample-suite-out.xml">sample-suite-out.xml</a> for a
+sample suite description.
+
+<p>
+Alternatively, instead of reading an XML suite definition file, your
+application may assemble a suite in runtime, creating an empty suite
+first and adding discirminations one by one. For example:
+
+<pre>
+Suite suite = Suite("My_Suite");
+suite.addDiscrimination( "USA", new String[] {"USA", "NOT-USA"}, 
+                         "NOT-USA", null, Suite.DCS.Fixed);
+suite.addDiscrimination( "Canada", new String[] {"Canada", "NOT-Canada"}, 
+                         "NOT-Canada", null, Suite.DCS.Fixed);
+suite.addDiscrimination( "Mexico", new String[] {"Mexico", "NOT-Mexico"}, 
+                         "NOT-Mexico", null, Suite.DCS.Fixed);
+</pre>
+
+In the above example, you have created a suite with 3 binary
+discirminations. Each one has 2 classes, one of which (e.g. "NOT-USA")
+is marked as a default class, meaning that examples not explicitly
+labeled as belonging to a class in the discirmination "USA" will be
+interpreted as if they were labeled as belonging to the class
+"NOT-USA" of that discrimination.
+
+<p>
+Or:
+
+<pre>
+Suite suite = Suite("My_Suite");
+suite.addDiscrimination( "Country", 
+          new String[] {"USA", "Canada", "Mexico", "Brazil", "Other", "None"}, 
+          "None", "Other", Suite.DCS.Fixed);
+suite.addDiscrimination( "Source", 
+           new String[] {"Reuters", "AP", "New_York_Times", "Other"}, 
+           "Other", "Other", Suite.DCS.Fixed);
+suite.addDiscrimination( "Language", 
+           new String[] {"English", "Foreign_language"}, 
+           "English", "Foreign_language", Suite.DCS.Fixed);
+</pre>
+
+In the above example, you have created a suite with two polytomous
+discriminations and a binary one. Each one has a default class (used
+for interpreting examples that are not explicitly labeled) and a
+"leftovers class". The meaning of the latter is the following: if an
+example comes up labeled e.g. "Country:Peru", "Source:AFP", or
+"Language:Spanish", it will be interpreted as if it were labeled
+"Country:Other", "Source:Other", or "Language:Foreign_language".
+
+<p>
+It is advisable to explicitly describe all discirminations you will
+use, in order to ensure that BOXER does exactly what you
+want. However, it is also possible in some circumstances to have BOXER
+learn about discriminations and classes by looking at labels contained
+in the data sets it will read, and to create discriminations (or add
+classes to existing discriminations) as it goes. This will be
+discussed later.
+
+<p>
+It is also possible that an application won't need to create a suite
+explicitly, because it is going to read a "learner complex" - an XML
+element containing the description of a learner complete with the
+suite it operates on; that situation is discussed below.
+
+<h3>Creating a Learner on an existing Suite</h3> 
+
+<p>
+To do any classification, you need a Learner. You can create a Learner
+from scratch as follows:
+<pre>
+File f = new File("learner-definition-file-name.xml");
+org.w3c.dom.Element e = ParseXML.readFileToElement(f);
+Learner learner =  suite.addLearner(e);
+</pre>
+The learner definition file should contain a <tt>learner</tt> element
+describing the learner's type and properties.
+See <a href="./eg-learner-param-1.xml">eg-learner-param-1.xml</a>
+and other XML files in the directory <tt>sample-data</tt> for examples
+of learner definition files.
+<p>
+
+It is possible to create several learners using the same suite; your
+application may do this if, for example, you want to compare
+performance of different algorithms in a single run.
+</p>
+
+<h3>Deserializing a "learner complex"</h3> 
+
+<p>
+Instead of creating a suite and a learner separately, you can read a
+single XML element, <tt>learnercomplex</tt>, which contains both a
+suite definition and a learner definition (or even several learners on
+the same suite). The learner definitions can contain just the
+algorithm name and parameters, or they can also contain the complete
+saved state of the learners. The latter would be the case if
+the <tt>learnercomplex</tt> file has been produced by "deserializing
+everything" on an earlier run of a BOXER application. This, in fact,
+is the more typical use of <tt>learnercomplex</tt>.
+
+<p>Reading a  "learner complex":
+<pre>
+File f = new File("learner-complex-file-name.xml");
+suite =  Learner.deserializeLearnerComplex(f);
+</pre>
+
+<h3>Reading data points from an XML file</h3>
+<p>
+To feed a set of data points to BOXER (as a training set or a test
+set), you will typically create an XML file (or an in-mememory XML
+org.w3c.dom.Element object) containing a <tt>dataset</tt>
+element. This element will enclose any number of <tt>datapoint</tt>
+tags, each of which will describe a data point, i.e. the data point's
+features and their values, as well as any discrimination/class labels
+that may be associated with this. 
+
+<p>
+The data set description XML file can be read in using the
+ParseXML class:
+<pre>
+Vector<DataPoint> train =  ParseXML.readDataFileXML("file-name.xml", suite, true);	
+</pre>
+The last (boolean) parameter affects how BOXER will interpret data
+points' class labels that it cannot resolve via the discrimination
+definitions it already has. If this flag is <tt>true</tt>, BOXER may
+(if allowed by the suite's properties) add new discriminations and/or
+classes to the suite based on such "unexepected" labels. Otherwise,
+the only options it has is to ignore such labels, or to throw an
+exception.  Therefore, you may want to either never have this flag on
+(if you always provide complete suite definition in advance), or only
+have it on when reading your training examples (since it makes little
+sense to extend your discriminations when reading test data!).
+
+<p>
+Once read and stored as DataPoint objects, the data points can be used
+just once, or a number of times - e.g., you can feed the same data
+point to a Learner several times as a training example, or you can
+later apply the Learner to it to see how correctly it will score it.
+</p>
+
+<h3>Creating data points</h3> 
+
+<p>
+While XML files are convenient for passing data between applications,
+your program may create DataPoint objects directly as well. E.g.
+<pre>
+// get the FeatureDictionary associated with the current suite
+FeatureDictionary fd = suite.getDic(); 
+Vector<<DataPoint.FVPair> v = new Vector<DataPoint.FVPair>;
+for(....) {
+  String featureName = ...;
+  double featureValeu = ...;
+  int featureID = fd.getIdAlways( featureName );
+  v.add( new FVPair( featureID, featureValue);
+}
+DataPoint p = new DataPoint(v, fd);
+</pre>
+</p>
+
+<h3>Training a Learner</h3> 
+
+<p>
+All BOXER Learners are able to accept additional training examples at any time.
+The usual training method can process one or several examples.
+
+<p>
+To process an entire vector:
+<pre>
+Vector<DataPoint> xvec = ...;
+learner.absorbExample(xvec);
+</pre>
+
+<p>
+To process 2 examples: the i-th and (i+1)-th elements of the vector:
+<pre>
+Vector<DataPoint> xvec = ...;
+learner.absorbExample(xvec, i, i+2);
+</pre>
+</p>
+
+<p>
+If your application generates data in XML format, it is also possible to feed an XML description of a data point directly to the Learner:
+<pre>
+org.w3c.dom.Element e = ...; // a <tt>datapoint</tt> element
+learner.absorbExample(e);
+</pre>
+</p>
+
+<h3>Scoring examples</h3> 
+
+<p>
+Applying a learner's model to an example:
+<pre>
+  Learner algo = ...;
+  DataPoint x = ...;
+  double [][] prob = algo.applyModel(x);
+</pre>
+In he result array, the element <tt>prob[i][j]</tt> contains the
+model's estimation of the probability of the example <em>x</em>'s
+belongingh to the <em>j</em>-th class of the <tt>i</tt>-th
+discrimination of the suite with which the learner is associated.
+<p>
+
+In practice, many probabilities are very small numbers; in order to be
+able to see them as different from zero, one can request the model to
+return natural logarithms of the scores:
+<pre>
+  Learner algo = ...;
+  DataPoint x = ...;
+  double [][] probLog = algo.applyModelLog(x);
+  // You can use probLog[][] directly, or compute exp(*) of each element
+  double [][] prob = expProb(probLog); 
+</pre>
+<p>
+
+If the DataPoint x has been read from an XML data set file, it will
+also contain any class labels associated with it in the XML
+file. Naturally, <tt>applyModel</tt> will <em>not</em> look at those
+labels, and they (or the test example itself) won't affect the
+learner's model in any way. But you can interpret those stored labels
+as the "true" classification of the data poiint, and use them to
+compute various measures of the classification quality (cumulative
+recall, precisions, log-likelyhood). There are a number of auxiliary
+classes and methods to do it; you can reuse a number of methods from
+the <tt>borj</tt> package. Look at the source code of borj.Driverd,
+and the auxiliary class <tt>borj.Scores</tt> for details.
+
+</p>
+
+<h2>Other common operations</h2>
+
+<p>
+This section discusses some less commonly used BOXER operations.
+
+<h3>Saving the suite</h3>
+....
+
+<h3>Saving the learner's state</h3>
+....
+
+<h3>Using a separate labels file</h3>
+....
+
+
+<h2>Additional information</h2>
+
+<h3>Logging</h3> 
+
+Boxer sends certain warning and info messages to a logger called
+"boxer". To control the processing of those messages, you can create a logger with that name in advance, as follows:
+<pre>
+  String NAME = "boxer";
+  Logger logger = java.util.logging.Logger.getLogger(NAME);
+</pre>
+and then configure the logger as desired. For more on logging, see <a href="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/overview.html">Java<sup>TM</sup> Logging Overview</a>.
+
+
+<h2>See also</h2>
+<ul>
+<li><a href="tags.html">XML tags</a>
+<li><a href="nd.html">Treating new classes and new discirminations (proposal)</a>
+<li><a href="standard-scenarios.html">Standard Discrimination Handling Scenarios</a> - more usage examples
+</ul>
+
+</body>
+</html>
