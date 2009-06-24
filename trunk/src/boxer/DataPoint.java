@@ -207,7 +207,7 @@ public class DataPoint implements Measurable  {
       with a name (ID) for the new data point. Instead, BOXER will
       auto-generate a (likely unique) name.
 
-      @param v A Vector of feature/value pairs describing the new data point
+      @param _v A Vector of feature/value pairs describing the new data point
       @param _dic the FeatureDictionary of the suite in whose context
       the DataPoint will be used.
      */
@@ -219,10 +219,10 @@ public class DataPoint implements Measurable  {
      * according to the feature id, so that dot product, binary search, and
      other operations relying on the right order will work. 
 
-      @param v A Vector of feature/value pairs describing the new data point
+      @param _v A Vector of feature/value pairs describing the new data point
       @param _dic the FeatureDictionary of the suite in whose context
       the DataPoint will be used.
-      @param name The name (example ID) to be assigned to the new data point
+      @param _name The name (example ID) to be assigned to the new data point
     */
      public DataPoint(Vector <FVPair> _v, FeatureDictionary _dic,String _name) {
 	 name = _name;
@@ -241,9 +241,9 @@ public class DataPoint implements Measurable  {
 
     /** Constructs a data point from the data in the hash map.
 
-	@param the feature name / feature value map describing the new
+	@param words The feature name / feature value map describing the new
 	data point
-	@param dic the FeatureDictionary of the suite in whose context
+	@param dic The FeatureDictionary of the suite in whose context
 	the DataPoint will be used.
 	@param name The name to assign the new data point
     */

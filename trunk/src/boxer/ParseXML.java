@@ -78,16 +78,28 @@ public class ParseXML {
     }
 
 
-    /** Reads an entire file into an XML element. The file must
-     * contain a "dataset" element. */
+    /** Reads an entire file into an XML element. If one wants to use
+     * the element later to parse as a dataset, the file must contain
+     * a "dataset" element as its top-level element. 
+
+     @throws IOException E.g., if the file can't be opened
+     @throws SAXException If the W3C DOM parser finds that the
+     document isn't good XML
+    */
     public static Element readFileToElement(File f)
  	throws IOException, SAXException{
 	//Logging.info("Parsing XML file " + f.getPath());
 	return readFileToElement(f.getPath());
     }
 
-    /** Reads an entire file into an XML element. The file must
-     * contain a "dataset" element. */
+    /** Reads an entire file into an XML element. If one wants to use
+     * the element later to parse as a dataset, the file must contain
+     * a "dataset" element as its top-level element.
+
+     @throws IOException E.g., if the file can't be opened
+     @throws SAXException If the W3C DOM parser finds that the
+     document isn't good XML
+ */
     public static Element readFileToElement(String fname) 
 	throws IOException, SAXException{
 	if (!(new File(fname)).exists()) {
@@ -128,7 +140,7 @@ public class ParseXML {
     public static Vector<DataPoint> parseDatasetElement(Element e,
 							Suite suite, 
 							boolean isDefinitional) 
-	throws BoxerXMLException, SAXException{
+	throws BoxerXMLException    {
 
 	Vector<DataPoint> v = new Vector<DataPoint>();
 
@@ -154,16 +166,18 @@ public class ParseXML {
 	return v;
     }
 
-    /** Creates a DataPoint from the data in the XML element DATAPOINT */
+    /** Creates a DataPoint from the data in the specified
+     <tt>datapoint</tt> XML element.
+     @param node A <tt>datapoint</tt> XML element to parse
+     @throws BoxerXMLException If the element does not contain
+     everything a <tt>datapoint</tt> element needs. */
     public static DataPoint parseDataPoint(Element node,  
 				    Suite suite, boolean isDefinitional)
 	throws BoxerXMLException {
 	Vector<DataPoint.FVPair> fv = null;
 	String dpName= validateDataPointName(node.getAttribute(ATTR.NAME_ATTR), suite);
 
-	// check if we have pre-read labels for this datapoint
 	Vector<Discrimination.Cla> clav = null;
-	//if (labelStore!=null) clav=labelStore.getLabels(dpName,suite,isDefinitional);
 
 	for(Node n=node.getFirstChild(); n!=null; n=n.getNextSibling()) {
 	    if (n.getNodeType() ==  Node.ELEMENT_NODE) {
@@ -191,7 +205,7 @@ public class ParseXML {
 		    }
 		} else if  (name.equals(NODE.FEATURES)) {
 		    if (fv != null) {
-			throw new BoxerXMLException("Duplicate " + NODE.FEATURES + " tag in  a data point!");
+			throw new BoxerXMLException("Duplicate " + NODE.FEATURES + " tag in data point '"+dpName+"'!");
 		    }
 		    Vector<String[]> v=parseList(n,NODE.FEATURE,
 						 ATTR.FEATURE_ATTR);
@@ -212,7 +226,7 @@ public class ParseXML {
 	    }
 	}
 	if (fv == null || fv.size() == 0) {
-	    throw new BoxerXMLException("Data point "+dpName+" has no features");
+	    throw new BoxerXMLException("Data point '"+dpName+"' has no features");
 	} 
 	DataPoint p = new  DataPoint(fv, suite.getDic(), dpName);
 
@@ -299,7 +313,7 @@ public class ParseXML {
 	@param e The XML element (named "dataset") to be parsed. This,
 	typically, is the top-level element of an XML file.
 
-	@param suite Parsing will be done in the context of this suite.
+	@param suite Parsing will be done in the context of a specially-prepared copy of this suite. The suite itself will not be affected.
 
 	@param isDefinitional Set this flag to true if you want to validate
 	the data set for future reading as a training set. This will
@@ -309,7 +323,8 @@ public class ParseXML {
     public static int validateDatasetElement(Element e,
 					     Suite suite, 
 					     boolean isDefinitional) 
-	throws IOException, SAXException{
+    //throws  SAXException
+    {
 	Suite validator = suite.lightweightCopyOf("Validator");
 	int n = -1;
 	try {
@@ -320,6 +335,80 @@ public class ParseXML {
 	}
 	return n;
 
+    }
+
+    /** This methods allows one to check in advance whether a given
+	<tt>dataset</tt> XML element can be successfully "ingested" by BOXER.
+	Unlike {@link #validateDatasetElement(Element, Suite, boolean)
+	validateDatasetElement(Element, Suite, boolean)}, this method
+	does not stop after the first error. Instead, it keeps
+	processing the 	<tt>dataset</tt> element no matter what, and
+	returns a Vector that contains a mix of DataPoint objects (for
+	successfully parsed <tt>datapoint</tt> elements) and Exceptions (for 
+	<tt>datapoint</tt> elements that could not be properly parsed and
+	processed within the context of the specified suite.
+
+	<p> To understand how successful the processing has been, the
+	caller would need to scan the entire results array, and to see
+	how many Exception objects it contains.
+
+	Regardless of how successfully the data set is parsed, this
+	method does not affect the suite passed to it (other than,
+	perhaps, adding terms to its feature dictionary, which has no
+	effect on the end user).
+
+	@param e The XML element (named <tt>dataset</tt>) to be parsed. This,
+	typically, is the top-level element of an XML file.
+
+	@param originalSuite Parsing will be done in the context of a specially-prepared copy this suite. The suite itself will not be affected.
+
+	@param isDefinitional Set this flag to true if you want to validate
+	the data set for future reading as a training set. This will
+	affect the way "new discriminations" and "new classes"
+	encountered in the file are processed
+
+	@return A mixed Vector of DataPoint and Exception objects,
+	normally - one for each <tt>datapoint</tt> child element
+	within the <tt>dataset</tt> element being parsed.
+
+	//@throws SAXException Is thrown by W3C DOM parser when XML just can't be parsed
+
+     */
+    public Vector<Object> validateDatasetElement2(Element e,
+					     Suite originalSuite, 
+					     boolean isDefinitional) 
+    //throws SAXException
+    {
+	Suite validator = originalSuite.lightweightCopyOf("Validator");
+	Vector<Object> v = new 	Vector<Object>();
+
+	XMLUtil.assertName(e, NODE.DATASET);
+	
+	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+	    int type = n.getNodeType();
+	    String val = n.getNodeValue();
+	    
+	    if (type == Node.TEXT_NODE && val.trim().length()>0) {
+		Logging.warning("Found an unexpected non-empty text node, val="  + val.trim());
+	    } else if (type == Node.ELEMENT_NODE) {
+		if (!n.getNodeName().equals(NODE.DATAPOINT)) {
+		    Logging.warning("Element node name is not " + NODE.DATAPOINT + ", ignoring");		    
+		} else {
+		    // parse a data point (vector), and its labels
+		    try {
+			DataPoint p=parseDataPoint((Element)n, validator, isDefinitional); 
+			v.add(p);
+			//} catch(SAXException ex) {
+			// This exception - implying poor XML - we re-throw,
+			// as per DL's writeup (2009-06-24)
+			//throw ex;
+		    } catch(Exception ex) {
+			v.add(ex);
+		    }
+		}
+	    }		
+	}
+	return v;
     }
 
 

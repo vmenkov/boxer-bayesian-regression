@@ -9,7 +9,8 @@ package boxer;
     0.6.003 - late May 2009
     0.6.004 - 2009-06-18. Borj: respect quotes in cmd line
     0.6.005 - 2009-06-19. Boxer: introduced (and use) BoxerXMLException 
-    0.6.006 - 2009-06-22. Boxer: improved DataPoint name management
+    0.6.006 - 2009-06-24. Boxer: improved DataPoint name management; 
+       ParseXML enhancements (in connection with standard-scenarios.html)
 </pre>
  */
 public class Version {
