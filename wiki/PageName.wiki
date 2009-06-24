@@ -1,4 +1,4 @@
-#Using Google code
+#Using Google Code
 
 = Introduction =
 
@@ -8,7 +8,10 @@ For an MS Windows machine, trying to get "CollabNet Subversion Client v1.6.3"  f
 = Details =
 
 *Adding* a whole tree:
- * svn import src  https://boxer-bayesian-regression.googlecode.com/svn/trunk/  --username vmenkov   -m "Initial import"
+ * svn import src  https://boxer-bayesian-regression.googlecode.com/svn/trunk/src  --username vmenkov   -m "Initial import"
 
 _Deleting_ a file:
 svn del  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/BXRReader.java.bak  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/DataPoint.java.bak --username vmenkov -m "delete bak files"
+
+*Checking out*:
+svn co https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/src/boxer src/boxer --username vmenkov
