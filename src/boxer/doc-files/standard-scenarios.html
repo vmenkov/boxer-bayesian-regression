@@ -19,7 +19,7 @@ step, whether parsing is definitional or not, etc.<p>
 
 <p>Most exampes in this document assume that the XML input is well-formed, and
 that is consistent with BOXER's XML syntax and semantics. If that is
-not the case, an ,tt>org.xml.sax.SAXException</tt>
+not the case, an <tt>org.xml.sax.SAXException</tt>
 or <a href="../BoxerXMLException.html">BoxerXMLException</a>,
 respectively, will be thrown by BOXER. If desired, these exception can
 be caught by the user's code using the appropriate Java try/catch syntax.
@@ -73,8 +73,75 @@ import org.xml.sax.SAXException;
 
 <h2>1. Validation Scenarios:<h2>
 
-<h3>Scenario 1.1</h3>
+<h3>Scenario 1.1a</h3>
+
+ <p><strong>Scenario:</strong> The user has a set of examples in the
+form of XML DataSet elements, one per file.  They want to find out
+whether it would be valid to use the DataPoint elements in those
+DataSets for definitional parsing and/or training of Suite Foo.
+However, they don't want this validation process to actually alter
+Suite Foo.  When invalidity is present, they want error messages with
+as much information as possible written to the log, i.e. processing
+should not stop at the first error.  (Note that in cases where a
+source of invalidity is running out of anonymous classes in a
+DCS2/Bounded discrimination, the identified "invalid" examples are
+dependent on the order in which examples are processed.)</p>
+
+<p><strong>Implementation</strong></p>
+  
 <p>
+<pre>
+Suite validator = suite.lightweightCopyOf(mysuite);
+String filenames[] = { "dataset1.xml", "dataset2.xml", ...};
+
+int nDataSets = 0, nBadDataSets = 0, nDataPointsinGoodDataSets = 0, nBadDataPointsinGoodDataSets = 0; 
+for (String f : filenames) {
+   nDataSets++;     
+   org.w3c.dom.Element e;
+   try {
+	org.w3c.dom.Element Element e=ParseXML.readFileToElement(f);
+   } catch (Exception ex) {
+      nBadDataSets++; 
+      Logging.warning("File " + f  
+          + " either could not be read, or did not contain proper XML. "
+	  + "  We did not attempt to validate individual DataPoints within this file."
+	  + "  ParseXML.readFileToElement raised the following exception: " + ex );
+      continue;
+    }
+
+    Vector&lt;Object&gt; v = ParseXML.validateDatasetElement2(e, validator, true);
+    for (int i=0; i &lt; v.size(); i++) {
+	   nDataPointsinGoodDataSets++; 
+	   Object o = v.elementAt(i);
+	   if  (o instanceof Exception) {			   
+		nBadDataPointsinGoodDataSets++;
+		Logging.warning("Example number " + i  + " in file " + f 
+			+ " caused ParseXML.validateDatasetElement2 to raise exception: " + o); 
+	   }
+   }
+   <!--
+   catch (Exception ex) {
+      nBadDataSets++; 
+      Logging.warning("File " + f  
+          + " did not contain XML for a correctly structured DataSet element."
+	  + "  We did not attempt to validate individual DataPoints within this file."
+	  + "  ParseXML.readFileToElement raised the following exception: " + ex );
+    }
+    -->
+}
+if (nBadDataSets + nBadDataPointsinGoodDataSets == 0) {
+   System.out.println("[VALIDATE] The specified files are valid for definitional parsing or training " 
+     + "with respect to Suite " + Suite.getName + "."
+     + "The " + nDataSets + "files contain " + nDataPointsinGoodDataSets + " data points in total.");
+}
+</pre>
+</p> 
+  
+<h3>Scenario 1.1b</h3>
+
+<p><em>To appear...</em></p>
+
+<!--
 
 Scenario: User wants to check the validity of a set of XML
 examples against Suite Foo. They care in a yes/no way whether the
@@ -213,7 +280,7 @@ viz.:
 (the "lightweight copy" of the "main suite" <tt>suite</tt>) is
 modified. Therefore, once the validation has completed, you still need
 to parse the dataset against the main suite.
-
+-->
 
 <h3>Scenario 1.2</h3>
 
