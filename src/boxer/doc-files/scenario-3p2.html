@@ -1,0 +1,77 @@
+<html>
+<head>
+<title>Scenario 3.2</title>
+</head>
+
+<body>
+<h3>Scenario 3.2</h3>
+
+<p>
+ User wants to process a series of XML examples one at a time. For
+ each example they want to:
+
+<pre>
+IF the example is valid
+   i) Update the Discrimination definitions of Suite Foo
+   ii) Update the training state of Suite Foo
+ELSE
+   i&#39;) Stop processing. The invalid example should have no impact on Suite Foo.
+</pre>
+
+<strong>Implementation.</strong> In the code snippet below, just as in
+the one in <a href="scenario-1p2.html">Scenario 1.2</a>, all examples
+being processed will be obtained by the user's application from
+parsing a single <tt>dataset</tt> element; but in general, they can
+come from any source (e.g., each one from a single small XML file; or,
+from an input stream formatted in some special way).
+
+<pre>
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // Add any learners 
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=true;
+          // validate the examples from dataset XML
+          DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          // If we got here, the validator had no problems, so the real suite 
+          // should not either.
+          learner.absorbExample(pe);
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+ }
+
+ if (!error) logger.info("All " + cnt + " examples validated successfully");
+</pre>
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>Scenario 7.2</title>
+</head>
+
+<body>
+<h3>Scenario 7.2</h3>
+
+<p>
+User wants to process a series of XML examples one at a time.  
+For each example they want to:
+<pre>
+       IF the example is valid
+               i) Update the Discrimination definitions of Suite Foo
+               ii) Apply the model currently implicit in the training state 
+                   of Suite Foo to the example to make predictions,
+               iii)    IF an appropriate prediction is made
+                          Update training state of Suite Foo using this example
+                       ELSE
+                          Do not update training state                    
+       ELSE
+               i&#39;) Stop processing. The invalid example should have no impact on Suite Foo.
+</pre>
+
+<p><strong>Implementation</strong>
+
+<p>The code below uses the same appropriateness criterion, and the
+same method <tt>predictionsAreAppropriate</tt> as in
+the <a href="scenario-7p1.html">previous scenario</a>.
+
+<pre> 
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  final boolean isDefinitional=true;
+  Suite validator = suite.lightweightCopyOf("Validator");
+
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+     try {
+         // validate the example
+         DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional);
+         // If we got here, the validator had no problems, so the real suite 
+         // should not either.
+
+
+         // (i) parse the example into the "real suite" 
+         DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+         // (ii) score the example
+         double[][] scores = learner.applyModel(p);
+         // Now, scores[i][j] contains the learner-estimated probability of
+         // the example p's belonging to the j-th class of the i-th 
+         // discrimination of the suite. We will compare it with 
+         if (predictionsAreAppropriate(suite, p, scores)) {
+                  // (iii) Train the learner on example p
+                  learner.absorbExample(p);
+         }
+         cnt ++; // keep going
+      } catch (Exception e) {
+          logger.error("Error when validating the "+(cnt+1)+"-th example: " +e);
+           error = true;
+           break; // stop processing
+      }
+  }
+
+
+</pre>	
+
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

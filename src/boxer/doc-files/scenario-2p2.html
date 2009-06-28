@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>Scenario 2.2</title>
+</head>
+
+<body>
+<h3>Scenario 2.2</h3>
+
+<strong>Scenario:</strong> User wants to process a series of XML examples one at a time.  For each example they want to:
+
+<pre>
+       IF the example is valid
+               i) Update the Discrimination definitions of Suite Foo
+       ELSE
+               i&#39;) Stop processing.  The invalid example should have no impact on Suite Foo.
+</pre>
+
+
+<strong>Implementation.</strong> In the example below, all examples
+being validated will be obtained by the user's application from
+parsing a single <tt>dataset</tt> element; but in general, they can
+come from any source (e.g., each one from a single small XML file; or,
+from an input stream formatted in some special way).
+
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=true;
+          // Parse against the "validator"  suite. This will only affect the
+          // validator, and not the main suite
+          DataPoint dummy=ParseXML.parseDataPoint(pe,validator,isDefinitional);
+          // If no exception has been thrown on the validator, we can now parse
+          // it in the context of the main suite (which may experience any
+          // appropriate update
+           DataPoint p=ParseXML.parseDataPoint(pe,suite,isDefinitional);
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+ }
+
+ if (!error) logger.info("All " + cnt + " examples validated, and then applied to the main suite, successfully");
+</pre>
+
+<p>
+<strong>Discussion.</strong> 
+<ul>
+<li>In the example above, why do we need to use the validation suite?
+Would not it be possible to parse the example against the main suite
+right away and catch any exception? Surely ParseXML.parseDataPoint
+would throw an exception if it finds that a data point description is
+invalid in some way, or that the suite modification required by a data
+point descrion (e.g., adding a class to a discrimination that alreayd
+has as many classes as it can) is impossible? Although this normally
+will be the case, this "atomically failsafe" behavior is not generally
+guaranteed.  One could imagine, perhaps, a situiation when a
+"Discr_name:Class_name" label has triggered the (successful) creation
+of a new (empty) discrimination, but then some unexpected problem
+(say, the invalid class name) triggered an exception as the first was
+being added to the discrimination. Therefore, using a separate
+validation suite is recommended for an extra degree of safety.
+
+<li>Normally, the DataPoint object returned by the call to
+ParseXML.parseDataPoint(pe,suite,isDefinitional) will not be discarded
+by the application (as in the example above), but will be used for
+something else later on, e.g. as a training example. The code snippet
+shown above demonstrates parsing examples purely for the purpose of
+updating the suite (creating discriminations/adding classes) based on
+the labels associated with the data points in the data set.
+</ul>
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<html>
+<head>
+<title>Scenario 3.1</title>
+</head>
+
+<body>
+<h3>Scenario 3.1</h3>
+
+
+<p>
+Like <a href="scenario-1p1a.html">1.1</a>, but if and only if the entire set of examples is valid with
+respect to Suite Foo, user wants to update Discrimination definitions
+<em>and</em> update training state of Suite Foo using these examples.
+
+
+<p><strong>Implementation</strong>
+
+<p>For simplicity, we assume below that the entire set comes in a
+single "dataset" XML element, and we only care about the first
+unacceptable example. We therefore use the simple method
+ParseXML.validateDatasetElement(...) for validation.  Otherwise, you
+can use ParseXML.validateDatasetElement2(...) as shown
+in <a href="scenario-1p1a.html">Scenario 1.1(a)</a>.
+
+<pre>
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // add a learner to the suite somehow
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  boolean isDefinitional = true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &gt; 0) {
+	System.out.println("[VALIDATE] The data set from file " + f +
+        " appears to be fully acceptable as a training set in the current suite."+
+        " It contains " + n + " data points");
+        // now, parse the date with the "real" suite. Definitional parsing is
+        // used, so the suite is updated as we go
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Have the learner absorb all examples from v. 
+        learner.absorbExample(v);
+
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse the data set from file " + f +
+         " as a training set in the current suite. Please see a warning log message for detals");
+  }
+
+</pre>	
+
+<p>
+<strong>Discussion.</strong>  One may want to say that "Since training
+always updates Discrimination definitions, omitting updating of
+Discrimination definitions is not an option", but with Boxer 0.6.003
+(and earlier) versions this is <strong>not</strong>, strictly speaking, the
+case. For example, one may have already has read a complete suite
+definition from "foo.xml", and therefore feel that any
+"non-conforming" discr:class label in the data set file may only be an
+error. In this case, one can parse the data as above, but with 
+<pre>
+  isDefinitional=false,
+</pre>
+which means that no changes will be made to the suite, and all
+non-conforming labels (i.e. ones referring to disriminations or
+classes not occurring in the original suite definition) will either be
+ignored, or cause an exception.
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

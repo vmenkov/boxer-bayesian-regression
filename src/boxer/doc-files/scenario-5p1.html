@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>Scenario 5.1</title>
+</head>
+
+<body>
+<h3>Scenario 5.1</h3>
+
+
+<p>
+Like <a href="scenario-1p1a.html">1.1</a>,
+but if and only if the
+entire set of examples is valid with respect to Suite Foo, user wants
+to apply the model currently implicit in the training state of Suite
+Foo to these examples to make predictions, without first updating
+Discrimination Definitions.
+
+
+<p><strong>Implementaion</strong>
+
+<p>Here, one needs non-definitional parsing of the data with respect
+to the training set (i.e., ignoring or errorring out new labels,
+instead of creating new discr/classes). As to the validation, its mode
+has to be consistent with the real parsing mode, i.e., be
+non-definitional as well.
+
+
+<pre>
+  import boxer.*;
+
+  ...
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  boolean isDefinitional = false;
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitonal);
+  if (n &gt; 0) {
+        // parse the data against the main suite
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Score them all
+        for(DataPoint p: v) {
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+        }
+
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a test set in the current "+
+        "suite. It contains " + n + " data points, and we scored them all");
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a test set in the current suite. Please see a warning "+
+         "message in the log for detals");
+  }
+
+</pre>	
+
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

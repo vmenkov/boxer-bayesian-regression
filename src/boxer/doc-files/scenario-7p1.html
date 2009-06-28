@@ -1,0 +1,147 @@
+<html>
+<head>
+<title>Scenario 7.1</title>
+</head>
+
+<body>
+<h3>Scenario 7.1</h3>
+
+<p>
+Like <a href="scenario-1p1a.html">1.1</a>,
+but if and only if the entire set of examples is valid with respect 
+to Suite Foo, user wants to process each example one at a time, 
+doing the following for each example:
+<pre>
+       i. Update Discrimination definitions of Suite Foo,
+       ii. Apply the model currently implicit in the training state of 
+           Suite Foo to the examples to make predictions
+       iii.    IF an appropriate prediction is made
+                       Update training state of Suite Foo using this example
+               ELSE
+                       Do not update training state
+</pre>         
+
+<p><strong>Assumptions.</strong> What is an "appropriate prediction"
+depends, of course, on the goals of the particular application. In the
+code snippet below we will assume that the application's criterion of
+appropriatensess for the learner's scoring of the example X is the
+following:
+
+<quote>
+For each discrimination D for which the example X is labeled
+(explicitly or implicitly) in the dataset file, let C(X,D) be the
+class to which the examples X is so assigned. The learner's
+predictions for example X will be deemed "appropriate" only if, for
+each discrimination D mentioned above, the learner gives the class
+C(D,X) the score now lower than the one given by it to any other
+class.
+</quote>
+
+The above definition is not very strong: for example, a trivial
+learner that assigns equal scores to each class within a
+discrimination will be always deemed to make "appropriate
+predictions". The rules, naturally, can be made more strict by
+requiring the learner to assign to the "correct" class a
+score <em>higher</em> than to any other class in the discrimination.
+
+
+<p><strong>Implementation</strong>
+
+<p>
+We will, for simplicity's sake, assume that 
+the entire set of example is contained in a
+single "dataset" XML element (typically, the top level element of a
+dataset XML file), <strong>and</strong> that, if the entire set can't be
+validly parsed in Suite Foo,  the user will only want to learn
+about the first invalid example (without parsing the rest of the set). 
+
+<p>More detailed validation process can be seen in <a href="scenario-1p1a.html">scenarion 1.1 (a)</a>.
+
+
+<pre>
+import boxer.*;
+
+/** Applies an "appropriateness" criterion to the probability values returned
+    by the model
+*/
+static boolean predictionsAreAppropriate(Suite suite, DataPoint p, double prob[][]) {
+   boolean y[] = p.getY(suite);
+   boolean ysec[][] = suite.splitVectorByDiscrimination(y);
+
+   for(int did = 0; did &lt; ysec.length; did ++) {
+
+	double maxP =0;
+  	for(double p: prob[did]) {
+          if (p &gt; maxP) maxP=p;
+        }
+	for(int i=0; i &lt; prob[did].length; i++) {
+	   if (ysec[did][i]) {
+              // Is the estimated prob for the "correct" class is lower than for some
+              // other class? If it is, the prediction is not "appropriate"
+	      if (prob[did][i] &lt; maxP) return false;
+	   }
+	}
+        return true;
+    }
+}
+
+static void main(....) {
+  ...
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  final boolean isDefinitional=true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &lt; 0) {
+	 System.out.println("[VALIDATE] It would not be possible to parse "+
+         "the data set from file " + f + 
+         " as a training set in the current suite. Please see a warning "+
+         "message in the log for detals");
+  }else if (n==0) {
+         // empty set
+  } else{
+        // Data looks OK
+	System.out.println("[VALIDATE] The data set from file " + f + 
+        " appears to be fully acceptable as a training set in the current "+
+        "suite. It contains " + n + " data points");
+
+        //Now we need to parse the "dataset" element into individual 
+        // datapoint elements and process them separately
+        for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+          if (n.getNodeType() == Node.ELEMENT_NODE && 
+             n.getNodeName().equals(ParseXML.NODE.DATAPOINT)) {
+             Element pe = (Element)n;  // the "datapoint" element 
+           
+             // (i) since the data have been validated already, we can parse 
+             // the example into the "real suite" right away 
+             DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+             // (ii) score the example
+             double[][] scores = learner.applyModel(p);
+             // Now, scores[i][j] contains the learner-estimated probability of
+             // the example p's belonging to the j-th class of the i-th 
+             // discrimination of the suite. We will compare it with 
+             if (predictionsAreAppropriate(suite, p, scores)) {
+                  // (iii) Train the learner on example p
+                  learner.absorbExample(p);
+             }
+             cnt ++; // keep going
+          }
+        }
+
+     }
+
+  }
+
+</pre>	
+
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>
