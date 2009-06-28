@@ -11,6 +11,7 @@ package boxer;
     0.6.005 - 2009-06-19. Boxer: introduced (and use) BoxerXMLException 
     0.6.006 - 2009-06-24. Boxer: improved DataPoint name management; 
        ParseXML enhancements (in connection with standard-scenarios.html)
+    0.6.007 - 2009-06-28. Only updated docs
 </pre>
  */
 public class Version {
