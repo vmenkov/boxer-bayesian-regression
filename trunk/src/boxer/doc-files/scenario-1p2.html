@@ -1,0 +1,66 @@
+<html>
+<head><title>Scenario 1.2</title></head>
+<body>
+<h3>Scenario 1.2</h3>
+
+Scenario: User wants to process a series of XML examples one at a time. None of the example processing should change Suite Foo. For each example they want to:
+<pre>
+ IF the example is valid
+     i) keep going 
+ ELSE
+     i') Stop processing with a useful exception message.
+</pre>
+
+<strong>Implementation.</strong> In the example below, all examples
+being validated will be obtained by the user's application from
+parsing a single <tt>dataset</tt> element; but in general, they can
+come from any source (e.g., each one from a single small XML file; or,
+from an input stream formatted in some special way).
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          final boolean isDefinitional=true;
+          DataPoint p=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+  }
+
+ if (!error) logger.info("All " + cnt + " examples validated successfully");
+
+</pre>
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

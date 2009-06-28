@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>Scenario 5.2</title>
+</head>
+
+<body>
+<h3>Scenario 5.2</h3>
+
+
+
+<p>
+ User wants to process a series of XML examples one at a time.  For
+ each example they want to:
+<pre>
+       IF the example is valid
+               i) Apply the model currently implicit in the training state of 
+                  Suite Foo to the example to make predictions, but without
+                  updating the Discrimination definitions first.
+       ELSE
+               i&#39;) Stop processing.  The invalid example should have no 
+                  impact on Suite Foo.
+</pre>
+
+<strong>Implementation.</strong>
+
+<p>The solution is identical to <a href="scenario-4p2.html">4.2</a>,
+but with isDefinitional=false, since we don't want to update the
+discriminations.
+
+<pre>
+import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+
+  ...
+  // or you can just use stderr...
+  Logger logger = Logger.getLogger("MyLog"); 
+
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // Add any learners 
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+ 
+  // create a lightweight copy of the suite (so that any modifications
+  // that may happen during validation will only affect this copy, and not
+  // your "main" suite
+  Suite validator = suite.lightweightCopyOf("Validator");
+ 
+  int cnt = 0;
+  boolean error = false;
+  // Obtain all "datapoint" elements from somewhere
+  org.w3c.dom.Element[] elements = ....
+  for(Element pe: elements) {
+
+       // parse a data point with its labels against the "validator" suite
+       try {
+          Element pe = (Element)n;  // the "datapoint" element 
+          final boolean isDefinitional=false;
+          // validate the examples from dataset XML
+          DataPoint dummy=ParseXML.parseDataPoint(pe, validator, isDefinitional); 
+          // If we got here, the validator had no problems, so the real suite 
+          // should not either.
+          DataPoint p=ParseXML.parseDataPoint(pe, suite, isDefinitional); 
+          // score the example
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+
+          cnt ++; // keep going
+       } catch (Exception e) {
+          logger.error("Error when validating the " + (cnt+1) + "-th example: " + e);
+           error = true;
+           break; // stop processing
+       }
+  }
+
+
+ logger.info((error? "Only " : "All ") + cnt + " examples validated, "+
+             "definitionally parsed, and scored successfully");
+</pre>
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

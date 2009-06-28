@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>Scenario 4.1</title>
+</head>
+
+<body>
+<h3>Scenario 4.1</h3>
+
+<p>
+Like <a href="scenario-1p1a.html">1.1</a>, but if and only if the
+entire set of examples is valid with respect to Suite Foo, user wants
+to update Discrimination definitions of Suite Foo <strong>and</strong>
+apply the model currently implicit in the training state of Suite Foo
+to these examples to make predictions.
+
+<p><strong>Implementation</strong>
+
+<p>For simplicity, we assume below that the entire set comes in a
+single "dataset" XML element, and we only care about the first
+unacceptable example. We therefore use the simple method
+ParseXML.validateDatasetElement(...) for validation.  Otherwise, you
+can use ParseXML.validateDatasetElement2(...) as shown
+in <a href="scenario-1p1a.html">Scenario 1.1(a)</a>.
+
+<pre>
+  Suite suite = new Suite("foo.xml"); // create suite...
+  // add a learner to the suite somehow
+  ....
+  // get the suite's learner (assuming there is just 1)
+  Learner learner = suite.getAllLearners()[0];
+
+  // modify suite by any preceding definitional parsing etc
+  ....                                
+  // validate the set of examples from dataset XML
+  // a "datapoint" element
+  boolean isDefinitional = true;
+  String f ="dataset.xml"; 
+  org.w3c.dom.Element e = ParseXML.readFileToElement(f); 
+  int n=ParseXML.validateDatasetElement(e, suite, isDefinitional);
+  if (n &gt; 0) {
+	System.out.println("[VALIDATE] The data set from file " + f +
+        " appears to be fully acceptable as a training set in the current suite."+
+        " It contains " + n + " data points");
+        // now, parse the date with the "real" suite. Definitional parsing is
+        // used, so the suite is updated as we go
+        Vector <DataPoint> v = ParseXML.parseDatasetElement(e, suite, isDefinitional);
+        // Have the learner score each example
+        for(DataPoint p: v) {
+          double[][] scores = learner.applyModel(p);
+          // now, scores[i][j] contains the learner-estimated probability of
+          // the example p's belonging to the j-th class of the i-th 
+          // discrimination of the suite
+        }
+
+  } else {
+	 System.out.println("[VALIDATE] It would not be possible to parse the data set from file " + f +
+         " as a training set in the current suite. Please see a warning log message for detals");
+  }
+</pre>	
+
+
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+
+</body>
+</html>

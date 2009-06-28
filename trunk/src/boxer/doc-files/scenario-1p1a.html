@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>Scenario 1.1a</title>
+</head>
+<body>
+
+<h3>Scenario 1.1a</h3>
+<h4>Last update: 24-Jun-09 by David D. Lewis </h3>
+
+<p>Scenario:  The user has a set of examples in the form of XML DataSet
+elements, one per file. They want to find out whether it would be valid
+to use the DataPoint elements in those DataSets for definitional parsing
+and/or training of Suite Foo.  However, they don't want this validation
+process to actually alter Suite Foo. When invalidity is present, they
+want error messages with as much information as possible written to the
+log, i.e. processing should not stop at the first error.  (Note that in
+cases where a source of invalidity is running out of anonymous classes
+in a DCS2/Bounded discrimination, the identified "invalid"  examples are
+dependent on the order in which examples are processed.)</p>
+
+<p><strong>Implementation</strong></p>
+  
+<p>
+<pre>
+Suite validator = suite.lightweightCopyOf(foo);
+String filenames[] = { "dataset1.xml", "dataset2.xml", ...};
+
+int nFiles = 0, nBadFiles = 0, nDataPointsinGoodDataSets = 0, nBadDataPointsinGoodDataSets = 0; 
+for (String f : filenames) {
+	nFiles++;     
+	org.w3c.dom.Element e;
+	try {
+		org.w3c.dom.Element Element e=ParseXML.readFileToElement(f);
+	}
+	catch (Exception ex) {
+		nBadFiles++; 
+		Logging.warning("File " + f  
+			+ " could not be read, or did not contain syntactically legal XML."
+			+ "  We did not attempt to validate individual DataPoints within this file."
+			+ "  ParseXML.readFileToElement raised the following exception: " + ex );
+	}
+
+	Vector&lt;Object&gt; v = ParseXML.validateDatasetElement2(e, validator, true);
+	for (int i=0; i &lt; v.size(); i++) {
+		nDataPointsinGoodDataSets++; 
+		Object o = v.elementAt(i);
+		if  (o instanceof Exception) {
+				nBadDataPointsinGoodDataSets++;
+				Logging.warning("Example number " + i  + " in file " + f 
+					+ " caused ParseXML.validateDatasetElement2 to raise exception: " + o); 
+		}
+	}
+}
+if (nBadFiles + nBadDataPointsinGoodDataSets == 0) {
+	System.out.println("[VALIDATE] The specified files are valid for definitional parsing or training " 
+	+ "with respect to Suite " + Suite.getName + "."
+	+ "The " + nDataSets + "files contain " + nDataPointsinGoodDataSets + " data points in total.");
+}
+
+</pre>
+ </p> 
+  
+<p>Notes: 
+
+<p>Note 1. ParseXML.validateDatasetElement2() currently (25-Jun-2009) only 
+includes an exception in the return vector (v above) when it detects malformations within
+DataPoint elements.  If invalid elements occur elsewhere within an DataSet,
+a warning is written to the log, but no exception shows up in the returned vector. 
+
+<p>Note 2. The exceptions returned by ParseXML.validateDatasetElement2() include
+the ID of the malformed DataPoint when the parser is able to determine this. 
+
+<p>Note 3. We believe (25-Jun-09) that there is no way for ParseXML.validateDatasetElement2() 
+to leave the Suite in an inoperable state, no matter what anomalies exist in the
+DataSet.  Of course an errorful DataPoint can lead to Discrimination definitions
+that were not what the creator of the DataPoint expected, and thus may lead
+to different processing of later DataPoints than expected.  Therefore, to be sure
+that a collection of DataSets can be processes properly, you should run the above
+code again after fixing all errors in the files, to be sure that no 
+warning messages are produced. 
+
+<hr>
+
+Back to <a href="standard-scenarios.html">All scenarios</a>
+ 
+</body>
+</html>
