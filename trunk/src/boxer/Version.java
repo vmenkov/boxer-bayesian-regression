@@ -15,5 +15,5 @@ package boxer;
 </pre>
  */
 public class Version {
-    public final static String version = "0.6.006";
+    public final static String version = "0.6.007";
 }
