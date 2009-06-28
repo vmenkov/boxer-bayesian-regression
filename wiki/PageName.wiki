@@ -7,11 +7,26 @@ For an MS Windows machine, trying to get "CollabNet Subversion Client v1.6.3"  f
 
 = Details =
 
-*Adding* a whole tree:
+*Adding* a whole tree (once-off):
  * svn import src  https://boxer-bayesian-regression.googlecode.com/svn/trunk/src  --username vmenkov   -m "Initial import"
 
-_Deleting_ a file:
-svn del  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/BXRReader.java.bak  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/DataPoint.java.bak --username vmenkov -m "delete bak files"
+*Deleting* a file:
+ * svn del  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/BXRReader.java.bak  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/DataPoint.java.bak --username vmenkov -m "delete bak files"
 
 *Checking out*:
-svn co https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/src/boxer src/boxer --username vmenkov
+ * svn co https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/src/boxer src/boxer --username vmenkov
+
+(If you are not "vmenkov", use your own Google name instead)
+
+That will check out an entire directory src/boxer on your host.
+
+*Committing*:
+
+Once you've made changes to files, you commit the whole tree:
+* svn commit src/boxer
+
+*Adding* a file:
+
+If you have added a new file, e.g. "add" it before committing like this:
+* svn add src/boxer/doc-files/my-new-doc.html
+
