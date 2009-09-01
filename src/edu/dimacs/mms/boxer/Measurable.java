@@ -1,4 +1,4 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 /** Data structures implementing this interface can estimate their
  * memory use */

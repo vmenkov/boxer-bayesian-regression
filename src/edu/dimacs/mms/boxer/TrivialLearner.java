@@ -1,13 +1,10 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
-import java.util.*;
-import java.text.*;
-import java.io.*;
+import java.io.PrintWriter;
+import java.util.Vector;
 
-// for XML output
-import org.w3c.dom.*;
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 
 /* A trivial learner always assigns equal probabilities to all classes

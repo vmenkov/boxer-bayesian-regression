@@ -1,4 +1,4 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 /** An instance of this class (one per suite) describes the "Fallback
  * discrimination prototype" for this suite. It contains just a few

@@ -24,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 import edu.dimacs.mms.borj.Driver;
+import edu.dimacs.mms.boxer.BoxerXMLException;
 
 public class BOXERUpdate extends AbstractAlgorithmModel2Model{
 	
@@ -157,6 +158,9 @@ public class BOXERUpdate extends AbstractAlgorithmModel2Model{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BoxerXMLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 

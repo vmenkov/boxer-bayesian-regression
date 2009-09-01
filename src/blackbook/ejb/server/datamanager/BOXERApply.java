@@ -24,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 import edu.dimacs.mms.borj.Driver;
+import edu.dimacs.mms.boxer.BoxerXMLException;
 
 public class BOXERApply extends AbstractAlgorithmModel2Model {
 	
@@ -125,8 +126,9 @@ public class BOXERApply extends AbstractAlgorithmModel2Model {
 	 * @throws ParserConfigurationException 
 	 * @throws TransformerException 
 	 * @throws SAXException 
+	 * @throws BoxerXMLException 
 	 */
-	public static void main(String[] args) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+	public static void main(String[] args) throws IOException, ParserConfigurationException, TransformerException, SAXException, BoxerXMLException {
 		
         BOXERApply test = new BOXERApply();
         
@@ -188,6 +190,9 @@ public class BOXERApply extends AbstractAlgorithmModel2Model {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BoxerXMLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

@@ -128,5 +128,5 @@ parameters.
 </ul>
 
 */
-package boxer;
+package edu.dimacs.mms.boxer;
 

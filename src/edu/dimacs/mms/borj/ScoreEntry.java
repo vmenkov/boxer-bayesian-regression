@@ -1,4 +1,4 @@
-package borj;
+package edu.dimacs.mms.borj;
 
 /** A ScoreEntry instance contains scoring data for one class of one
   discrimination */

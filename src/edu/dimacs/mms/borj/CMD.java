@@ -1,9 +1,6 @@
-package borj;
+package edu.dimacs.mms.borj;
 
 import java.util.*;
-import java.io.*;
-//import java.text.DateFormat;
-//import org.w3c.dom.Element;
 
 //import boxer.*;
 

@@ -1,14 +1,17 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Vector;
 
-// for XML output
-import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.*;
-// XML input
-import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /** The abstract parent of Learning Algorithm classes. Contains the

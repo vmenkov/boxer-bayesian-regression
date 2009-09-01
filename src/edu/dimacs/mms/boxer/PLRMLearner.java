@@ -1,12 +1,10 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
-import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Vector;
 
-// for XML output
-import org.w3c.dom.*;
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.*;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 
 /** This class contains methods common for all PLRM learning

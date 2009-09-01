@@ -1,4 +1,4 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 /** An exception of this class, or subclass, may be thrown by Boxer on
  * encountering certain problems */

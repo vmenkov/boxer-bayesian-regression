@@ -1,6 +1,4 @@
-package borj.rcv;
-
-import boxer.*;
+package edu.dimacs.mms.borj.rcv;
 
 import java.util.*;
 import java.io.*;
