@@ -1,4 +1,4 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 /** Contains the version name of this BOXER toolkit, for encoding in
   XML files etc. Also used by the Javadoc script for inserting into the 

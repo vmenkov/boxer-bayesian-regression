@@ -1,9 +1,4 @@
-package borj.rcv;
-
-import boxer.*;
-
-import java.util.*;
-import java.io.*;
+package edu.dimacs.mms.borj.rcv;
 
 /** An auxiliary class for storing an entry from a RCV1-v2 QREL file 
  */

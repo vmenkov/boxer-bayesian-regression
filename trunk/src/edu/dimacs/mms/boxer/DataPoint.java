@@ -1,4 +1,4 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 import java.util.*;
 import java.io.*;
@@ -7,7 +7,6 @@ import java.text.*;
 // for XML output
 import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.*;
 
 
 /** A DataPoint represents a document, or some other object
@@ -541,7 +540,7 @@ public class DataPoint implements Measurable  {
 
      /** An auxiliary class used in generating compact human-readable
       * representation of the score vector */
-     private static class ScoreRun {
+     public static class ScoreRun {
 	 double lastVal=0;
 	 int lastCnt=0;
 	 boolean sameRun(double p) { return (lastCnt==0 || p==lastVal); }
@@ -564,30 +563,64 @@ public class DataPoint implements Measurable  {
       * this data point is known to be assigned according to its
       * classes array */
      public String describeScores(double prob[][], Suite suite) {
-	 boolean y[] = getY(suite);
-	 boolean ysec[][] = suite.splitVectorByDiscrimination(y);
+    	 boolean y[] = getY(suite);
+    	 boolean ysec[][] = suite.splitVectorByDiscrimination(y);
 
-	 StringBuffer  b = new StringBuffer();
+    	 StringBuffer  b = new StringBuffer();
 
-	 for(int did = 0; did < ysec.length; did ++) {
-	     b.append(" "+suite.getDisc(did).name +"(");
+    	 for(int did = 0; did < ysec.length; did ++) {
+    		 b.append(" "+suite.getDisc(did).name +"(");
 
-	     ScoreRun run = new ScoreRun();
+    		 ScoreRun run = new ScoreRun();
 
-	     for(int i=0; i<prob[did].length; i++) {
-		 double p= prob[did][i];
-		 if (ysec[did][i]) {
-		     b.append(run.dumpAny());
-		     b.append(String.format(" [%4.3f]",p));
-		 } else {
-		     if (!run.sameRun(p)) b.append( run.dumpAny());
-		     run.add(p);
-		 }
-	     }
-	     b.append(run.dumpAny());
-	     b.append(")");
-	 }
-	 return b.toString();
+    		 for(int i=0; i<prob[did].length; i++) {
+    			 double p= prob[did][i];
+    			 if (ysec[did][i]) {
+    				 b.append(run.dumpAny());
+    				 b.append(String.format(" [%4.3f]",p));
+    			 } 
+    			 else {
+    				 if (!run.sameRun(p)) b.append( run.dumpAny());
+    				 run.add(p);
+    			 }
+    		 }
+    		 b.append(run.dumpAny());
+    		 b.append(")");
+    	 }
+    	 return b.toString();
+     }
+     
+     /** Returns a string listing the scores with
+      * annotations. Specially marks scores for the classes to which
+      * this data point is known to be assigned according to its
+      * classes array */
+     public String describeScoresLong(double prob[][], Suite suite) {
+    	 boolean y[] = getY(suite);
+    	 boolean ysec[][] = suite.splitVectorByDiscrimination(y);
+
+    	 StringBuffer  b = new StringBuffer();
+
+    	 for(int did = 0; did < ysec.length; did ++) {
+    		 b.append(" "+suite.getDisc(did).name +"(");
+
+    		 ScoreRun run = new ScoreRun();
+
+    		 for(int i=0; i<prob[did].length; i++) {
+    			 double p= prob[did][i];
+    			 if (ysec[did][i]) {
+    				 b.append(run.dumpAny());
+    				 b.append(String.format(" [%4.3f]",p));
+    			 } 
+    			 else {
+    				 if (!run.sameRun(p)) 
+    					 b.append( run.dumpAny());
+    				 run.add(p);
+    			 }
+    		 }
+    		 b.append(run.dumpAny());
+    		 b.append(")");
+    	 }
+    	 return b.toString();
      }
 
     /* Probability assigned by the classifier to the "true" class in

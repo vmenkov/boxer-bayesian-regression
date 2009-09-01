@@ -37,6 +37,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 import edu.dimacs.mms.borj.*;
+import edu.dimacs.mms.boxer.BoxerXMLException;
 import edu.dimacs.mms.boxer.DataPoint;
 import edu.dimacs.mms.boxer.Learner;
 import edu.dimacs.mms.boxer.ParseConfig;
@@ -130,7 +131,7 @@ public class BOXERDriverApply extends AbstractAlgorithmMultiModel2Model {
 			boolean verbose = ht.getOption("verbose", (Suite.verbosity>=3));
 
 			String runid = ht.getOption("runid", mkRunId());
-			ParseXML.setDefaultNameBase(runid);
+			DataPoint.setDefaultNameBase(runid);
 
 			Suite suite = null; //new Suite();
 		 
@@ -259,9 +260,6 @@ public class BOXERDriverApply extends AbstractAlgorithmMultiModel2Model {
 			return new_learnercomplex;
 			
 			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -269,6 +267,9 @@ public class BOXERDriverApply extends AbstractAlgorithmMultiModel2Model {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (TransformerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BoxerXMLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

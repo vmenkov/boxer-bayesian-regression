@@ -1,8 +1,7 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
-import java.util.*;
-import java.text.*;
-import java.io.*;
+import java.util.Arrays;
+import java.util.Vector;
 
 /** An auxiliary class for TruncatedGradient or for any other learners
  that apply truncation to some coefficient matrices. A Truncation

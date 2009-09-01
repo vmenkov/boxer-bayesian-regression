@@ -1,8 +1,6 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 import java.util.Vector;
-import java.util.logging.*;
-
 // for XML generation
 import org.w3c.dom.*;
 

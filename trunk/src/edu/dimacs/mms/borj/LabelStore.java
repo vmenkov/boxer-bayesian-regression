@@ -1,11 +1,11 @@
-package borj;
+package edu.dimacs.mms.borj;
 
 import java.io.*; 
 import java.util.*;
 import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-import boxer.*;
+import edu.dimacs.mms.boxer.*;
 
 /** Handles label files separate from the dataset files.
 
@@ -45,38 +45,77 @@ public class LabelStore {
      */
     public void readXML(String fname) throws IOException, SAXException, 
 					     BoxerXMLException {
-	if (!(new File(fname)).exists()) {
-	    throw new IllegalArgumentException("Input file " + fname + 
-					       " does not exist");
-	}
+    	if (!(new File(fname)).exists()) {
+    		throw new IllegalArgumentException("Input file " + fname + " does not exist");
+    	}
 
-	DOMParser parser = new DOMParser();
-	parser.parse(fname);
-	Document doc = parser.getDocument();
+    	DOMParser parser = new DOMParser();
+    	parser.parse(fname);
+    	Document doc = parser.getDocument();
+    	
+    	Element e = doc.getDocumentElement();
+    	String name = e.getTagName();
+    	if (!name.equals(ParseXML.NODE.DATASET)) {
+    		System.out.println("Warning: top-level document element is not " + ParseXML.NODE.DATASET + ", parsing anyway");
+    	}
 	
-	Element e = doc.getDocumentElement();
-	String name = e.getTagName();
-	if (!name.equals(ParseXML.NODE.DATASET)) {
-	    System.out.println("Warning: top-level document element is not " + 
-			       ParseXML.NODE.DATASET + ", parsing anyway");
-	}
-	
-	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
-	    int type = n.getNodeType();
-	    String val = n.getNodeValue();
-	    //System.out.println("Node Name  = " + n.getNodeName()+ 				   ", type=" + type + ", val= " + val);
+    	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+    		int type = n.getNodeType();
+    		String val = n.getNodeValue();
+    		//System.out.println("Node Name  = " + n.getNodeName()+ 				   ", type=" + type + ", val= " + val);
 
-	    if (type == Node.TEXT_NODE && val.trim().length()>0) {
-		System.out.println("Warning: found an unexpected non-empty text node, val="  + val.trim());
-	    } else if (type == Node.ELEMENT_NODE) {
-		if (!n.getNodeName().equals(ParseXML.NODE.DATAPOINT)) {
-		    System.out.println("Warning: element node name is not " + ParseXML.NODE.DATAPOINT + ", ignoring");		    
-		} else {
-		    // parse a data point (vector), and its labels
-		    parseDataPoint((Element)n);
-		}		
-	    }
-	}
+    		if (type == Node.TEXT_NODE && val.trim().length()>0) {
+    			System.out.println("Warning: found an unexpected non-empty text node, val="  + val.trim());
+    		} 
+    		else if (type == Node.ELEMENT_NODE) {
+    			if (!n.getNodeName().equals(ParseXML.NODE.DATAPOINT)) {
+    				System.out.println("Warning: element node name is not " + ParseXML.NODE.DATAPOINT + ", ignoring");		    
+    			} 
+    			else {
+    				// 	parse a data point (vector), and its labels
+    				parseDataPoint((Element)n);
+    			}		
+    		}
+    	}
+    }
+    
+    /** Reads all labels from an XML Document, adding them to this LabelStore instance.
+	@param fname The Document to be read
+     */
+    public void readXML(Document doc) throws IOException, SAXException, 
+					     BoxerXMLException {
+//    	if (!(new File(fname)).exists()) {
+//    		throw new IllegalArgumentException("Input file " + fname + " does not exist");
+//    	}
+//
+//    	DOMParser parser = new DOMParser();
+//    	parser.parse(fname);
+//    	Document doc = parser.getDocument();
+    	
+    	Element e = doc.getDocumentElement();
+    	String name = e.getTagName();
+    	if (!name.equals(ParseXML.NODE.DATASET)) {
+    		System.out.println("Warning: top-level document element is not " + ParseXML.NODE.DATASET + ", parsing anyway");
+    	}
+	
+    	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+    		int type = n.getNodeType();
+    		String val = n.getNodeValue();
+    		//System.out.println("Node Name  = " + n.getNodeName()+ 				   ", type=" + type + ", val= " + val);
+
+    		if (type == Node.TEXT_NODE && val.trim().length()>0) {
+    			System.out.println("Warning: found an unexpected non-empty text node, val="  + val.trim());
+    		} 
+    		else if (type == Node.ELEMENT_NODE) {
+    			if (!n.getNodeName().equals(ParseXML.NODE.DATAPOINT)) {
+    				System.out.println("Warning: element node name is not " + ParseXML.NODE.DATAPOINT + ", ignoring");		    
+    			} 
+    			else {
+    				// 	parse a data point (vector), and its labels
+    				parseDataPoint((Element)n);
+    			}		
+    		}
+    	}
     }
 
     /** Gets the class list (only) from a "datapoint" element of the

@@ -1,17 +1,17 @@
-package borj;
+package edu.dimacs.mms.borj;
 
 import java.util.*;
-import boxer.*;
+import edu.dimacs.mms.boxer.*;
 
 /** A Scores instance contains scoring data (obtained with a
  * particular learner) for the entire suite
  */
-class Scores extends Vector<ScoreEntry[]> {
+public class Scores extends Vector<ScoreEntry[]> {
 
-    double logLik[];
-    int logLikCnt[];
+    public double logLik[];
+    public int logLikCnt[];
   
-    Scores(Suite suite) {
+    public Scores(Suite suite) {
 	super();	
 	int ndis =suite.disCnt();
 	logLik = new double[suite.disCnt()];
@@ -20,7 +20,7 @@ class Scores extends Vector<ScoreEntry[]> {
     }
 
     /** ... And it also resizes the logLik arrays */
-    void evalScores(DataPoint x, Suite suite, double[][] prob) {
+    public void evalScores(DataPoint x, Suite suite, double[][] prob) {
 
 	// resize as needed
 	int ndis =suite.disCnt();
@@ -74,7 +74,7 @@ class Scores extends Vector<ScoreEntry[]> {
 
     /** Print a report on the quality of our classifier's scoring so far 
      @param prefix Append it to each line, for easy retrieval with 'grep'*/
-    String scoringReport( Suite suite, String prefix) {
+    public String scoringReport( Suite suite, String prefix) {
 
 	int disCnt =suite.disCnt();
   
@@ -91,7 +91,7 @@ class Scores extends Vector<ScoreEntry[]> {
 	return b.toString();
     }
 
-    String loglikReport( Suite suite, String prefix) {
+    public String loglikReport( Suite suite, String prefix) {
 	StringBuffer b = new StringBuffer();
 	for(int j=0;j< logLik.length; j++) {
 	    if (logLikCnt[j]==0) continue; // empty discr

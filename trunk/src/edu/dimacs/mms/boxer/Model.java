@@ -1,4 +1,4 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
 //import java.io.*;
 //import java.util.*;

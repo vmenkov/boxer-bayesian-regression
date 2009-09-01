@@ -1,15 +1,17 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
-import java.util.*;
-import java.text.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Vector;
 
-// for XML output
-import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.*;
-// XML input
-import org.apache.xerces.parsers.DOMParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /** A Suite is a set of {@link boxer.Discrimination

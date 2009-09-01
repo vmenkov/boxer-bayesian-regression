@@ -1,11 +1,11 @@
-package borj;
+package edu.dimacs.mms.borj;
 
 import java.util.*;
 import java.io.*;
 import java.text.DateFormat;
 import org.w3c.dom.Element;
 
-import boxer.*;
+import edu.dimacs.mms.boxer.*;
 
 /**  The main class for a standalone command-line driven Java program
  *  that runs machine learning experiments using BOXER.

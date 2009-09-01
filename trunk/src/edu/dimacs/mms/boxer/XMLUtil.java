@@ -1,12 +1,13 @@
-package boxer;
+package edu.dimacs.mms.boxer;
 
-import java.util.Vector;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
-// for XML output
-import org.w3c.dom.*;
-import org.apache.xerces.dom.DocumentImpl;
-import org.apache.xml.serialize.*;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /** Constants and auxiliary classes for producing and parsing XML files 
  */
