@@ -2,6 +2,10 @@ package edu.dimacs.mms.boxer;
 
 import java.util.logging.*;
 
+/** Methods used by Boxer classes to log warning and error
+ * messages. These methdos are simply wrappers around the respective
+ * methods of  java.util.logging.Logging.
+ */
 class Logging {
     final static String NAME = "boxer";
 
