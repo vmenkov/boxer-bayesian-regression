@@ -2,8 +2,8 @@ package edu.dimacs.mms.boxer;
 
 import java.util.*;
 
- /** A sparse matrix of dense rows. For 
-	all-zero rows, null is stored. */
+ /** A sparse matrix of dense rows. For all-zero rows, null is
+	stored. */
 public class DenseMatrix extends Matrix  {
     double data[][]=new double[0][];
 
