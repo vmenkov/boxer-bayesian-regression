@@ -4,7 +4,7 @@
 
 source set.sh
 
-set d=${main}/src/sample-data/validation
+#set d=${main}/src/sample-data/validation
 
 set t=train:${d}/sample.xml
 set v=validate:${d}/sample.xml
@@ -13,7 +13,7 @@ set v=validate:${d}/sample.xml
 
 
 #-- this should fail, because the suite is inconsistent
-time java $opt -Dverbosity=2 -Dmodel=tg $driver read-suite:${d}/suite3.xml \
+time java $opt -Dmodel=tg $driver read-suite:${d}/suite2.xml \
    $v  write-suite:suite-out.xml
 
 

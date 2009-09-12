@@ -13,12 +13,12 @@ import org.w3c.dom.*;
 
     <p> Most API users would not need to ever use a FeatureDictionary
     object directly, as there is one encapsulated inside the {@link
-    boxer.Suite Suite} object your application would use, and BOXER
+    edu.dimacs.mms.boxer.Suite Suite} object your application would use, and BOXER
     would be using it everywhere the Suite is used.
 
     <p>However, one may need to access a FeatureDictionary (typically,
     the FeatureDictionary of a suite you've created) when
-    e.g. creating {@link boxer.DataPoint DataPoint} objects directly
+    e.g. creating {@link edu.dimacs.mms.boxer.DataPoint DataPoint} objects directly
     (rather than reading them from an XML dataset definition).
 
 */

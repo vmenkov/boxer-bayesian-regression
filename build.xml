@@ -1,0 +1,98 @@
+<!-- A "project" describes a set of targets that may be requested
+     when Ant is executed.  The "default" attribute defines the
+     target which is executed if no specific target is requested,
+     and the "basedir" attribute defines the current working directory
+     from which Ant executes the requested task.  This is normally
+     set to the current working directory.
+-->
+
+<project name="boxer" default="compile" basedir=".">
+
+<!-- Property Definitions
+
+     Each of the following properties are used by convention in this
+     build file.  The values specified can be overridden at run time by
+     adding a "-Dname=value" argument to the command line that invokes Ant.
+     This technique is normally used to copy the values of the ANT_HOME
+     and TOMCAT_HOME environment variables into the "ant.home" and
+     "tomcat.home" properties, which are normally not defined explicitly.
+
+     app.name          Base name of this application, used to
+                       construct filenames and directories.
+
+     deploy.home       The name of the directory into which the
+                       deployment hierarchy will be created.
+                       Normally, this will be the name of a
+                       subdirectory under $TOMCAT_HOME/webapps.
+
+     dist.home         The name of the base directory in which
+                       distribution files are created.
+
+                     distribution files are created.
+
+     dist.src          The name of the distribution JAR file
+                       containing the application source code,
+                       to be stored in the "dist.home" directory.
+                       This filename should end with ".jar".
+
+     dist.war          The name of the Web ARchive (WAR) file
+                       containing our deployable application.
+                       This filename should end with ".war".
+
+     javadoc.home      The name of the base directory in which
+                       the JavaDoc documentation for this application
+                       is generated.
+
+     tomcat.home       The name of the base directory in which
+                       Tomcat has been installed.  This value is
+                       normally set automatically from the value
+                       of the TOMCAT_HOME environment variable.
+
+-->
+
+ <property name="src" location="src"/>
+ <property name="build" location="../classes"/>
+ <property name="lib" location="../lib"/>
+ <property name="javadoc" location="../javadoc"/>
+ <property name="classpath" location="${lib}/xercesImpl.jar:${lib}/jena.jar"/>
+ 
+<target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${javadoc}"/>
+    <mkdir dir=""/>
+</target>
+
+<target name="compile" depends="init"
+        description="Compile the source (without the BB adapter)" >
+  <!-- Compile the java code from ${src} into ${build} -->
+  <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"
+	 includes="edu/dimacs/**"
+	 />
+</target>
+
+<target name="javadoc" depends="compile">
+  <exec executable="grep" outputproperty="boxer.ver">
+    <arg line="version ${src}/edu/dimacs/mms/boxer/Version.java"/>
+    <redirector >
+      <outputfilterchain >
+	<replaceregex pattern="[^0-9\.]" replace="" flags="g"/>
+      </outputfilterchain>
+    </redirector>
+  </exec>
+  <echo message="Assuming the Boxer version is ${boxer.ver}"/>
+  <javadoc packagenames="edu.dimacs.mms.*"
+	   sourcepath="${src}"
+           destdir="${javadoc}"
+	   classpath="${build}:${classpath}"
+	   author="true"
+           version="true"
+           use="true"
+	   link="http://java.sun.com/j2se/1.5.0/docs/api/"
+	   header="&lt;em&gt;BOXER ${boxer.ver}&lt;/em&gt;"   
+	   windowtitle="BOXER ${boxer.ver} API" 
+	   overview="overview.html"/>
+</target>
+
+</project>

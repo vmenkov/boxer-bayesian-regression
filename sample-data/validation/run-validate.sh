@@ -2,9 +2,10 @@
 
 # This script runs BOXER on a small sample
 
-source set.sh
+source ./set.sh
 
-set d=${main}/src/sample-data/validation
+#set d=${main}/src/sample-data/validation
+echo d=$d
 
 set t=train:${d}/sample.xml
 set v=validate:${d}/sample.xml

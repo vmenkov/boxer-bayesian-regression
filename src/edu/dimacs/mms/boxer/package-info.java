@@ -27,8 +27,8 @@ maintaining or modifying BOXER.
 <h2>Scientific Perspective:</h2>
 <p>
 The algorithms implemented in BOXER include versions of the {@link
-boxer.ExponentiatedGradient Exponentiated Gradient} (EG), stochastic
-gradient (SG), and {@link boxer.TruncatedGradient Truncated Gradient} (TG)
+edu.dimacs.mms.boxer.ExponentiatedGradient Exponentiated Gradient} (EG), stochastic
+gradient (SG), and {@link edu.dimacs.mms.boxer.TruncatedGradient Truncated Gradient} (TG)
 algorithms.  All are conventionally viewed as algorithms for "online
 learning".  BOXER has its origins in our work on teasing apart and
 rationalizing the multiple and unclear goals that have been pursued
@@ -65,7 +65,7 @@ allowed for features, classes, and tasks.
 </ul>
 
 <p>
-The BOXER distribution also includes a standalone program, {@link borj
+The BOXER distribution also includes a standalone program, {@link edu.dimacs.mms.borj
 BORJ}, which may be used for running machine learning experiments with
 the BOXER library.  Users interested in carrying out machine learning
 experiments with BOXER should begin by looking at the BORJ
@@ -85,27 +85,27 @@ In exploring the BOXER API, we suggest first examining these major classes:
 
 <ul> 
 
-<li> {@link boxer.DataPoint DataPoint}: A DataPoint represents a
+<li> {@link edu.dimacs.mms.boxer.DataPoint DataPoint}: A DataPoint represents a
 single entity of interest.  The content of a DataPoint consists in the
 values it takes on for various features, and in the labels that
 indicate to what class the point belongs with respect to various
 discriminations.  BOXER reads (and writes) DataPoints in XML form.
 
-<li>{@link boxer.Discrimination Discrimination}: A Discrimination is a
+<li>{@link edu.dimacs.mms.boxer.Discrimination Discrimination}: A Discrimination is a
 set of mutually exclusive and collectively exhaustive classes.  If a
 Discrimination applies to a particular DataPoint, the DataPoint
 logically must belong to exactly one of the Classes in that
 Discrimination, even if that Class is not currently known.
 
-<li>{@link boxer.Suite Suite}: A set of Discriminations.  A Boxer's
+<li>{@link edu.dimacs.mms.boxer.Suite Suite}: A set of Discriminations.  A Boxer's
 Learner works with exactly one Suite.  A Suite can consist
-of related {@link boxer.Discrimination discriminations} (e.g. four binary
+of related {@link edu.dimacs.mms.boxer.Discrimination discriminations} (e.g. four binary
 discriminations, one each of the news categories Politics, Sports,
 Financial, and Weather), unrelated ones (e.g. one multiclass
 discrimination for geographic region, and another multiclass
 discrimination for news topic), or both.
 
-<li>{@link boxer.Learner Learner}: Each concrete
+<li>{@link edu.dimacs.mms.boxer.Learner Learner}: Each concrete
 class extending the abstract Learner class implements a
 particular algorithm for producing classifiying models (e.g. PLRMs),
 given prior knowledge, a discrimination definition, and a series of

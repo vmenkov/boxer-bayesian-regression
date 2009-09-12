@@ -505,7 +505,7 @@ public class Discrimination /* extends DiscriminationFallback */{
     /** The main discrimination constructor, it parses a
       <tt>discrimination</tt> XML element, creating a new
       discrimination and all its classes. This constructor should only
-      be called from inside {@link boxer.Suite#addDiscrimination()},
+      be called from inside {@link edu.dimacs.mms.boxer.Suite#addDiscrimination()},
       which will then validate the name etc and record the
       discrimination and its classes in the Suite's tables.
 

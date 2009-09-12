@@ -80,7 +80,7 @@ public class LabelStore {
     }
     
     /** Reads all labels from an XML Document, adding them to this LabelStore instance.
-	@param fname The Document to be read
+	@param doc The Document to be parsed
      */
     public void readXML(Document doc) throws IOException, SAXException, 
 					     BoxerXMLException {

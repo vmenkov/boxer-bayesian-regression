@@ -14,16 +14,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-/** A Suite is a set of {@link boxer.Discrimination
+/** A Suite is a set of {@link edu.dimacs.mms.boxer.Discrimination
     Discriminations}. It also keeps track of the list of {@link
-    boxer.Learner Learners} using the Suite.
+    edu.dimacs.mms.boxer.Learner Learners} using the Suite.
 
     <p> Most of BOXER operations are associated with a particular
     suite. A suite contains a reference to {@link
-    boxer.FeatureDictionary FeatureDictionary}, used to map internal
+    edu.dimacs.mms.boxer.FeatureDictionary FeatureDictionary}, used to map internal
     feature IDs to feature names. Data points are parsed (converted
     from the external XML representation to the internal {@link
-    boxer.DataPoint} representation) in the context of a suite,
+    edu.dimacs.mms.boxer.DataPoint} representation) in the context of a suite,
     possibly triggering creation of new discriminations/classes in the
     suite. Each learner is associated with a particular suite as well.
 
@@ -222,7 +222,7 @@ public class Suite {
 
     HowToHandleMissingIDs  howToHandleMissingIDs = HowToHandleMissingIDs.Error;
 
-    /** Gets the {@link boxer.FeatureDictionary feature dictionary}
+    /** Gets the {@link edu.dimacs.mms.boxer.FeatureDictionary feature dictionary}
        associated with this suite */
     public FeatureDictionary getDic() { return dic;}
 
@@ -706,7 +706,7 @@ public class Suite {
     /** Returns the class which appears in position i in the "master
      *	list" of all classes from all discriminations. This can be
      *	used to e.g. interpret the array of probabilities returned by
-     *	{@link boxer.Learner#applyModel(DataPoint)}
+     *	{@link edu.dimacs.mms.boxer.Learner#applyModel(DataPoint)}
      */
     public Discrimination.Cla getCla(int i) {
 	return id2cla.elementAt(i);
@@ -1144,11 +1144,11 @@ public class Suite {
 
 	//Class algoClass = Class.forName(a);
 	
-	if (a.equals("boxer.TrivialLearner")) {
+	if (a.endsWith("boxer.TrivialLearner")) {
 	    return new TrivialLearner(this, e );
-	} else if (a.equals("boxer.TruncatedGradient")) {
+	} else if (a.endsWith("boxer.TruncatedGradient")) {
 	    return new TruncatedGradient(this, e );
-	} else if (a.equals("boxer.ExponentiatedGradient")) {
+	} else if (a.endsWith("boxer.ExponentiatedGradient")) {
 	    return new ExponentiatedGradient(this, e );
 	} else {
 	    throw new IllegalArgumentException("Model reading for name='"+a+"' is not supported.");
@@ -1260,15 +1260,15 @@ public class Suite {
 	this suite, and the two will live independent lives. (With the
 	exception of sharing the FeatureDictionary; this, however, is
 	something that does not affect the API user). This means, for
-	one, that if you {@link boxer.ParseXML parse} any {@link
-	boxer.DataPoint data point} description XML elements in the
+	one, that if you {@link edu.dimacs.mms.boxer.ParseXML parse} any {@link
+	edu.dimacs.mms.boxer.DataPoint data point} description XML elements in the
 	context of the new suite, causing the creation of new
 	discriminations or classes in the new suite, this won't affect
-	the old suite. More over, the {@link boxer.DataPoint
+	the old suite. More over, the {@link edu.dimacs.mms.boxer.DataPoint
 	DataPoint} objects obtained from the parsing in the context of
 	the new suite won't be usable with the old suite, and vice
 	versa, because each DataPoint object makes use of a particular
-	suite's {@link boxer.FeatureDictionary FeatureDictionary}, and
+	suite's {@link edu.dimacs.mms.boxer.FeatureDictionary FeatureDictionary}, and
 	contains references to a particular suite's classes.  <p>
 
 	One use of creating a lightweight copy of your "main" suite is

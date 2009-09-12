@@ -72,7 +72,7 @@ public class DenseMatrix extends Matrix  {
    /** Removes from this matrix all columns corresponding to the
 	classes from the specified discrimination. This method is
 	called (indirectly) from the Suite's {@link
-	boxer.Suite#deleteDiscrimination} method, before the latter
+	edu.dimacs.mms.boxer.Suite#deleteDiscrimination} method, before the latter
 	wipes out information about the discrimination being deleted
 	from the suite's own interior tables.
 	@param suite The suite in the context of which this matrix is interpreted
