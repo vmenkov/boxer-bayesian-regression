@@ -1,7 +1,7 @@
 #-- this file is included (with "source") into other shell scripts
 
 #set driver=boxer.driver.Driver
-set driver=borj.Driver
+set driver=edu.dimacs.mms.borj.Driver
 set main=${home}/boxer
 set cp=${main}/classes:${main}/lib/xercesImpl.jar
 set opt="-Xmx256m -cp ${cp}"
@@ -15,3 +15,5 @@ else
    echo Creating directory $out
    mkdir $out
 endif
+
+set d=${main}/boxer-bayesian-regression/src/edu/dimacs/mms/sample-data/validation

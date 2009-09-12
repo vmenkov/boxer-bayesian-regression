@@ -31,14 +31,14 @@ import org.apache.xerces.dom.DocumentImpl;
 
     <p>The feature ids stored inside a DataPoint object can be mapped
     to the human-readable feature names using the {@link
-    boxer.FeatureDictionary} of the suite in whose context the
+    edu.dimacs.mms.boxer.FeatureDictionary} of the suite in whose context the
     DataPoint has been created.
 
     <p>
     A DataPoint object also contains a list of references to actually
-    existing {@link boxer.Discrimination.Cla class objects} (which, in
+    existing {@link edu.dimacs.mms.boxer.Discrimination.Cla class objects} (which, in
     their turn, belong to actually existing {@link
-    boxer.Discrimination discrimination objects}), rather than merely
+    edu.dimacs.mms.boxer.Discrimination discrimination objects}), rather than merely
     strings with discr/class names. These class lists associated with
     the DataPoint can be used by BOXER depending on the context in
     which the DataPoint is used (i.e., BOXER would interpret them as
@@ -47,7 +47,7 @@ import org.apache.xerces.dom.DocumentImpl;
   
     <p>
     A BOXER application would typically read a list of data points (a
-    data set) from an XML file, using the methods of the {@link boxer.ParseXML}
+    data set) from an XML file, using the methods of the {@link edu.dimacs.mms.boxer.ParseXML}
     class.  During this conversion, the text discr/class labels
     (containing in the XML document) are converted into class
     references.  This process can be affected by the user's intended

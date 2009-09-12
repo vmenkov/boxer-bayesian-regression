@@ -152,7 +152,6 @@ public class RDFtoXML2 {
 	 * extraction. It's good to know that Jena does all the character
 	 * encoding/decoding seamlessly.
 	 * @param m
-	 * @return
 	 */
 	
 	public static Document convertLearnerComplexToXML(Model m) {

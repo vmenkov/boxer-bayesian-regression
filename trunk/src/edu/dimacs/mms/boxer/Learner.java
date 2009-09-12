@@ -18,7 +18,7 @@ import org.xml.sax.SAXException;
  * common API, as well as the shared auxiliary methods.
 
  A Learner is set up to classify data points with respect to
- multiple classifications (called  "{@link boxer.Discrimination
+ multiple classifications (called  "{@link edu.dimacs.mms.boxer.Discrimination
  Discriminations}"). Categoryzing data points with respect to each
  Discrimination will be carried out mathematically independently from
  other Discirminations, but the algorithm may use of common data
@@ -156,7 +156,7 @@ public abstract class Learner implements Model {
 	this learnber, there may be other learners using the same Suite
 	as well. */
     Suite suite;
-    /** Gets the {@link boxer.Suite suite} associated with this
+    /** Gets the {@link edu.dimacs.mms.boxer.Suite suite} associated with this
 	learning algorithm */
     public Suite getSuite() { return suite; }
 
@@ -392,7 +392,7 @@ public abstract class Learner implements Model {
 
     /** Saves the complete internal state of the classifier (with the
      * current values of all parameters, any latent coefficients or
-     * whatever, as well as its {@link boxer.Suite Suite}) as an XML
+     * whatever, as well as its {@link edu.dimacs.mms.boxer.Suite Suite}) as an XML
      * Document object, which can later be written into an XML
      * file. The file can be read in later on to re-create the
      * classifier.

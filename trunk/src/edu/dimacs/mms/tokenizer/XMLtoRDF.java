@@ -77,7 +77,7 @@ public class XMLtoRDF {
 	
 	/**
 	 *  Returns the associated document.
-	 * @return
+	 * @return  the associated document
 	 */
 	public Document getDocument() {
 		return doc;
@@ -193,7 +193,7 @@ public class XMLtoRDF {
 	 *  # is the least integer not used yet. So officially we can't have
 	 *  more than 2^32-1 of the same tagname in our Document, but I think
 	 *  that's something that we won't deal with!
-	 * @param str The XML tagname.
+	 * @param n 
 	 * @return The RDF tagname.
 	 */
 	
@@ -236,7 +236,7 @@ public class XMLtoRDF {
 	 *  name of the Resource, and creates the appropriate RDF name, which
 	 *  will be <name>-<#>, where <#> starts at 1 and increments for every
 	 *  repeat we have going on.
-	 * @param n The Node in our Document.
+	 * @param node The Node in our Document.
 	 * @return The corresponding RDF Resource.
 	 */
 	
@@ -335,7 +335,7 @@ public class XMLtoRDF {
 //		}
 //	}
 	
-	/** XMLtoModel
+	/* XMLtoModel
 	 *  The key invariant here is that the RDFNode and the Node are both 
 	 *  logistically in the same spot. So we take the attributes from n as 
 	 *  property/literal counterparts to the RDFNode, and we can further
