@@ -14,8 +14,8 @@ For an MS Windows machine, trying to get "CollabNet Subversion Client v1.6.3"  f
  * svn del  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/BXRReader.java.bak  https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/DataPoint.java.bak --username vmenkov -m "delete bak files"
 
 *Checking out*:
- * svn co https://boxer-bayesian-regression.googlecode.com/svn/trunk/boxer/src/boxer src/boxer --username vmenkov
-
+ * svn checkout https://boxer-bayesian-regression.googlecode.com/svn/trunk/ boxer-bayesian-regression --username vmenkov
+ 
 (If you are not "vmenkov", use your own Google name instead)
 
 That will check out an entire directory src/boxer on your host.
@@ -29,4 +29,3 @@ Once you've made changes to files, you commit the whole tree:
 
 If you have added a new file, e.g. "add" it before committing like this:
 * svn add src/boxer/doc-files/my-new-doc.html
-
