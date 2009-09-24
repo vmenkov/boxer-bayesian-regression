@@ -317,11 +317,17 @@ public class Driver {
 	CmdManager cm  = new CmdManager(argv);
 	CMD q = cm.next();
 	if (q.is(CMD.READ)) {
+	    // Reading a complete learner complex
 	    System.out.println("Reading learner(s) from file: "+q.f);
 	    suite =  Learner.deserializeLearnerComplex(new File(q.f));
 	    Vector <Learner> algos = suite.getAllLearners();
-	    if (algos.size()==0) usage("The file " + q.f + " did not specify even a single learner");
-	    //algo = Learner.deserializeLearner(new File(q.f));
+	    
+	    Logging.info("Read "+algos.size()+" learners from the 'learner complex' file " + q.f );
+	    if (algos.size()==0) {
+		//usage("The file " + q.f + " did not specify even a single learner");
+		Logging.info("The 'learner complex' file " + q.f + " did not specify even a single learner. We expect that one will be added with a separate read-learner command");
+	    }
+
 	    q = cm.next();
 	} else if (q.is(CMD.READ_SUITE)) {
 	    System.out.println("Reading discrimination suite from file: "+q.f);
@@ -332,7 +338,7 @@ public class Driver {
 	}
 
 	// Any "read-learner" commmands?
-	for( ; q.is(CMD.READ_LEARNER); q=cm.next()) {
+	for( ; q!=null && q.is(CMD.READ_LEARNER); q=cm.next()) {
 	    System.out.println("Adding a learner from file: "+q.f);
 	    suite.addLearner(ParseXML.readFileToElement(new File(q.f)));
 	}

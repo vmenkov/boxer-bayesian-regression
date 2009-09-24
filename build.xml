@@ -69,6 +69,7 @@
   <!-- Compile the java code from ${src} into ${build} -->
   <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"
 	 includes="edu/dimacs/**"
+	 debug="on" debuglevel="lines,vars,source" 
 	 />
 </target>
 

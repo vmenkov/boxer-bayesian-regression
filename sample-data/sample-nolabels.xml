@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- An XML file contains a data set. The dataset tag may have some optional
  attributes -->
-<dataset name="A sample dataset" boxerversion="0.1">
+<dataset name="A_sample_dataset" boxerversion="0.1">
 <!-- A data set contains a number of data points (vectors). The "name" 
   attribute is optional, and can be used for better human readability,
   debugging etc. -->
@@ -14,10 +14,10 @@
   </features>
 </datapoint>
 <datapoint name="New Brunswick, NJ">
-  <features>lat:40.5 lon:-74.5 seaside:0 elevation:21</features>
+  <features>lat^40.5 lon^-74.5 seaside^0 elevation^21</features>
 </datapoint>
 <datapoint name="Penticton">
-  <features>lat:50.5 lon:-119 seaside:0 elevation:300</features>
+  <features>lat^50.5 lon^-119 seaside^0 elevation^300</features>
 </datapoint>
 <datapoint name="Adelaide">
   <features>
