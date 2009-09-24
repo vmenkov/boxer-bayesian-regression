@@ -144,8 +144,14 @@ public class ParseXML {
 
 	Vector<DataPoint> v = new Vector<DataPoint>();
 
-	//String name = e.getTagName();
 	XMLUtil.assertName(e, NODE.DATASET);
+
+	// not actually used
+	String dataSetName = e.getAttribute(ParseXML.ATTR.NAME_ATTR);
+	if (!IDValidation.validateBasic(dataSetName)) {
+	    throw new BoxerXMLException("The data set name '"+dataSetName+"' contained in the XML suite definition is invalid");
+	}
+	Logging.info("Parsing data set named "  +  dataSetName);
 	
 	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
 	    int type = n.getNodeType();

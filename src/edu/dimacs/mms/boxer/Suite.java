@@ -363,7 +363,7 @@ public class Suite {
 		    throw new AssertionError("Even though supportsSimpleLabels="+supportsSimpleLabels+", the unique polytomous discrimination appears not to have been created!");
 		}
 	    } else {
-		throw new IllegalArgumentException("Discrimination name should not be null unless SupportsSimpleLabels is set");
+		throw new IllegalArgumentException("Discrimination name should not be null unless SupportsSimpleLabels is set. (discr="+disName+"), class=("+className+")");
 	    }
 	} else if (disName.equals("")) {
 	    throw new IllegalArgumentException("Discrimination name should never be an empty string");
@@ -510,14 +510,16 @@ public class Suite {
     }
 
     /** All flavors of addDiscirmination(...), other than the one with
-     * the XML argumentm, eventually get here. This particular method
+     * the XML argument, eventually get here. This particular method
      * is private, because fallback discr can only be created from the Suite
      * constructor anyway (thus, the user can only specify it via XML)
      */
     private synchronized Discrimination addDiscrimination(String disName, String[] claNames, String defClaName, String leftoversClaName, DCS dcs, boolean isFallback) {
 	if (discr.get(disName) != null) {	    
 	    throw new IllegalArgumentException("Cannot add discrimination `" +disName+ "', because a discrimination with that name already exists"); 
-	}	    
+	} if (!IDValidation.validateDiscName(disName)) {	
+	    throw new IllegalArgumentException("Cannot add discrimination named `" +disName+ "', because it is not a legal name");     
+	}
 
 	Logging.info("Starting new discrimination `"+disName+"', dcs="+dcs+" no. "+disCnt());
 	Discrimination d = new Discrimination(this, disName);
@@ -528,6 +530,9 @@ public class Suite {
 	    if (claNames.length==0) d.ensureClassSetDefined();
 	    for(String name: claNames) 	{
 		if (name==null && dcs==DCS.Bounded) continue; // allowed to pass nulls in this mode, just to indicate size
+		if (!IDValidation.validateClaName(name)) {
+		    throw new IllegalArgumentException("Can't add class '"+name+"', because it's not a legal class name");
+		}		
 		d.addClass(name);
 	    }
 	    Logging.info("Classes added to discrimination `"+d+"'; now has " + d.claCount() + " classes");
@@ -558,11 +563,14 @@ public class Suite {
      discrimination's name should be different from those of all
      already existing discriminations.
     */
-    synchronized public Discrimination addDiscrimination(Element e) {
+    synchronized public Discrimination addDiscrimination(Element e) throws BoxerXMLException {
 	Discrimination d = new Discrimination(this, e);
 	if ( discr.get(d.getName()) != null) {  
 	    throw new IllegalArgumentException("Can't create discrimination from this XML element, because a discrimination named '" + d.getName() + "' already exists");
+	} else if (!IDValidation.validateDiscName(d.getName())) {	
+	    throw new IllegalArgumentException("Cannot add discrimination named `" +d.getName()+ "', because it is not a legal name");     
 	}
+
 	boolean isFallback = Discrimination.isFallback(e);
 	verifySimpleLabelConditions(d,isFallback);
 	recordDiscFull(d);
@@ -931,6 +939,10 @@ public class Suite {
 	a = e.getAttribute(ParseXML.ATTR.NAME_ATTR);
 	if (XMLUtil.nonempty(a)) {
 	    name = a;
+	    if (!IDValidation.validateBasic(name)) {
+		throw new BoxerXMLException("The suite name '"+name+"' contained in the XML suite definition is invalid");
+	    }
+
 	} else {
 	    throw new BoxerXMLException("XML suite definition contains no name");
 	}

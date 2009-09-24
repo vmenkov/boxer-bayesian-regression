@@ -465,8 +465,8 @@ public abstract class Learner implements Model {
       parses a "parameters" element, which may be created by {@link
       #createParamsElement(Document, String, double)} or hand-coded by
       the user.
-      @value name Names of parameters we expect to find
-      @value Array with the default values. It may be shorter than name
+      @param name Names of parameters we expect to find
+      @param value Array with the default values. It may be shorter than name
       @return a HashMap mapping each param name to an object (Double
       or Param constant) corresponding to the found value.
      */
@@ -495,7 +495,7 @@ public abstract class Learner implements Model {
       Names can be understood in a case-insensitive way, depending on
       the value of the flag ignoreCase (which is currently hard-coded in).
 
-      @value h A HashMap whose keys are the names of the parameters we expect to find, and the values are those params' default values.
+      @param h A HashMap whose keys are the names of the parameters we expect to find, and the values are those params' default values.
       @return a HashMap mapping each param name to an object (Double
       or Param constant) corresponding to the found value.
      */

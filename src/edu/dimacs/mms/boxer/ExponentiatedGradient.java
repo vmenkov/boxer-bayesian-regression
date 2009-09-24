@@ -71,7 +71,8 @@ public class ExponentiatedGradient extends PLRMLearner {
 	    // FIXME: this really should not be a problem, because if
 	    // we have no training examples labeled with respect to a
 	    // particular discrimination, we should not do any training there
-	    if (m==0) throw new AssertionError("minNonZeroClassSize() called when no non-empty classes are known in at least one of the discrimination yet!");
+
+	    //if (m==0) throw new AssertionError("minNonZeroClassSize() called when no non-empty classes are known in at least one of the discrimination yet!");
 	    return m;
 	}	
     }

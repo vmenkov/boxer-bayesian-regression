@@ -6,15 +6,20 @@ import java.util.logging.*;
  * messages. These methdos are simply wrappers around the respective
  * methods of  java.util.logging.Logging.
  */
-class Logging {
-    final static String NAME = "boxer";
+public class Logging {
+    public final static String NAME = "boxer";
 
-    static void warning(String msg) {
+    public static void error(String msg) {
+	Logger logger = Logger.getLogger(NAME);
+	logger.severe(msg);
+    }
+
+    public static void warning(String msg) {
 	Logger logger = Logger.getLogger(NAME);
 	logger.warning(msg);
     }
 
-    static void info(String msg) {
+    public static void info(String msg) {
 	Logger logger = Logger.getLogger(NAME);
 	logger.info(msg);
     }
