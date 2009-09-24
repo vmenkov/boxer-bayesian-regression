@@ -27,6 +27,20 @@ public class Discrimination /* extends DiscriminationFallback */{
     /** Discrimination class structure (DCS) */
     Suite.DCS dcs = Suite.DCS.Bounded;
 
+    /** prefix used for the names of pre-reserved still-anonymous classes */
+    private static final String prrPrefix =  "@UNNAMED_";
+    
+    /** Returns true if the specified string looks like the name of
+	one of the still-unnamed classes (as used in DCS2).  */
+    static boolean isAPreReservedName(String s) {
+	return s.startsWith(prrPrefix);
+    }
+
+    /** Generates a name for a "pre-reserved"  class */
+    static String makePreReservedName(int i) {
+	return prrPrefix  + i;
+    }
+
     /** A Cla instance describes one class of a Discrimination (a
 	polytomous [multi-class] classification of examples). A Cla
 	instance only exists in the context of an enclosing
@@ -73,9 +87,11 @@ public class Discrimination /* extends DiscriminationFallback */{
 	    return (Discrimination.this.hashCode() << 8) + pos;
 	}
 
-	/** An easily human readable fully qualified name of the class  */
+	/** An easily human readable fully qualified name of the
+	 * class. This metho is used both for producing human-readable
+	 * info, and in generating the compact XML format  */
 	public String toString() {
-	    return Discrimination.this.name + ":" + name;
+	    return Discrimination.this.name + BXRReader.PAIR_SEPARATOR_STRING + name;
 	}
 
 	/** Get the discrimination id */
@@ -106,12 +122,11 @@ public class Discrimination /* extends DiscriminationFallback */{
 	    getDisc().setLeftoversClass( this);
 	}
 
-	static final String prrPrefix =  "@UNNAMED_";
 
 	/** Returns true if this is one of the still-unnamed classes
-	  (as used in DCS2).  */
+	    (as used in DCS2).  */
 	boolean isPreReserved() {
-	    return name.startsWith(prrPrefix);
+	    return isAPreReservedName( name );
 	}
 
 	/** Returns the name of the class (not including the name of
@@ -128,10 +143,6 @@ public class Discrimination /* extends DiscriminationFallback */{
 
     }
 
-    /** Generates a name for a "pre-reserved"  class */
-    static String makePreReservedName(int i) {
-	return Cla.prrPrefix  + i;
-    }
 
     /** Refers to the suite in whose context the discrimination has
      * been created. It's mostly useful to be able to access the
@@ -159,7 +170,7 @@ public class Discrimination /* extends DiscriminationFallback */{
     /** Only used by borj.rcv.QrelToXML */
     public void setQrelFileName(String _qrel) { qrel=_qrel; }
        
-    /** The classes of this discrimnation, in order. Internally,
+    /** The classes of this discrimination, in order. Internally,
 	classes of this discrimination can be identified by 0-based
 	integer indexes into this array. (This can be done safely
 	because no elements are ever removed from this vector; thus, a
@@ -309,6 +320,9 @@ public class Discrimination /* extends DiscriminationFallback */{
   */
     synchronized public Cla addClass(String cname, boolean reuse, Suite.NC ncMode) { 
 	if (cname==null || cname.equals("")) throw new IllegalArgumentException("Should not have empty-named classes! cname='"+cname+"'"); 
+	else if (!IDValidation.validateClaName(cname)) {
+	    throw new  IllegalArgumentException("Not a legal class name: '"+cname+"'"); 
+	}
 
 	// Does a class with this name already exist?
 	Cla c0 = getCla(cname);
@@ -349,7 +363,7 @@ public class Discrimination /* extends DiscriminationFallback */{
 		" from training data.";	    
 	    msg += " Reason: discrimination has ClassStructure="+dcs;
 	    if (ncMode != Suite.NC.API) msg += ", no leftovers class";
-	    msg += (dcs==Suite.DCS.Fixed)?".":", and no pre-reserved classes.";
+	    msg +=(dcs==Suite.DCS.Fixed)?"." : ", and no pre-reserved classes.";
 
 	    throw new IllegalArgumentException(msg);
 	} else {
@@ -470,8 +484,8 @@ public class Discrimination /* extends DiscriminationFallback */{
        StringBuffer b=new StringBuffer("Discrimination '"+name+"', DCS="+dcs+" contains " + classes.size() + " classes: {");
        for(Cla c: classes)   b.append(" [" + c.name + "]");
        b.append("};" +
-		(defaultCla==null? " no default;": " default=" + defaultCla.name) +
-		(leftoversCla==null? " no leftovers;": " leftovers=" + leftoversCla.name) );
+		(defaultCla==null? " no default;" : " default=" + defaultCla.name) +
+		(leftoversCla==null? " no leftovers;" : " leftovers=" + leftoversCla.name) );
 
        return b.toString();
     }
@@ -499,6 +513,9 @@ public class Discrimination /* extends DiscriminationFallback */{
 	Logging.info("Creating discrimination " + _name);
 	suite = _suite;
 	name = _name;
+	if (!IDValidation.validateDiscName(name)) {
+	    throw new IllegalArgumentException("Can't create discrimination named '"+name+"', because it's not a legal name");
+	}
 	dcs = Suite.DCS.Uncommitted; // FIXME
     }
     
@@ -517,12 +534,13 @@ public class Discrimination /* extends DiscriminationFallback */{
       element), in which case the missing properties are initialized
       from sysdefaults.
 
-      @param e The element describing the new discrimination. The new
+      @param e The XML element describing the new discrimination. The new
       discrimination's name should be different from those of all
-      already existing discriminations.
+      already existing discriminations. 
+
 
     */
-    Discrimination(Suite _suite, Element e) {
+    Discrimination(Suite _suite, Element e) throws BoxerXMLException {
 	this(_suite, getDiscNameAttr(e));
 	Logging.info("Getting the rest of data for discrimination " + name + " from XML");
 
@@ -541,11 +559,20 @@ public class Discrimination /* extends DiscriminationFallback */{
 			// Parsing the text of the node
 			String text = x.getNodeValue().trim();
 			for(String cname: text.split("\\s+")) {
+			    if (!IDValidation.validateClaName(cname)) {
+				throw new BoxerXMLException("Can't create class '"+cname+"' in discrimination "+name+", because it's not a legal class name");
+			    }
 			    addClass(cname);
 			}
 		    }
 		}
 	    }
+	}
+
+	//Logging.info("Class count=" + claCount()+", classes="+classes);
+
+	if (classes!=null && !validateAllClaNames()) {
+	    throw new BoxerXMLException("Can't create discrimination '"+name+"' because of inappropriate class names. Please see the Boxer error log for details");
 	}
 
 	String s;
@@ -609,6 +636,39 @@ public class Discrimination /* extends DiscriminationFallback */{
 	}
 
     }
+
+    /** Makes sure that the entire set of class names makes sense
+	(i.e., if you have even one "special" name, the whole set must
+	be appropriate). Presently, there are only 2 situations when
+	"special identifiers" are allowed in class names. Those are
+	the simple binary fallback discrimination, and a
+	discrimination with pre-reserved classes.
+	
+	FIXME: should the existence of pre-reserved classes be coordinated
+	with some other properties?
+    */
+    boolean validateAllClaNames() {
+	if (isSimpleBinaryFallback()) return true;
+	int errcnt = 0;
+	for(Cla c: classes) {
+	    if (!IDValidation.validateClaName(c.getName())) {
+		Logging.error("In discrimination " + name + ", '" +
+			      c.getName() + "' is not a valid class name");
+		errcnt++;
+	    }
+	    if (IDValidation.isSpecial(c.getName())) {
+		if (c.isPreReserved()) {
+		    // that's allowed
+		} else {
+		    Logging.error("In discrimination " + name + ", class name '" +
+				  c.getName() + "' can't be used, because it's a special name, but has no BOXER meaning in this context");
+		    errcnt++;		    
+		}
+	    }		    
+	}
+	return (errcnt == 0);
+    }
+	
 
     /** Bumps up this discrimination's size by adding "pre-reserved"
      (unnamed) classes, if necessary. Used from the constructors and
@@ -797,7 +857,7 @@ public class Discrimination /* extends DiscriminationFallback */{
     /** Is this a suitable fallback discrimination for Situation 1, as per
 	boxer-make-common-case-trivial-20090430.pdf ?
      */
-    boolean isSimpleBinaryFallback() {
+    boolean  isSimpleBinaryFallback() {
 	return isSimpleBinary(Suite.NOT_DIS_NAME, Suite.DIS_NAME);
     }
 

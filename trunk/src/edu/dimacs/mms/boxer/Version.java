@@ -12,10 +12,12 @@ package edu.dimacs.mms.boxer;
     0.6.006 - 2009-06-24. Boxer: improved DataPoint name management; 
        ParseXML enhancements (in connection with standard-scenarios.html)
     0.6.007 - 2009-06-28. Only updated docs
+    0.7.001 - 2009-09-24. New ID validation process. Using caret instead of
+       colon for compact XML format. New package tree structure.
 </pre>
  */
 public class Version {
-    public final static String version = "0.6.007";
+    public final static String version = "0.7.001";
 }
 
 /*

@@ -4,6 +4,13 @@ package edu.dimacs.mms.boxer;
  * XML. It is triggered when an input XML file, even though
  * well-formatted, does not have the structure expected by BOXER, or
  * contains values that we don't allow.
+
+ * An exception of this type is also thrown by some methods that don't
+ * actually take XML input, but which take string arguments (e.g.,
+ * the name of a feature) that need to be validated, and that are
+ * found to be invalid syntactically.
+
+ 
  */
 public class BoxerXMLException extends BoxerException {
     BoxerXMLException(String msg) {
