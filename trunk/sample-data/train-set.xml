@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- An XML file contains a data set. The dataset tag may have some optional
  attributes -->
-<dataset name="A sample dataset" boxerversion="0.1">
+<dataset name="A_sample_dataset" boxerversion="0.1">
 <!-- A data set contains a number of data points (vectors). The "name" 
   attribute is optional, and can be used for better human readability,
   debugging etc. -->
@@ -22,23 +22,23 @@
       <feature name="elevation" value="179"/>
   </features>
 </datapoint>
-<datapoint name="New Brunswick, NJ">
-  <labels>    Countries:US  Climate:temperate  </labels>
-  <features>lat:40.5 lon:-74.5 seaside:0 elevation:21</features>
+<datapoint name="New_Brunswick,_NJ">
+  <labels>    Countries^US  Climate^temperate  </labels>
+  <features>lat^40.5 lon^-74.5 seaside^0 elevation^21</features>
 </datapoint>
 
 <datapoint name="Penticton">
-  <labels>    Countries:Canada Climate:temperate  </labels>
-  <features>lat:50 lon:-119 seaside:0 elevation:300</features>
+  <labels>    Countries^Canada Climate^temperate  </labels>
+  <features>lat^50 lon^-119 seaside^0 elevation^300</features>
 </datapoint>
 <datapoint name="Vancouver">
-  <labels>    Countries:Canada Climate:temperate  </labels>
-  <features>lat:49.25 lon:-123.1 seaside:1 elevation:20</features>
+  <labels>    Countries^Canada Climate^temperate  </labels>
+  <features>lat^49.25 lon^-123.1 seaside^1 elevation^20</features>
 </datapoint>
 
 <datapoint name="Melbourne">
-  <labels>    Countries:Australia Climate:temperate  </labels>
-  <features>lat:-37.8 lon:145.0 seaside:1 elevation:0</features>
+  <labels>    Countries^Australia Climate^temperate  </labels>
+  <features>lat^-37.8 lon^145.0 seaside^1 elevation^0</features>
 </datapoint>
 <datapoint name="Adelaide">
   <labels>

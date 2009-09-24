@@ -6,7 +6,8 @@ set main=${home}/boxer
 set cp=${main}/classes:${main}/lib/xercesImpl.jar
 set opt="-Xmx256m -cp ${cp}"
 
-set d=${main}/rcv-out
+#set d=${main}/rcv-out
+set d=.
 set out=${main}/out
 
 if (-e $out) then
@@ -16,4 +17,3 @@ else
    mkdir $out
 endif
 
-set d=${main}/boxer-bayesian-regression/src/edu/dimacs/mms/sample-data/validation

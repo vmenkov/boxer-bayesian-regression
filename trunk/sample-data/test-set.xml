@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dataset name="A sample test dataset" boxerversion="0.1">
-<datapoint name="Bloomington, IN">
-  <labels>    Countries:US Climate:temperate  </labels>
-  <features>lat:39.1 lon:-86.5 seaside:0 elevation:235</features>
+<dataset name="A_sample_test_dataset" boxerversion="0.1">
+<datapoint name="Bloomington,_IN">
+  <labels>    Countries^US Climate^temperate  </labels>
+  <features>lat^39.1 lon^-86.5 seaside^0 elevation^235</features>
 </datapoint>
 <datapoint name="Nambour">
-  <labels>    Countries:Australia Climate:subtropical  </labels>
-  <features>lat:-26.5 lon:153.0 seaside:0 elevation:50</features>
+  <labels>    Countries^Australia Climate^subtropical  </labels>
+  <features>lat^-26.5 lon^153.0 seaside^0 elevation^50</features>
 </datapoint>
 <datapoint name="Saskatoon">
-  <labels>    Countries:Canada Climate:temperate  </labels>
-  <features>lat:52.1 lon:-106.65 seaside:0 elevation:481</features>
+  <labels>    Countries^Canada Climate^temperate  </labels>
+  <features>lat^52.1 lon^-106.65 seaside^0 elevation^481</features>
 </datapoint>
 <datapoint name="Wuhan">
-  <labels>    Countries:China Climate:temperate Port:river </labels>
-  <features>lat:30.5 lon:114.3 seaside:0 elevation:100</features>
+  <labels>    Countries^China Climate^temperate Port^river </labels>
+  <features>lat^30.5 lon^114.3 seaside^0 elevation^100</features>
 </datapoint>
 </dataset>

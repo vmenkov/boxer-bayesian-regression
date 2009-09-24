@@ -4,7 +4,8 @@
 
 source set.sh
 
-set d=${main}/src/sample-data
+#set d=${main}/src/sample-data
+set d=${main}/boxer-bayesian-regression/sample-data
 
 set a=train:${d}/train-set.xml
 set a1=test:${d}/train-set.xml 
