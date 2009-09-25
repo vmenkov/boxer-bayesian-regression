@@ -42,7 +42,7 @@ public class Tokenizer {
 	return clav;
     }
 
-    static public void main(String argv[]) throws IOException, org.xml.sax.SAXException{
+    static public void main(String argv[]) throws IOException, org.xml.sax.SAXException, BoxerXMLException {
 
 	//memory();
 	if (argv.length==0) usage();
@@ -96,7 +96,7 @@ public class Tokenizer {
 	}
 
 	/** @param name The name to assign to the new data point */
-	DataPoint toDataPoint(String name) {
+	DataPoint toDataPoint(String name) throws BoxerXMLException {
 	    String[] keys = h.keySet().toArray(new String[0]);
 	    Arrays.sort(keys);
 	    Vector <DataPoint.FVPair> v =new Vector <DataPoint.FVPair>();
@@ -108,7 +108,7 @@ public class Tokenizer {
 	}
     }
 
-    DataPoint tokenizeFile(String fname)	throws IOException //, SAXException
+    DataPoint tokenizeFile(String fname)	throws IOException, BoxerXMLException
     {
 	DTD dtd = DTD.getDTD("http://www.w3.org/TR/html4/strict.dtd");
 	System.out.println("DTD="+dtd);
