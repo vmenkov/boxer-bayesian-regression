@@ -253,6 +253,9 @@ public class DataPoint implements Measurable  {
 	@param dic The FeatureDictionary of the suite in whose context
 	the DataPoint will be used.
 	@param name The name to assign the new data point
+
+	@throws BoxerXMLException If the data point name is
+	inappropriate, as per {@link edu.dimacs.mms.boxer.IDValidation}
     */
     static public DataPoint makeDataPoint(HashMap <String, Integer> words, 
 			       FeatureDictionary dic, String name) throws BoxerXMLException {

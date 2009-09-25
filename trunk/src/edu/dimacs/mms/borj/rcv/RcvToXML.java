@@ -51,7 +51,7 @@ public class RcvToXML {
     final static String REGION = "region", INDUSTRY = "industry", 
 	TOPIC="topic", NONE="none", OTHER="other";    
 
-    static public void main(String argv[]) throws IOException, org.xml.sax.SAXException{
+    static public void main(String argv[]) throws IOException, org.xml.sax.SAXException, BoxerXMLException {
 	ParseConfig ht = new ParseConfig();
 	// 0 means: no restriction
 	int from = ht.getOption("from", 0),  to = ht.getOption("to", 0);
@@ -139,7 +139,7 @@ more data ...
 
     */
     static void fillTable(HashMap<Integer, DataPoint> docs, String fname, 
-			  FeatureDictionary dic) throws IOException {
+			  FeatureDictionary dic) throws IOException, BoxerXMLException {
  	LineNumberReader r = new LineNumberReader( new FileReader(fname));
 	String s=null;
 	int cnt=0, useCnt=0;
