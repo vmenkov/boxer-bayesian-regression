@@ -37,7 +37,7 @@ class Truncation /*implements Cloneable*/ {
     public double getBasicTo() {return basicTo; }
 
     /** Implementation mode */
-    static boolean lazy=true;
+    final boolean lazy;
 
     /** The matrix (BetaMatrix or DenseMatrix), or matrices, whose
       elements we will truncate. 
@@ -47,21 +47,26 @@ class Truncation /*implements Cloneable*/ {
     double truncToApply[];
 
     /** No-truncation constructor */
-    Truncation() {
-	this((Object)(new Double(0)), 0.0, 1, new Matrix[]{});
+    Truncation( boolean  _lazy) {
+	this((Object)(new Double(0)), 0.0, 1, new Matrix[]{}, _lazy);
     }
 
     /** Creates a truncation object for truncation of elements of a single 
 	marix */
-    Truncation(Object _theta, double to, int _K, Matrix w) {
-	this( _theta, to, _K, new Matrix[] {w});
+    Truncation(Object _theta, double to, int _K, Matrix w, boolean  _lazy) {
+	this( _theta, to, _K, new Matrix[] {w}, _lazy);
     }
 
     Truncation(Truncation orig, Matrix[] _matrices) {	
-	this( orig.reportTheta(), orig.basicTo, orig.K,  _matrices);
+	this( orig.reportTheta(), orig.basicTo, orig.K,  _matrices, orig.lazy);
     }
 
-    Truncation(Object _theta, double to, int _K, Matrix[] _matrices) {	
+    /**
+       @param _matrices An array of matrices to which this truncation applies
+       @param _lazy If true, use lazy truncation
+     */
+    Truncation(Object _theta, double to, int _K, Matrix[] _matrices, boolean _lazy) {	
+	lazy = _lazy;
 	if (_theta.equals(Param.INF)) {
 	    mode = MODE.ALWAYS;
 	    theta = -1;
@@ -165,8 +170,11 @@ class Truncation /*implements Cloneable*/ {
 	}  else  truncateNow();
     }
 
-    /** Looks at the not-applied-yet truncation amount for the j-th row of
-	the matrix, and if it's non-zero, applies it now
+    /** Looks at the not-applied-yet truncation amount for the j-th
+	row of the matrix(es), and if it's non-zero, applies it
+	now. If one uses lazy truncation, it is necessary to call this
+	method on the j-th row of the matrix before it is used (e.g.,
+	to score a vector with a non-zero j-th component)
      */
     void applyTruncation(int j) {
 	if (mode == MODE.NONE) return;

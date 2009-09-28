@@ -14,10 +14,11 @@ package edu.dimacs.mms.boxer;
     0.6.007 - 2009-06-28. Only updated docs
     0.7.001 - 2009-09-24. New ID validation process. Using caret instead of
        colon for compact XML format. New package tree structure.
+    0.7.002 - 2009-09-28. Lazy truncation made correct in TruncatedGradient, and disabled in ExponentiatedGradient
 </pre>
  */
 public class Version {
-    public final static String version = "0.7.001";
+    public final static String version = "0.7.002";
 }
 
 /*
