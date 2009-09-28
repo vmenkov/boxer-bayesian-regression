@@ -13,8 +13,10 @@ import org.w3c.dom.Element;
  */
 public class TruncatedGradient extends PLRMLearner {
 
+    static final boolean lazyT = true;
+
     /** Algorithm parameters */
-    /** The learning rate eta. Default (as per paper is 0.1. It was
+    /** The learning rate eta. Default (as per paper) is 0.1. It was
 	0.01 in the code used in January-Feb 2009 */
     double  eta=0.1;  
     /**  in Jan-Feb 2009 we had g=0.001 and K=1, i.e. truncation was
@@ -64,6 +66,15 @@ public class TruncatedGradient extends PLRMLearner {
 	    for(int i=i1; i<i2; i++) {
 
 		DataPoint x = xvec.elementAt(i);
+
+		// Actuate any postponed ("lazy evaluation") truncation that
+		// needs to be done now because if affects the matrix's rows 
+		// that we'll be using now
+		for(int h=0; h<x.features.length; h++) {
+		    int j = x.features[h];		
+		    trunc.applyTruncation(j);
+		}
+
 		double z[] = adjWeights(x);
 		if (z==null) {
 		    if (Suite.verbosity>1) System.out.println("Skip example " + x.name + " not labeled for " + dis.getName());
@@ -73,7 +84,6 @@ public class TruncatedGradient extends PLRMLearner {
 		trunc.requestTruncation(d);	    
 		for(int h=0; h<x.features.length; h++) {
 		    int j = x.features[h];		
-		    trunc.applyTruncation(j);
 		    w.addDenseRow(j, z, eta * x.values[h]);
 		}
 		// trunc.requestTruncation(d); // moved to bottom
@@ -143,7 +153,7 @@ public class TruncatedGradient extends PLRMLearner {
     */
     TruncatedGradient(Suite _suite, Element e) throws org.xml.sax.SAXException {
 	setSuite( _suite);
-	commonTrunc = new Truncation( Param.INF, g*eta, K, new BetaMatrix[0]);
+	commonTrunc = new Truncation( Param.INF, g*eta, K, new BetaMatrix[0], lazyT);
 	if (e==null) {
 	    createAllBlocks();
 	} else {
@@ -188,7 +198,7 @@ public class TruncatedGradient extends PLRMLearner {
 	g =  ((Double)(h.get("g"))).doubleValue();
 	K = ((Number)(h.get(PARAM.K))).intValue();
 	t = ((Number)(h.get(PARAM.t))).intValue();
-	commonTrunc = new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0]);
+	commonTrunc = new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT);
 	commonTrunc.setT(t); // part of saved history	
     }
     

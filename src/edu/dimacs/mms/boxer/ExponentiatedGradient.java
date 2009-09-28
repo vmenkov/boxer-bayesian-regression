@@ -18,9 +18,18 @@ import org.w3c.dom.Element;
   discrimination, one can generally control the learner's parameters
   on the global level (for all existing and future discriminations at
   once), or for individual discriminations.
+
+  This learner also supports truncation (which, if requested, applies
+  to the latent coefficients V). However, the truncation is rather
+  expensive, since it does not use lazy evaluation, 
   
  */
 public class ExponentiatedGradient extends PLRMLearner {
+
+    /** We cant't do lazy truncation here, because W needs to be
+    updated from V after each training vector
+    */
+    static final boolean lazyT = false;
 
     /** Algorithm parameters - the "common" fixed values of U and F which
 	are used for all discriinations if supplied like this.
@@ -28,7 +37,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	Fixed defaults set as of Ver 0.5.006 (2009-04-21)
      */
     double commonU=10.0, commonF=1.0;
-    Truncation commonTrunc = new Truncation();
+    Truncation commonTrunc = new Truncation(lazyT);
 
     /** If these flags are true, U and f will be computed on each
 	training example based on our heuristics. This was default prior to 
@@ -102,7 +111,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	DenseMatrix vplus=new DenseMatrix(), vminus=new DenseMatrix();
 
 	/** Optional Truncation policy for Vplus and Vminus; by default, none */
-	Truncation trunc = new Truncation();
+	Truncation trunc = new Truncation(lazyT);
 
 	/** How many training data points from each class have we
 	    seen?  The array is aligned with the list of classes in
@@ -132,7 +141,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 	public void setTruncation(double theta, double to, int K) {
 	    Object otheta = (theta<0) ? Param.INF : new Double(theta);
-	    trunc = new Truncation(otheta, to, K, new Matrix[] {vplus, vminus});
+	    trunc = new Truncation(otheta, to, K, new Matrix[] {vplus, vminus}, lazyT);
 	}
 
 
@@ -160,7 +169,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 		double vm[] = vminus.data[j];
 		if (vp==null && vm==null) continue; // both empty rows
 		if (vp==null || vm==null) {
-		    throw new AssertionError("We did not expect VP and VM have mismatched row patterns!");
+		    throw new AssertionError("We did not expect VP and VM to have mismatched row patterns!");
 		} else if (vp.length != vm.length) {
 		throw new AssertionError("Rows of VP and VM are of different length");
 		}
@@ -289,6 +298,11 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 	    for(int i=i1; i<i2; i++) {
 		trunc.requestTruncation(d);//or we can move to bottom
+		trunc.applyTruncationToAllRows(); // nothing is done by this
+		// call (since lazeT==false), but we keep it here for
+		// completeness
+
+
 		DataPoint x = xvec.elementAt(i);
 
 		double z[] = adjWeights(x); // (t-p)
@@ -309,17 +323,18 @@ public class ExponentiatedGradient extends PLRMLearner {
 		    vplus.enable(j,r);
 		    vminus.enable(j,r);
 		    
-		    trunc.applyTruncation(j);
 		    for(int k=0; k<r; k++) {
 			double f = z[k] * x.values[h];  // (t-p) * U * f * x
 			vplus.data[j][k]  += f;
 			vminus.data[j][k] -= f;
 		    }
 		}
+		// convert latent coefficients to the model, to be
+		// ready for scoring the next training vector
 		w = latentToModel(d);
 		//describe( System.out, false);
 	    }
-	    trunc.applyTruncationToAllRows(); 
+
 	}
 
 	public void describe(PrintWriter out, boolean verbose) {
@@ -451,7 +466,7 @@ public class ExponentiatedGradient extends PLRMLearner {
      */
     public void setTruncation(double theta, double to, int K) {
 	Object otheta = (theta<0) ? Param.INF : new Double(theta);
-	commonTrunc = new Truncation(otheta, to, K, new Matrix[0]);
+	commonTrunc = new Truncation(otheta, to, K, new Matrix[0], lazyT);
 	for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(theta, to,  K);
     }
 
@@ -505,7 +520,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	
 	K = ((Number)(h.get(PARAM.K))).intValue();
 		
-	commonTrunc = new Truncation( otheta, to, K, new Matrix[0]);
+	commonTrunc = new Truncation( otheta, to, K, new Matrix[0], lazyT);
 
 	//System.out.println("[DEBUG]: EG.parseParams: commonF=" +  reportCommonF()+
 	//			   " commonU=" +  reportCommonU());
