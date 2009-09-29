@@ -15,6 +15,7 @@ public class TrivialLearner extends Learner {
 
 	TrivialLearnerBlock(Discrimination _dis) {
 	    dis = _dis;
+	    createAllBlocks();
 	}
 
 	boolean isZero() { return true; }
