@@ -143,6 +143,7 @@ public class QrelToXML {
 	for(int did =0; did<suite.disCnt(); did++) {
 	    Discrimination dis = suite.getDisc(did);
 	    String qrel = dis.getQrelFileName();
+	    if (dis.getName().equals(Suite.SYSDEFAULTS)) continue;
 	    if (qrel==null) throw new IllegalArgumentException("No source QREL file indicated for discirmination " + dis.getName() + " !");
 	    qrel =  d + File.separator + qrel;
 	    Vector<Discrimination> v=qrelFile2disList.get(qrel);

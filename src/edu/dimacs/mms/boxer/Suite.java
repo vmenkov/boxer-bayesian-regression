@@ -1235,14 +1235,16 @@ public class Suite {
 
     static final String DIS_NAME = "@DiscriminationName",
 	NOT_DIS_NAME =  "@NotDiscriminationName";
-    
+
+    static public final String SYSDEFAULTS = "sysdefaults";
+
     /** Initializes fallback with sysdefaults */
     private void initFallback() {
 	String[] cnames = 
 	    (supportsSimpleLabels==SupportsSimpleLabels.MultipleBinary) ?
 	    new String[] {DIS_NAME, NOT_DIS_NAME} : new String[0];
 	String defName = (cnames.length==0) ? null : NOT_DIS_NAME;
-	Discrimination f = addDiscrimination("sysdefaults", cnames,
+	Discrimination f = addDiscrimination(SYSDEFAULTS, cnames,
 					     defName, null,
 					     SysDefaults.dcs, true);
 

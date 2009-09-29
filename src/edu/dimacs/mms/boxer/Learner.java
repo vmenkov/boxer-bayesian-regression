@@ -553,8 +553,10 @@ public abstract class Learner implements Model {
 	probably piggybacking on the parent class's method.  */
     public long memoryEstimate() {
 	long sum = 2*Sizeof.OBJ +  Sizeof.OBJREF;
-	for(LearnerBlock block: blocks) {
-	    sum += Sizeof.OBJREF + block.memoryEstimate();
+	if (blocks!=null) { // TrivialLearner has no blocks
+	    for(LearnerBlock block: blocks) {
+		sum += Sizeof.OBJREF + block.memoryEstimate();
+	    }
 	}
 	return sum;
     }
