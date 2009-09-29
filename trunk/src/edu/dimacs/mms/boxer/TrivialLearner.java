@@ -15,7 +15,6 @@ public class TrivialLearner extends Learner {
 
 	TrivialLearnerBlock(Discrimination _dis) {
 	    dis = _dis;
-	    createAllBlocks();
 	}
 
 	boolean isZero() { return true; }
@@ -57,6 +56,7 @@ public class TrivialLearner extends Learner {
 
     public TrivialLearner(Suite _suite) {
 	setSuite( _suite);
+	createAllBlocks();
     }
 
     public void describe(PrintWriter out, boolean verbose) {
