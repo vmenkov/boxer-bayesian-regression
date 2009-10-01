@@ -19,6 +19,11 @@ import edu.dimacs.mms.tokenizer.RDFNames;
  */
 
 public class BOXERPersistModel extends AbstractAlgorithmMultiModel2Model {
+	
+	private static final String DESCRIPTION = "General method to persist models in Assertions Datasources.";
+
+    private static final String LABEL = "BOXER Persist Model";
+    
 
 	/**
 	 * 
@@ -62,6 +67,20 @@ public class BOXERPersistModel extends AbstractAlgorithmMultiModel2Model {
 		throw new Exception("Model has no statements giving names");
 	}
 
-	
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
 
 }

@@ -30,6 +30,11 @@ import edu.dimacs.mms.tokenizer.RDFNames;
 
 public class BOXERMakeTestingSet extends AbstractAlgorithmMultiModel2Model {
 	
+	private static final String DESCRIPTION = "Given parameters and documents, makes the testing set. Passes through the parameters, for it is needed in the future.";
+
+    private static final String LABEL = "BOXER Make Testing Set";
+    
+	
 	public static final String COMBINED_ROOT = "combined";
 	
 	/**
@@ -229,5 +234,21 @@ public class BOXERMakeTestingSet extends AbstractAlgorithmMultiModel2Model {
 		return final_result;
 		
 	}
+	
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
 
 }

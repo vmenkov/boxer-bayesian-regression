@@ -28,7 +28,7 @@ public class BOXERFilter extends AbstractAlgorithmModel2Model {
 	 */
 	private static final long serialVersionUID = 3791236414011234099L;
 
-	private static final String DESCRIPTION = "BOXER Filter";
+	private static final String DESCRIPTION = "A collection of RDF parsing tools for BOXER.";
 
     private static final String LABEL = "BOXER Filter";
     

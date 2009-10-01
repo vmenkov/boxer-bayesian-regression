@@ -24,6 +24,11 @@ import edu.dimacs.mms.boxer.ParseXML;
 import edu.dimacs.mms.boxer.Suite;
 
 public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
+	
+	private static final String DESCRIPTION = "Given a learner complex and documents, it trains and updates the learner complex.";
+
+    private static final String LABEL = "BOXER Train";
+    
 
 	/**
 	 * 
@@ -155,4 +160,20 @@ public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
 	    
     }
 
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
+    
 }
