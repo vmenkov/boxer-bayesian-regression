@@ -278,6 +278,44 @@ public class BOXERFilter extends AbstractAlgorithmModel2Model {
 		return "";
 	}
 	
+	public static String genericFinderEndsWith (Model model, Resource res, String RDF) {
+		ArrayList<Statement> statements = BFS(model, res);
+		Property current_predicate;
+		
+		for (Statement st : statements) {
+			current_predicate = st.getPredicate();
+
+			if (current_predicate.toString().endsWith(RDF)) {
+				return st.getObject().toString();
+			}
+		}
+		
+		return "";
+	}
+	
+	/* This will return ALL possible literal values matching the predicate given */
+	public static String[] genericFinderMulti (Model model, Resource res, String RDF) {
+		ArrayList<String> possibilities = new ArrayList<String>();
+		ArrayList<Statement> statements = BFS(model,res);
+		Property current_predicate;
+		
+		for (Statement st : statements) {
+			current_predicate = st.getPredicate();
+			if (current_predicate.toString().endsWith(RDF) && st.getObject().isLiteral()) {
+				possibilities.add(st.getObject().toString());
+			}
+		}
+		
+		int len = possibilities.size();
+		String[] result = new String[len];
+		
+		for (int i=0; i<len; i++) {
+			result[i] = possibilities.get(i);
+		}
+		
+		return result;
+	}
+	
 	/** findRegion
 	 *  Uses BFS to find the Region node, and returns it.
 	 * @param res	-	Starting resource for the BFS.

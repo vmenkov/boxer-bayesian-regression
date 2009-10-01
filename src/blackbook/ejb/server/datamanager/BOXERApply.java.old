@@ -15,6 +15,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import security.ejb.client.User;
+
 import blackbook.ejb.client.exception.BlackbookSystemException;
 
 import com.hp.hpl.jena.rdf.model.Model;
@@ -24,64 +25,38 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 import edu.dimacs.mms.borj.Driver;
 import edu.dimacs.mms.boxer.BoxerXMLException;
-import edu.dimacs.mms.tokenizer.XMLtoRDF2;
 
-public class BOXERUpdate extends AbstractAlgorithmModel2Model{
+public class BOXERApply extends AbstractAlgorithmModel2Model {
 	
-    private static final String DESCRIPTION = "Inputs the Jena documents as the model. Takes in a hardcoded serialized complex and trains the new documents in the model and returns an updated complex.";
+    private static final String DESCRIPTION = "Inputs the Jena documents as the model. Takes in a hardcoded serialized complex and tests the model.";
 
-    private static final String LABEL = "BOXER Update";
+    private static final String LABEL = "BOXER Apply";
 	
 	private final String RCV_FILENAME = "rcv.xml";
 	private final String QREL_FILENAME = "qrel.xml";
 	private final String LEARNER_COMPLEX_FILENAME = "complex.xml";
 	
 	private Document rcv_doc		=	null;
-	private Document qrel_doc		=	null;
+	private Document qrel_doc		= 	null;
 	private Document complex_doc	=	null;
 	
 	private File rcv_file			=	null;
 	private File qrel_file			=	null;
 	private File complex_file		=	null;
 	
-	public BOXERUpdate() {
+	public BOXERApply() {
 		
 		rcv_file = new File(RCV_FILENAME);
-		qrel_file = new File(QREL_FILENAME);
 		complex_file = new File(LEARNER_COMPLEX_FILENAME);
 		
 	}
 	
-	public void createRCVDoc(Model m) throws ParserConfigurationException {
-		
-		ExtendedIterator resources = BOXERFilter.listURIResources(m);
-		Resource r;
-		
-		DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
-	    DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
-	    rcv_doc = docBuilder.newDocument();
-	    
-	    Element dataset = rcv_doc.createElement("dataset");
-	    dataset.setAttribute("name","sample");
-	    dataset.setAttribute("version","0.6.003");
-	    
-	    rcv_doc.appendChild(dataset);
-	    
-	    while (resources.hasNext()) { 
-	    
-	    	r = (Resource) resources.next();
-	    	
-		    Element datapoint = rcv_doc.createElement("datapoint");
-		    datapoint.setAttribute("name",r.toString());
-		    
-		    dataset.appendChild(datapoint);
-		    
-		    Element features = rcv_doc.createElement("features");
-		    features.setTextContent(BOXERFilter.findFeatures(m,r));
-		    
-		    datapoint.appendChild(features);
-	    }
-	}
+	/** createQRELDoc
+	 *  This creates a QREL document from ALL of the documents in the model.
+	 * @param f
+	 * @param m
+	 * @throws ParserConfigurationException
+	 */
 	
 	public void createQRELDoc(Model m) throws ParserConfigurationException {
 		
@@ -94,7 +69,7 @@ public class BOXERUpdate extends AbstractAlgorithmModel2Model{
 
 	    Element dataset = qrel_doc.createElement("dataset");
 	    dataset.setAttribute("name","sample");
-	    dataset.setAttribute("version","0.6.003");
+	    dataset.setAttribute("version","0.5.007");
 	    
 	    qrel_doc.appendChild(dataset);
 	    
@@ -113,6 +88,37 @@ public class BOXERUpdate extends AbstractAlgorithmModel2Model{
 		    datapoint.appendChild(labels);
 		}
 	}
+	
+	public void createRCVDoc(Model m) throws ParserConfigurationException {
+		
+		ExtendedIterator resources = BOXERFilter.listURIResources(m);
+		Resource r;
+		
+		DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+	    DocumentBuilder docBuilder = dbfac.newDocumentBuilder();
+	    rcv_doc = docBuilder.newDocument();
+	    
+	    Element dataset = rcv_doc.createElement("dataset");
+	    dataset.setAttribute("name","sample");
+	    dataset.setAttribute("version","0.5.007");
+	    
+	    rcv_doc.appendChild(dataset);
+	    
+	    while (resources.hasNext()) { 
+	    
+	    	r = (Resource) resources.next();
+	    	
+		    Element datapoint = rcv_doc.createElement("datapoint");
+		    datapoint.setAttribute("name",r.toString());
+		    
+		    dataset.appendChild(datapoint);
+		    
+		    Element features = rcv_doc.createElement("features");
+		    features.setTextContent(BOXERFilter.findFeatures(m,r));
+		    
+		    datapoint.appendChild(features);
+	    }
+	}
 
 	/**
 	 * @param args
@@ -120,32 +126,58 @@ public class BOXERUpdate extends AbstractAlgorithmModel2Model{
 	 * @throws ParserConfigurationException 
 	 * @throws TransformerException 
 	 * @throws SAXException 
+	 * @throws BoxerXMLException 
 	 */
-	public static void main(String[] args) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+	public static void main(String[] args) throws IOException, ParserConfigurationException, TransformerException, SAXException, BoxerXMLException {
+		
+        BOXERApply test = new BOXERApply();
         
         Model m = ModelFactory.createDefaultModel();
         FileInputStream file = new FileInputStream("c:\\integration\\RDFXMLresults.rdf");
         m.read(file,"");
         file.close();
+        
+        test.createRCVDoc(m);
+        test.createQRELDoc(m);
+        
+        test.rcv_file = new File(test.RCV_FILENAME);
+        test.qrel_file = new File(test.QREL_FILENAME);
+        
+        FileWriter rcv_fw = new FileWriter(test.rcv_file);
+        
+        rcv_fw.write(BOXERTrain.XMLtoString(test.rcv_doc));
+        
+        rcv_fw.close();
+        
+        String[] driver_args = {"read:"+"/blackbook-2.7/"+test.LEARNER_COMPLEX_FILENAME,
+        						"read-labels:"+"/blackbook-2.7/"+test.QREL_FILENAME,
+       		 				 	"test:"+"/blackbook-2.7/"+test.RCV_FILENAME,
+       		 				 	"write:complex2.xml"};
+        
+        Driver.main(driver_args);
 
 	}
 
 	public Model executeAlgorithm(User user, Model model)
 			throws BlackbookSystemException {
 		// TODO Auto-generated method stub
-        try {
+		try {
 			createRCVDoc(model);
-			rcv_file = new File(RCV_FILENAME);   
+			createQRELDoc(model);
+	        
+	        rcv_file = new File(RCV_FILENAME);
+	        qrel_file = new File(QREL_FILENAME);
+	        
 	        FileWriter rcv_fw = new FileWriter(rcv_file);
 	        
-	        rcv_fw.write(XMLtoRDF2.convertToString(rcv_doc));
+	        rcv_fw.write(BOXERTrain.XMLtoString(rcv_doc));
 	        
 	        rcv_fw.close();
 	        
-	        String[] driver_args = {"read:"+LEARNER_COMPLEX_FILENAME,
-	        						"read-labels:"+QREL_FILENAME,
-	       		 				 	"train:"+RCV_FILENAME,
-	       		 				 	"write:complex3.xml"};
+	        String[] driver_args = {"read:/blackbook-2.7/"+LEARNER_COMPLEX_FILENAME,
+	        						"read-labels:/blackbook-2.7/"+QREL_FILENAME,
+	       		 				 	"test:/blackbook-2.7/"+RCV_FILENAME,
+	       		 				 	"write:/blackbook-2.7/complex2.xml"};
 	        
 	        Driver.main(driver_args);
 		} catch (ParserConfigurationException e) {
@@ -163,7 +195,8 @@ public class BOXERUpdate extends AbstractAlgorithmModel2Model{
 		} catch (BoxerXMLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
+        
         return ModelFactory.createDefaultModel();
 	}
 
