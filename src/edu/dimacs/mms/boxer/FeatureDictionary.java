@@ -63,9 +63,10 @@ public class FeatureDictionary {
 
      This method must be synchronized to prevent double insertion
 
-     @param label The feature label (name)
+     @param label The feature label (name). Should be non-null
     */
     synchronized public int getIdAlways(String label) throws BoxerXMLException {
+	if (label==null) throw new IllegalArgumentException("label=null");
 	Integer x = label2id.get(label);
 	if (x != null) return x.intValue();
 	if (!IDValidation.validateFeatureName(label)) {

@@ -185,7 +185,7 @@ public abstract class PLRMLearner extends Learner {
 		    Vector<BetaMatrix.Coef> v = new Vector<BetaMatrix.Coef>(pairs.length);
 		    for(String p: pairs) {
 			if (p.length()==0) continue;
-			String q[] = p.split(":");
+			String q[] = p.split(BXRReader.PAIR_SEPARATOR_REGEX);
 			if (q.length!=2) throw new IllegalArgumentException("While reading matrix row element for feature '"+feature+"', could not parse element '"+p+"' as class:value!");
 			Discrimination.Cla c = dis.getCla(q[0]);
 			if (c==null)  throw new IllegalArgumentException("While reading matrix row element for feature '"+feature+"', found previously undeclared class name: " + q[0]);

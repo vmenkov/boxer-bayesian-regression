@@ -92,7 +92,8 @@ public abstract class Matrix implements Measurable {
 	    for(int j=0; j<v[i].length; j++) {
 		if (v[i][j] != 0) {
 		    if (b.length()>0) b.append(" ");
-		    b.append( dis.classes.elementAt(j).name + ":" + v[i][j]);
+		    b.append( dis.classes.elementAt(j).name + 
+			      BXRReader.PAIR_SEPARATOR_STRING + v[i][j]);
 		}
 	    }
 	    re.appendChild(xmldoc.createTextNode(b.toString()));
