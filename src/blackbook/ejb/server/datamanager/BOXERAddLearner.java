@@ -39,6 +39,11 @@ import edu.dimacs.mms.tokenizer.XMLtoRDF2;
  * throw an exception!
  */
 public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
+	
+	private static final String DESCRIPTION = "Add a learner to a previously-existing learner complex.";
+
+    private static final String LABEL = "BOXER Add Learner";
+    
 
 	/* For testing purposes ONLY */
 	public static void main (String[] args) throws IOException, SAXException, ParserConfigurationException, TransformerException, BlackbookSystemException {
@@ -129,6 +134,20 @@ public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
 		return e.getTagName();
 	}
 	
-	
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
 	
 }

@@ -51,6 +51,11 @@ import edu.dimacs.mms.tokenizer.XMLtoRDF2;
  *
  */
 public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
+	
+	private static final String DESCRIPTION = "Makes the parameters dumb model based on the text input.";
+
+    private static final String LABEL = "BOXER Make Parameters";
+    
 
 	/**
 	 * 
@@ -168,6 +173,20 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
 			System.out.println(strings[i]);
 	}
 
-	
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
 	
 }

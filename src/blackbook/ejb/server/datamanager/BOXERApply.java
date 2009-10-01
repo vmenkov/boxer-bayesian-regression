@@ -38,6 +38,11 @@ import edu.dimacs.mms.boxer.Suite;
 import edu.dimacs.mms.tokenizer.RDFtoXML2;
 
 public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
+	
+	private static final String DESCRIPTION = "Apply a learner complex to a set of documents.";
+
+    private static final String LABEL = "BOXER Apply";
+    
 
 	/* For testing purposes ONLY */
 	public static void main (String[] args) throws BlackbookSystemException {
@@ -302,6 +307,22 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
    	 	}
    	 	
    	 	return map;
+    }
+    
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
     }
     
 }

@@ -38,6 +38,11 @@ import edu.dimacs.mms.tokenizer.RDFNames;
 import edu.dimacs.mms.tokenizer.XMLtoRDF2;
 
 public class BOXERMakeTrainingSet extends AbstractAlgorithmMultiModel2Model {
+	
+	private static final String DESCRIPTION = "Given parameters and documents, constructs a BOXER training set as a dumb model.";
+
+    private static final String LABEL = "BOXER Make Training Set";
+    
 
 	public static void main (String[] args) {
 		String dir = "C://Users//praff//Desktop//2009-2010//BOXER//examples//";
@@ -371,5 +376,21 @@ public class BOXERMakeTrainingSet extends AbstractAlgorithmMultiModel2Model {
 		
 		return m_trainingset;
 	}
+	
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
 
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
+    
 }

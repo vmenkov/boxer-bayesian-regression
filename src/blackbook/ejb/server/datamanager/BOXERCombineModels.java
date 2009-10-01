@@ -25,6 +25,11 @@ import edu.dimacs.mms.tokenizer.XMLtoRDF2;
  *
  */
 public class BOXERCombineModels extends AbstractAlgorithmMultiModel2Model {
+	
+	private static final String DESCRIPTION = "Simple method to combine two XML documents into one, as dumb models.";
+
+    private static final String LABEL = "BOXER Combine Models";
+    
 
 	/**
 	 * 
@@ -66,5 +71,21 @@ public class BOXERCombineModels extends AbstractAlgorithmMultiModel2Model {
 		return m;
 
 	}
+	
+	 /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    /**
+     * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getLabel()
+     */
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
 
 }
