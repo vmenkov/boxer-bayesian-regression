@@ -1,27 +1,24 @@
 package blackbook.ejb.server.datamanager;
 
-/**
- * Hidden class containing terms that are used in a general sense, so any changes
- * desired for these terms should be made here and here only.
- * @author praff
- *
+/** 
+ * A general exception that signifies that something is wrong
+ * with anything that involves the code between BOXER and blackbook.
  */
-public class BOXERTerms {
-	
-	/* Tag name for a dataset template, used to hold parameters */
-	public static final String DATASET_TEMPLATE = "datasettemplate";
-	
-	/* Tag name for "combined" */
-	public static final String COMBINED = "combined";
-	
-	/* Looks for any non-nil amount of whitespace, where only
-	 * spaces and tabs are whitespace.
-	 */
-	public static final String SPLIT_REGEX = "[ \t]+";
-	
-	public static final String TEST_DIR = "C:\\Users\\praff\\Desktop\\2009-2010\\BOXER\\examples\\";
+public class BOXERBlackbookException extends Exception {
 
-}
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8567031996543237977L;
+
+	/**
+	 * The exception
+	 * @param msg	The message with the exception.
+	 */
+	BOXERBlackbookException(String msg) {
+    	super(msg);
+    }
+} 
 
 /*
 Copyright 2009, Rutgers University, New Brunswick, NJ.

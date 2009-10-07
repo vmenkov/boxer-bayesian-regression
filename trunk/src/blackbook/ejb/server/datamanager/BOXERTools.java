@@ -9,6 +9,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Random;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,6 +29,8 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import blackbook.ejb.server.metadata.MetadataManager;
+
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -32,7 +38,6 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.shared.JenaException;
 
 import edu.dimacs.mms.boxer.ParseXML;
 import edu.dimacs.mms.tokenizer.RDFNames;
@@ -45,14 +50,41 @@ import edu.dimacs.mms.tokenizer.RDFNames;
 public class BOXERTools {
 	
 	/* For testing purposes ONLY */
-	public static void main (String[] args) {
+	public static void main (String[] args) throws Exception {
+		Model m_complex = readFileToModel(BOXERTerms.TEST_DIR + "blackbook-complex-workflow1.rdf");
+		StmtIterator statements = m_complex.listStatements();
+		int count = 0;
+		while (statements.hasNext()) {
+			count++;
+			Statement s = (Statement) statements.next();
+			if (s.isReified())
+				System.out.print("(REIFIED) ");
+			System.out.println(s.toString());
+		}
+		System.out.println(count + " statements");
+		Document d_complex = null;
+		try {
+			d_complex = convertToXML(m_complex);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.print(convertToFlatString(d_complex));
+		
+		MetadataManager m = new MetadataManager();
+		Set<String> datasources = m.getQueryableDataSourceNames();
+		
+		for (String d : datasources) {
+			System.out.println(d);
+		}
+
 
 	}
 
 	/** Gives a string representation of the input XML Document.
 	 * 
-	 * @param doc
-	 * @return
+	 * @param 	doc	The DOM Document
+	 * @return	A string representation of this Document in XML syntax. Newlines and tabs are used.
 	 * @throws TransformerException
 	 */
 	public static String convertToString(Document doc) throws TransformerException {
@@ -76,8 +108,8 @@ public class BOXERTools {
 	
 	/**
 	 * Just like {@link convertToString} but it returns it as a flat string with no newlines.
-	 * @param doc
-	 * @return
+	 * @param 	doc	The DOM Document to convert
+	 * @return	A string representation in a "flat" format - i.e. no newlines.
 	 * @throws TransformerException
 	 */
 	
@@ -102,14 +134,21 @@ public class BOXERTools {
 	
     /**
      * This method is only to be used after a Document was converted
-     * via XMLToRDF2.convertToRDF. This method assumes there is only 
-     * one statement in the model, and the text content of the object
-     * of this one statement will be returned. Exceptions will be thrown
-     * if there are multiple statements in the model or the object
-     * of the one statement is not a Literal.
-     * @throws Exception 
+     * via {@link convertToRDF}. Since blackbook reifies statements in models
+     * that are ingested/stored, this method works in a very specific manner:
+     * <ol>
+     * <li>First, it looks for a reified statement. If it finds one, it assumes
+     * it's the one and returns the text content of the Literal of that statement.</li>
+     * <li>If no reified statements exist, then it takes the first statement and again
+     * returns the text content of the Literal of that statement.
+     * </ol>
+     * Note that this method will have unknown results if the model contains 
+     * multiple reified statements.
+     * @throws BOXERBlackbookException if the method finds a reified statement with a
+     * non-literal object, or if the model contains no reified statements but more
+     * than one statement.
      */
-	public static Document convertToXML(Model m) throws JenaException {
+	public static Document convertToXML(Model m) throws BOXERBlackbookException {
 
 		/* If we did this appropriately, then there should only be
 		 * one statement in the model. So we don't really care 
@@ -119,38 +158,92 @@ public class BOXERTools {
 
 		/* We simply take the first statement */
 		/* TODO: Throw an exception if there are multiple statements? */
+		/* FIX 10/2/2009: blackbook modifies with reified statements.
+		 * As a result, we should only look at the statements that are REIFIED */
+		 
 		StmtIterator iter = m.listStatements();
 		
-		if (iter.hasNext()) {
-			doc_string = ((Statement) iter.next()).getLiteral().getString();
-			StringReader sr = new StringReader(doc_string);
-			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-			Document doc = null;
-	        try {
-				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-				doc = docBuilder.parse(new InputSource(sr));			
-			} catch (ParserConfigurationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (SAXException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		while (iter.hasNext()) {
+			Statement s = (Statement) iter.next();
+			if (s.isReified()) {
+				if (s.getObject().isLiteral()) {
+					doc_string = s.getLiteral().getString();
+				}
+				else {
+					throw new BOXERBlackbookException("Model contains a reified statement with a non-Literal Object");
+				}
+				StringReader sr = new StringReader(doc_string);
+				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+				Document doc = null;
+				try {
+					DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+					doc = docBuilder.parse(new InputSource(sr));			
+				} catch (ParserConfigurationException e) {
+					// 	TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SAXException e) {
+					// 	TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+				return doc;
 			}
-			if (iter.hasNext()) {
-				throw new JenaException("Model has too many statements!");
-			}
-			return doc;
-		}
-		else {
-			return null;
 		}
 		
+		/* Now we do it over again, in case nothing is reified. 
+		 * In this case, we expect only one statement!
+		 */
+		iter = m.listStatements();
+		
+		if (iter.hasNext()) {
+			Statement s = (Statement) iter.next();
+			if (s.getObject().isLiteral()) {
+				doc_string = s.getLiteral().getString();
+				StringReader sr = new StringReader(doc_string);
+				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+				Document doc = null;
+				try {
+					DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+					doc = docBuilder.parse(new InputSource(sr));			
+				} catch (ParserConfigurationException e) {
+					// 	TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SAXException e) {
+					// 	TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+				if (iter.hasNext()) {
+					throw new BOXERBlackbookException("Model has too many (>1) statements!");
+				}
+				else {
+					return doc;
+				}
+			}
+			else {
+				throw new BOXERBlackbookException("Model has statement without literal");
+			}
+		}
+		else {
+			throw new BOXERBlackbookException("No statements in model!");
+		}
 		
 	}
 	
+	/**
+	 * Takes in a file path which contains XML, and reads it into a DOM Document.
+	 * @param 	filename	The file path
+	 * @return	The DOM Document that represents the file.
+	 * @throws 	IOException
+	 * @throws 	ParserConfigurationException
+	 * @throws 	SAXException
+	 */
 	public static Document readFileToDocument(String filename) throws IOException, ParserConfigurationException, SAXException {
 		File f = new File(filename);
 		
@@ -214,9 +307,9 @@ public class BOXERTools {
 	
 	/** This method takes in string and holds that string as a literal in a one-statement model.
 	 * Usually we don't care what the URI is of the resource or the property . . . 
-	 * @param keyword
-	 * @param root_name
-	 * @return
+	 * @param 	keyword		The text information that will be kept in the Literal of the one-statement model.
+	 * @param 	root_name	The desired third part of the URI of the resource of the returned model.
+	 * @return	A one-statement model holding the desired information.
 	 */
 	public static Model createDumbModel(String keyword, String root_name) {
 		Model m_model = ModelFactory.createDefaultModel();
@@ -226,6 +319,12 @@ public class BOXERTools {
 		return m_model;
 	}
 	
+	/**
+	 * A specialization that stores the whole Document as text and uses the root tagname.
+	 * @param 	The DOM Document to be stored.
+	 * @return	A one-statement model containing the Document in text form.
+	 * @throws TransformerException
+	 */
 	public static Model createDumbModel(Document d) throws TransformerException {
 		return createDumbModel(convertToString(d),getDocumentElementName(d));
 	}
@@ -233,8 +332,8 @@ public class BOXERTools {
 	/** Retrieves the value of the name attribute of the root element, if it exists. 
 	 * Otherwise, it returns the tagname of the root element.
 	 * 
-	 * @param doc
-	 * @return
+	 * @param 	doc	The DOM Document
+	 * @return	The name attribute of the root element, if it exists. If not, the empty string.
 	 */
     public static String getDocumentElementName(Document doc) {
     	String name = doc.getDocumentElement().getAttribute(ParseXML.ATTR.NAME_ATTR);
@@ -246,6 +345,12 @@ public class BOXERTools {
     	}
     }
     
+    /**
+     * Convenience method to save the model in a file specified.
+     * @param 	m			The Jena model to be saved.
+     * @param 	filename	The file path to save the file.
+     * @throws	IOExcecption if Java is unable to write to the file specified.
+     */
     public static void saveModelAsFile(Model m, String filename) {
     	try {
 			FileWriter fw = new FileWriter(new File(filename));
@@ -256,6 +361,13 @@ public class BOXERTools {
 		}
     }
     
+    /**
+     * Convenience method to save the Document in a file specified.
+     * @param doc		The DOM Document that will be stored.
+     * @param filename	The file path of where the DOM Document will be stored.
+     * @throws TransformerException
+     * @throws IOException
+     */
 	public static void saveDocumentAsFile(Document doc, String filename) throws TransformerException, IOException {
 		TransformerFactory transfac = TransformerFactory.newInstance();
 						
@@ -275,6 +387,11 @@ public class BOXERTools {
 		trans.transform(source, result);
 	}
     
+	/**
+	 * Convenience method to input a filename and attempt to read the model in.
+	 * @param 	filename	The file path containing the RDF.
+	 * @return	The Jena model consisting of statements in the file.
+	 */
     public static Model readFileToModel(String filename) {
     	Model m = ModelFactory.createDefaultModel();
     	try {
@@ -287,6 +404,12 @@ public class BOXERTools {
 		return m;
     }
     
+    /**
+     * Convenience method to read in the text content of a file.
+     * @param 	filename	The path of the file.
+     * @return	The string content of the file.
+     * @throws IOException
+     */
     public static String readFileToString(String filename) throws IOException {
     	BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
 		
@@ -302,5 +425,64 @@ public class BOXERTools {
 		
 		return sb.toString();
     }
+    
+    /**
+     * Returns a random alpha-numeric string of the specified length. The string
+     * will only contain characters in [0-9A-Za-z].
+     * @param 	len	The length desired.
+     * @return	A random string of length len.
+     */
+    public static String getRandomString(int len) {
+    	Random ra = new Random();
+    	String name = "";
+    	for (int i=0; i<len; i++) {
+    		int num = ra.nextInt(62);
+    		/* Will be an integer */
+    		if (0 <= num && num <= 9)
+    			name += (char)(num+48);
+    		/* Will be an uppercase letter */
+    		else if (10 <= num && num <= 35)
+    			name += (char)(num+55);
+    		/* Will be a lowercase letter */
+    		else 
+    			name += (char)(num + 61);
+    	}
+    	return name;
+    }
+    
+    
+    /**
+     * Returns the current timestamp of the form <i>yyyy MM dd HH mm ss</i>, where the terms
+     * are years, months, day, hours, minutes, and seconds, respectively.
+     * @return	The timestamp
+     */
+    public static String getTimestamp() {
+		Calendar cal = Calendar.getInstance();
+	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd HH mm ss");
+	    return sdf.format(cal.getTime());
+	    
+    }
 	
 }
+
+/*
+Copyright 2009, Rutgers University, New Brunswick, NJ.
+
+All Rights Reserved
+
+Permission to use, copy, and modify this software and its documentation for any purpose 
+other than its incorporation into a commercial product is hereby granted without fee, 
+provided that the above copyright notice appears in all copies and that both that 
+copyright notice and this permission notice appear in supporting documentation, and that 
+the names of Rutgers University, DIMACS, and the authors not be used in advertising or 
+publicity pertaining to distribution of the software without specific, written prior 
+permission.
+
+RUTGERS UNIVERSITY, DIMACS, AND THE AUTHORS DISCLAIM ALL WARRANTIES WITH REGARD TO 
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ANY PARTICULAR PURPOSE. IN NO EVENT SHALL RUTGERS UNIVERSITY, DIMACS, OR THE AUTHORS 
+BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
+PERFORMANCE OF THIS SOFTWARE.
+*/

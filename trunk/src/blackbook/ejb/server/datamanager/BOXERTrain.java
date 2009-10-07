@@ -23,6 +23,11 @@ import edu.dimacs.mms.boxer.Learner;
 import edu.dimacs.mms.boxer.ParseXML;
 import edu.dimacs.mms.boxer.Suite;
 
+/**
+ * Workflow algorithm that mimicks the functionality of training documents to a learner complex.
+ * @author praff
+ *
+ */
 public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
 	
 	private static final String DESCRIPTION = "Given a learner complex and documents, it trains and updates the learner complex.";
@@ -36,7 +41,7 @@ public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
 	private static final long serialVersionUID = -6421206163445155471L;
 
 	/* For testing purposes ONLY */
-	public static void main (String[] args) throws BlackbookSystemException, TransformerException, IOException {
+	public static void main (String[] args) throws BOXERBlackbookException, BlackbookSystemException, TransformerException, IOException {
 		Model m_complex = BOXERTools.readFileToModel(BOXERTerms.TEST_DIR + "monterey-complex-after-train.rdf");
 		Model m_trainset = BOXERTools.readFileToModel(BOXERTerms.TEST_DIR + "monterey-trainset.rdf");
 		
@@ -49,17 +54,28 @@ public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
 		BOXERTools.saveDocumentAsFile(d, BOXERTerms.TEST_DIR + "monterey-complex-after-train.xml");
 	}
 
-	/* We follow borj.Driver() - we first read in the learner complex,
+	/** 
+	 * We follow borj.Driver() - we first read in the learner complex,
 	 * then we train on the documents. 
 	 * The two are stored in a dumb manner, and can be retrieved easily. 
-	 * (non-Javadoc)
-	 * @see blackbook.ejb.client.datamanager.AlgorithmMultiModel2Model#executeAlgorithm(security.ejb.client.User, com.hp.hpl.jena.rdf.model.Model, com.hp.hpl.jena.rdf.model.Model)
+	 * @param	user				The user
+	 * @param	m_learnercomplex 	The dumb model containing the learner complex
+	 * @param	m_trainingset		The dumb model containing the trainingset
+	 * @return	A dumb model containing the updated learner complex.
 	 */
 	public Model executeAlgorithm(User user, Model m_learnercomplex, Model m_trainingset)
 			throws BlackbookSystemException {
 		
-		Document d_learnercomplex = BOXERTools.convertToXML(m_learnercomplex);
-		Document d_trainingset = BOXERTools.convertToXML(m_trainingset);
+		Document d_learnercomplex = null;
+		Document d_trainingset = null;
+
+		try {
+			d_learnercomplex = BOXERTools.convertToXML(m_learnercomplex);
+			d_trainingset = BOXERTools.convertToXML(m_trainingset);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		/* We read in the learner complex */
 		try {
@@ -111,7 +127,7 @@ public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
 			
 			/* Now we have the entire model in Document form. Perfect for XMLtoRDF! */
 			MetadataManager meta = new MetadataManager();
-			String DSname = "BOXER " + BOXERTools.getDocumentElementName(d_new_learnercomplex) + getTimestamp();
+			String DSname = "BOXER " + BOXERTools.getDocumentElementName(d_new_learnercomplex) + BOXERTools.getTimestamp();
 			meta.createNewAssertionsDS(DSname);
 			
 			/* Don't just create it, PERSIST it! */
@@ -151,14 +167,6 @@ public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
     	System.out.println("[MEMORY]"+s+" max=" + mmem + ", total=" + tmem +
     			   ", free=" + fmem + ", used=" + used);	
     }
-    
-    
-    public static String getTimestamp() {
-		Calendar cal = Calendar.getInstance();
-	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd HH mm ss");
-	    return sdf.format(cal.getTime());
-	    
-    }
 
 	 /**
      * @see blackbook.ejb.server.datamanager.AbstractAlgorithmImpl#getDescription()
@@ -177,3 +185,25 @@ public class BOXERTrain extends AbstractAlgorithmMultiModel2Model {
     }
     
 }
+
+/*
+Copyright 2009, Rutgers University, New Brunswick, NJ.
+
+All Rights Reserved
+
+Permission to use, copy, and modify this software and its documentation for any purpose 
+other than its incorporation into a commercial product is hereby granted without fee, 
+provided that the above copyright notice appears in all copies and that both that 
+copyright notice and this permission notice appear in supporting documentation, and that 
+the names of Rutgers University, DIMACS, and the authors not be used in advertising or 
+publicity pertaining to distribution of the software without specific, written prior 
+permission.
+
+RUTGERS UNIVERSITY, DIMACS, AND THE AUTHORS DISCLAIM ALL WARRANTIES WITH REGARD TO 
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ANY PARTICULAR PURPOSE. IN NO EVENT SHALL RUTGERS UNIVERSITY, DIMACS, OR THE AUTHORS 
+BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
+PERFORMANCE OF THIS SOFTWARE.
+*/

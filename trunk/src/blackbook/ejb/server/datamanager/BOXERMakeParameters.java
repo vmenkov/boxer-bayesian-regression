@@ -2,6 +2,7 @@ package blackbook.ejb.server.datamanager;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
@@ -63,7 +64,7 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
 	private static final long serialVersionUID = 7926225108124552613L;
 
 	/* For testing purposes only */
-	public static void main (String[] args) throws BlackbookSystemException, TransformerException {
+	public static void main (String[] args) throws Exception {
 		String tester = "monterey_set features incidentDescription labels AGRO STAT_TGT_AGRO BUS STAT_TGT_BUS";
 		BOXERMakeParameters test = new BOXERMakeParameters();
 		Model m = test.executeAlgorithm(null,null,tester);
@@ -71,7 +72,20 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
 		System.out.print(BOXERTools.convertToString(d));
 	}
 	
-	public static Document getParametersDocument(String keyword)
+	/**
+	 * Turns the keyword into a parameters Document as described above.
+	 * @param 	keyword	The keyword in the format described above.
+	 * @return	The DOM Document representing this information that will be used later.
+	 * @throws BlackbookSystemException	If any of the following happens:
+	 * <ul>
+	 * <li>Not enough terms (needs at least six)</li>
+	 * <li>Second word is not "features"</li>
+	 * <li>No word between "features" and "labels"</li>
+	 * <li>No word named "labels"</li>
+	 * <li>An odd number of words after "labels"</li>
+	 * </ul>
+	 */
+	static Document getParametersDocument(String keyword)
 			throws BlackbookSystemException {
 		String[] words = parseKeyword(keyword);
 		int words_len = words.length;
@@ -84,7 +98,7 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
 		try {
 			/* First - sanity check. */
 			if (words_len < 6) {
-				throw new Exception();
+				throw new BOXERBlackbookException("Not enough words to create a parameters file");
 			}
 			/* Now, the first one will be the name */
 			docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -109,9 +123,9 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
 			}
 			else {
 				if (!words[1].equals(ParseXML.NODE.FEATURES))
-					throw new Exception("The second term must be " + ParseXML.NODE.FEATURES);
+					throw new BOXERBlackbookException("The second term must be " + ParseXML.NODE.FEATURES);
 				if (words[2].equals(ParseXML.NODE.LABELS))
-					throw new Exception("Nothing specified after " + ParseXML.NODE.FEATURES);
+					throw new BOXERBlackbookException("Nothing specified after " + ParseXML.NODE.FEATURES);
 			}
 			
 			/* Now we should be seeing the labels tagname, followed by pairs */
@@ -130,32 +144,42 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
 			}
 			else {
 				if (i >= words_len-1)
-					throw new Exception("Reached end of string without seeing " + ParseXML.NODE.LABELS);
+					throw new BOXERBlackbookException("Reached end of string without seeing " + ParseXML.NODE.LABELS);
 				if (!words[i].equals(ParseXML.NODE.LABELS))
-					throw new Exception("Expected, but did not get, " + ParseXML.NODE.LABELS);
+					throw new BOXERBlackbookException("Expected, but did not get, " + ParseXML.NODE.LABELS);
 				if ((words_len-i-1)%2==1)
-					throw new Exception("Strings must be in pairs after " + ParseXML.NODE.LABELS);
+					throw new BOXERBlackbookException("Strings must be in pairs after " + ParseXML.NODE.LABELS);
 			}
 			//finalmodel = XMLtoRDF2.convertToRDF(doc);
 			
 			//System.out.print(XMLtoRDF2.convertToString(doc));
-		}
-		catch (Exception e) {
-			System.out.println(e.getMessage());
+		} catch (BOXERBlackbookException e) {
+			throw new BlackbookSystemException("[BOXERBlackbookException] " + e.getMessage());
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		return doc;
 	}
 	
-	public Model executeAlgorithm(User user, String dataSource, String keyword) {
+	/**
+	 * Turns the parameter inputs in the keyword field into a dumb model containing the
+	 * DOM Document that holds all the necessary information.
+	 * @param	user		The user
+	 * @param	dataSource	The datasource (ignored)
+	 * @param	keyword		The keyword containing the parameters.
+	 * @return	A dumb model containing a DOM Document containing information
+	 * 			about the parameters.
+	 */
+	public Model executeAlgorithm(User user, String dataSource, String keyword) throws BlackbookSystemException {
 		Document doc = null;
 		Model m = null;
+		
+		doc = getParametersDocument(keyword);
+
 		try {
-			doc = getParametersDocument(keyword);
 			m = XMLtoRDF2.convertToRDF(doc);
-		} catch (BlackbookSystemException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (TransformerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -190,3 +214,25 @@ public class BOXERMakeParameters extends AbstractAlgorithmKeyword2Model {
     }
 	
 }
+
+/*
+Copyright 2009, Rutgers University, New Brunswick, NJ.
+
+All Rights Reserved
+
+Permission to use, copy, and modify this software and its documentation for any purpose 
+other than its incorporation into a commercial product is hereby granted without fee, 
+provided that the above copyright notice appears in all copies and that both that 
+copyright notice and this permission notice appear in supporting documentation, and that 
+the names of Rutgers University, DIMACS, and the authors not be used in advertising or 
+publicity pertaining to distribution of the software without specific, written prior 
+permission.
+
+RUTGERS UNIVERSITY, DIMACS, AND THE AUTHORS DISCLAIM ALL WARRANTIES WITH REGARD TO 
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ANY PARTICULAR PURPOSE. IN NO EVENT SHALL RUTGERS UNIVERSITY, DIMACS, OR THE AUTHORS 
+BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
+PERFORMANCE OF THIS SOFTWARE.
+*/
