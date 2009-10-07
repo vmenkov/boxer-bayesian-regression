@@ -61,18 +61,32 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
 	 */
 	private static final long serialVersionUID = -1275986399236096342L;
 
-	/* We follow borj.Driver() - we first read in the learner complex,
+	/** 
+	 * We follow borj.Driver() - we first read in the learner complex,
 	 * then we test/apply on the documents. 
 	 * The two are stored in a dumb manner, and can be retrieved easily. 
 	 * Then ALL of the results will be stored in an assertions datasource.
-	 * (non-Javadoc)
+	 * @param	user				The user
+	 * @param	m_learnercomplex	The dumb model containing the learner complex
+	 * @param	m_combined			The dumb model containing the combined parameters/test documents
+	 * @return	The assertions datasource containing the assertions made from the learner
+	 * 			complex applied to the test documents. The assertions are also saved
+	 * 			as an assertions datasource.
 	 * @see blackbook.ejb.client.datamanager.AlgorithmMultiModel2Model#executeAlgorithm(security.ejb.client.User, com.hp.hpl.jena.rdf.model.Model, com.hp.hpl.jena.rdf.model.Model)
 	 */
 	public Model executeAlgorithm(User user, Model m_learnercomplex, Model m_combined)
 			throws BlackbookSystemException {
 		
-		Document d_learnercomplex = BOXERTools.convertToXML(m_learnercomplex);
-		Document d_combined = BOXERTools.convertToXML(m_combined);
+		Document d_learnercomplex = null;
+		Document d_combined = null;
+
+		try {
+			d_learnercomplex = BOXERTools.convertToXML(m_learnercomplex);
+			d_combined = BOXERTools.convertToXML(m_combined);
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 		Document d_testset = getTestingDocument(d_combined);
 		Document d_parameters = getParametersDocument(d_combined);
@@ -158,7 +172,7 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
 			
 			/* Now we have the entire model in Document form. Perfect for XMLtoRDF! */
 			MetadataManager meta = new MetadataManager();
-			String DSname = "BOXER Assertions " + getDocumentElementName(d_testset) + getTimestamp();
+			String DSname = "BOXER Assertions " + BOXERTools.getDocumentElementName(d_testset) + BOXERTools.getTimestamp();
 			meta.createNewAssertionsDS(DSname);
 			
 			/* Don't just create it, PERSIST it! */
@@ -194,29 +208,17 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
     	System.out.println("[MEMORY]"+s+" max=" + mmem + ", total=" + tmem +
     			   ", free=" + fmem + ", used=" + used);	
     }
+   
     
-    public static String getDocumentElementName(Document doc) {
-    	String name = doc.getDocumentElement().getAttribute(ParseXML.ATTR.NAME_ATTR);
-    	if (name.length() == 0) {
-    		return doc.getDocumentElement().getTagName();
-    	}
-    	else {
-    		return name;
-    	}
-    }
-    
-    public static String getTimestamp() {
-		Calendar cal = Calendar.getInstance();
-	    SimpleDateFormat sdf = new SimpleDateFormat("yyyy MM dd HH mm ss");
-	    return sdf.format(cal.getTime());
-	    
-    }
-    
-    /* This method takes in a document and looks at its top-level elements past the root.
+    /**
+     * This method takes in a document and looks at its top-level elements past the root.
      * If one of them matches the tagname we're looking for, then it puts 
-     * that element in its own document and returns it. Otherwise, returns null;
+     * that element in its own document and returns it. Otherwise, returns null.
+     * @param	total	The whole DOM Document
+     * @param	tagname	The tagname that we're looking for
+     * @return 	The DOM Document containing that node and all its descendants, if there. Null otherwise.
      */
-    public Document subDocumentFinder(Document total, String tagname) {
+    private Document subDocumentFinder(Document total, String tagname) {
     	DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = null;
 		Document d_docs = null;
@@ -246,15 +248,31 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
 		return null;
     }
     
-    public Document getTestingDocument(Document total) {
+    /**
+     * Specialized method applying {@link subDocumentFinder}.
+     * @param total	The DOM Document
+     * @return	The document containing the node labeled {@link ParseXML.NODE.DATASET}, if it exists.
+     */
+    private Document getTestingDocument(Document total) {
     	return subDocumentFinder(total,ParseXML.NODE.DATASET);
     }
     
-    public Document getParametersDocument(Document total) {
+    /**
+     * Specialized method applying {@link subDocumentFinder}.
+     * @param total The DOM Document
+     * @return	The document containing the node labeled {@link ParseXML.NODE.DATASET}, if it exists.
+     */
+    private Document getParametersDocument(Document total) {
     	return subDocumentFinder(total,BOXERTerms.DATASET_TEMPLATE);
     }
     
-    public HashMap<String,String> getDiscriminationPropertyMap(Document properties) {
+    /**
+     * Parses the given Document for the property labels, and constructs the appropriate map
+     * that maps discrimination names to their property URIs that determine them. 
+     * @param properties	The document containing the label/property pairings
+     * @return	A {@link java.util.HashMap} containing the discrimination/property map.
+     */
+    private HashMap<String,String> getDiscriminationPropertyMap(Document properties) {
     	String content = "";
     	/* We don't care what the name is of this */
     	Element root = properties.getDocumentElement();
@@ -280,10 +298,19 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
 		return map;
     }
     
-    /** Returns a string listing the scores with
+    /** 
+     * Returns a string listing the scores with
      * annotations. Specially marks scores for the classes to which
      * this data point is known to be assigned according to its
-     * classes array */
+     * classes array.
+     * @param	prob	The class probabilities
+     * @param	suite	The BOXER suite
+     * @param	x		The datapoint involved
+     * @return	The HashMap containing the discrimination/probability map, where mapped to
+     * 			each discrimination is a string formatted like
+     * 			<class1> <prob1> <class2> <prob2> . . . 
+     * 			where <class> is the class name and <prob> is its associated probability.
+     */
     public HashMap<String,String> getDiscriminationProbabilitiesMap(double prob[][], Suite suite, DataPoint x) {
    	 	boolean y[] = x.getY(suite);
    	 	boolean ysec[][] = suite.splitVectorByDiscrimination(y);
@@ -326,3 +353,25 @@ public class BOXERApply extends AbstractAlgorithmMultiModel2Model {
     }
     
 }
+
+/*
+Copyright 2009, Rutgers University, New Brunswick, NJ.
+
+All Rights Reserved
+
+Permission to use, copy, and modify this software and its documentation for any purpose 
+other than its incorporation into a commercial product is hereby granted without fee, 
+provided that the above copyright notice appears in all copies and that both that 
+copyright notice and this permission notice appear in supporting documentation, and that 
+the names of Rutgers University, DIMACS, and the authors not be used in advertising or 
+publicity pertaining to distribution of the software without specific, written prior 
+permission.
+
+RUTGERS UNIVERSITY, DIMACS, AND THE AUTHORS DISCLAIM ALL WARRANTIES WITH REGARD TO 
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ANY PARTICULAR PURPOSE. IN NO EVENT SHALL RUTGERS UNIVERSITY, DIMACS, OR THE AUTHORS 
+BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
+PERFORMANCE OF THIS SOFTWARE.
+*/

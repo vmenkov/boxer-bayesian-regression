@@ -3,20 +3,13 @@
  */
 package blackbook.ejb.server.datamanager;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringReader;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import security.ejb.client.User;
@@ -32,11 +25,13 @@ import edu.dimacs.mms.boxer.XMLUtil;
 import edu.dimacs.mms.tokenizer.RDFtoXML2;
 import edu.dimacs.mms.tokenizer.XMLtoRDF2;
 
-/* This mimics the functionality of the read-learner command,
- * which can be done to suites OR complexes - we look
- * at the root element of the document to check whether it is 
- * a suite or a complex - if it is something else, then we will
- * throw an exception!
+/**
+ * This class mimics the functionality of the "add-learner" command in BORJ,
+ * which adds a new learner to a pre-existing suite OR learner complex.
+ * The output is a dumb model containing a learner complex. We know for sure
+ * that we will have a learner complex since we will have at least one learner.
+ * @author praff
+ *
  */
 public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
 	
@@ -71,6 +66,16 @@ public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
 	 * @see blackbook.ejb.client.datamanager.AlgorithmMultiModel2Model#executeAlgorithm(security.ejb.client.User, com.hp.hpl.jena.rdf.model.Model, com.hp.hpl.jena.rdf.model.Model)
 	 */
 	
+	/**
+	 * Takes in the learner complex and the learner as a dumb model
+	 * and returns the dumb model containing the learner complex with the
+	 * new learner in it.
+	 * @param	user		The user
+	 * @param	m_complex 	The dumb model containing the learner complex
+	 * @param	m_learner	The dumb model containing the new learner
+	 * @return	The dumb model containing the learner complex with the new learner.
+	 *  
+	 */
 	public Model executeAlgorithm(User user, Model m_complex, Model m_learner)
 			throws BlackbookSystemException {
 
@@ -106,7 +111,7 @@ public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
 			}
 			/* Neither a suite nor a learner, so bad! */
 			else {
-				throw new Exception();
+				throw new BOXERBlackbookException("Input data is neither a BOXER suite or a BOXER learner");
 			}
 			final_result = XMLtoRDF2.convertToRDF(suite.serializeLearnerComplex());
 		} catch (JenaException e) {
@@ -121,7 +126,7 @@ public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
 		} catch (TransformerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (Exception e) {
+		} catch (BOXERBlackbookException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
@@ -129,6 +134,12 @@ public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
 		return final_result;
 	}
 	
+	/**
+	 * This convenience method retrieves the name of the root tag element
+	 * in the Document.
+	 * @param doc the DOM Document
+	 * @return
+	 */
 	private static String getRootTagname(Document doc) {
 		Element e = doc.getDocumentElement();
 		return e.getTagName();
@@ -151,3 +162,25 @@ public class BOXERAddLearner extends AbstractAlgorithmMultiModel2Model {
     }
 	
 }
+
+/*
+Copyright 2009, Rutgers University, New Brunswick, NJ.
+
+All Rights Reserved
+
+Permission to use, copy, and modify this software and its documentation for any purpose 
+other than its incorporation into a commercial product is hereby granted without fee, 
+provided that the above copyright notice appears in all copies and that both that 
+copyright notice and this permission notice appear in supporting documentation, and that 
+the names of Rutgers University, DIMACS, and the authors not be used in advertising or 
+publicity pertaining to distribution of the software without specific, written prior 
+permission.
+
+RUTGERS UNIVERSITY, DIMACS, AND THE AUTHORS DISCLAIM ALL WARRANTIES WITH REGARD TO 
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR 
+ANY PARTICULAR PURPOSE. IN NO EVENT SHALL RUTGERS UNIVERSITY, DIMACS, OR THE AUTHORS 
+BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, 
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
+PERFORMANCE OF THIS SOFTWARE.
+*/
