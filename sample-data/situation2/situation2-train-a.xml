@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset name="Situation2_sample_dataset" boxerversion="0.1">
+
+<datapoint name="Saskatoon">
+  <labels>    Canada </labels>
+  <features>saskatchewan^1</features>
+</datapoint>
+<datapoint name="Penticton">
+  <labels>    Canada </labels>
+  <features>bc^1</features>
+</datapoint>
+<datapoint name="Wuhan">
+  <labels>    China </labels>
+  <features>hubei^1 huazhong^1</features>
+</datapoint>
+<datapoint name="Harbin">
+  <labels>    China </labels>
+  <features>heilongjiang^1 dongbei^1</features>
+</datapoint>
+<datapoint name="Yangzhou">
+  <labels>    China </labels>
+  <features>jiangsu^1 huazhong^1</features>
+</datapoint>
+<datapoint name="Whyalla">
+  <labels>    Australia </labels>
+  <features>sa^1</features>
+</datapoint>
+
+</dataset>

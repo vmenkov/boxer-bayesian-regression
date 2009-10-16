@@ -1,0 +1,11 @@
+<!-- This suite has one polytmous discrimination, whose existence
+     will trigger Situation 2, and to which all simple labels
+     will be added -->
+<suite name="minimal_suite_for_simple_label_polytomous_data"
+      SupportsSimpleLabels="Polytomous">
+<discrimination  name="polytomous_discrimination_welcomes_simple_labels" 
+		 defaultclass="Other" 
+		 classstructure="Uncommitted">
+<classes>Other</classes>
+</discrimination>
+</suite>

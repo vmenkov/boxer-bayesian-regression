@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset name="Situation2_sample_dataset" boxerversion="0.1">
+
+<datapoint name="Fairbanks">
+  <labels>    USA </labels>
+  <features>alaska^1 </features>
+</datapoint>
+<datapoint name="Regina">
+  <labels>    Canada </labels>
+  <features>saskatchewan^1</features>
+</datapoint>
+<datapoint name="Nelson">
+  <labels>    Canada </labels>
+  <features>bc^1</features>
+</datapoint>
+<datapoint name="Sanya">
+  <labels>    China </labels>
+  <features>hainan^1 huanan^1</features>
+</datapoint>
+<datapoint name="Dalian">
+  <labels>    China </labels>
+  <features>heilongjiang^1 dongbei^1</features>
+</datapoint>
+<datapoint name="Chicago">
+  <labels>    USA </labels>
+  <features>illinois^1 midwest^1</features>
+</datapoint>
+
+</dataset>
