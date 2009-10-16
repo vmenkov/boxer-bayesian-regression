@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset name="Situation2_sample_dataset" boxerversion="0.1">
+
+<datapoint name="Moose_Jaw">
+  <labels>    Canada </labels>
+  <features>saskatchewan^1</features>
+</datapoint>
+<datapoint name="Kelowna">
+  <labels>    Canada </labels>
+  <features>bc^1</features>
+</datapoint>
+<datapoint name="Fuzhou">
+  <labels>    China </labels>
+  <features>fujian^1 huanan^1</features>
+</datapoint>
+<datapoint name="Mudanjiang">
+  <labels>    China </labels>
+  <features>heilongjiang^1 dongbei^1</features>
+</datapoint>
+<datapoint name="Nanjing">
+  <labels>    China </labels>
+  <features>jiangsu^1 huazhong^1</features>
+</datapoint>
+<datapoint name="Peoria">
+  <labels>    USA  </labels>
+  <features>illinois^1 midwest^1</features>
+</datapoint>
+<datapoint name="Juneau">
+  <labels>    USA  </labels>
+  <features>alaska^1</features>
+</datapoint>
+<datapoint name="Whyalla">
+  <labels>    Australia </labels>
+  <features>sa^1</features>
+</datapoint>
+
+</dataset>
