@@ -19,7 +19,9 @@ public class Scores extends Vector<ScoreEntry[]> {
 	//System.out.println("DEBUG: logLik["+ndis+"]");
     }
 
-    /** ... And it also resizes the logLik arrays */
+    /** Updates the numbers (TP etc) needed to calculate recall and
+     * precision. This method also resizes the logLik arrays if
+     * needed; their content can then be updated separately. */
     public void evalScores(DataPoint x, Suite suite, double[][] prob) {
 
 	// resize as needed

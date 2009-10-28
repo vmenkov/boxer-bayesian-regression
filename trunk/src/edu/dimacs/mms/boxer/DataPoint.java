@@ -639,17 +639,32 @@ public class DataPoint implements Measurable  {
      * each discr. This value can be later used to compute the
      * log-likelyhood, viz.:
 
+     <P>
        To compute it for a discrimination on a test set do this:
 
-       1. For each test example find the probability the model assigns to the single class that is correct for that example.  Take the log base e of that probability.
+       <OL>
+       <li> For each test example find the probability the model assigns to the single class that is correct for that example.  Take the log base e of that probability.
        
-       2. Sum this quantity across the test set.
+       <li> Sum this quantity across the test set.
 
-       3. Divide by number of test examples to get the mean log likelikelihood.
+       <li> Divide by number of test examples to get the mean log likelikelihood.
        
+       </ol>
+
+       <p>
        This is a negative number with maximum value 0.0, so graphs of this value for models trained from nested training sets will show a line more or less climbing toward 0.
 
+       <p>
        This is in some sense the most natural measure of generalization for logistic regression.
+
+       @param probLog - logarithms of proababilities, obtained with
+       some learner's classifier (whose quality we wish to measure)
+
+       @param logLikCnt Array whose elements will be incremented by 1,
+       counting the number of data points for each discrimination
+
+       @param logLik Array to whose elements the logLik contributions
+       (for each discr) will be added
 
     */
     public void addLogLik(double probLog[][], Suite suite, int logLikCnt[], double logLik[]) {
@@ -657,7 +672,9 @@ public class DataPoint implements Measurable  {
 	     Discrimination dis = suite.getDisc(j);
 	     Discrimination.Cla trueC = claForDisc(dis);
 	     if (trueC==null) {
-		 System.out.println("No 'true class' label is stored for dis=" + dis.name + " in data point x="+name);
+		 if (!dis.getName().equals(Suite.SYSDEFAULTS)) {
+		     Logging.warning("No 'true class' label is stored for dis=" + dis.name + " in data point x="+name);
+		 }
 		 continue;
 		 //throw new IllegalArgumentException("No 'true class' label is stored for dis=" + dis.name + " in data point x="+name);
 	     } else {

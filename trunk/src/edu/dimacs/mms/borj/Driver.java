@@ -243,7 +243,7 @@ public class Driver {
 	usage(null);
     }
 
-    static void usage(String m) {
+    static private void usage(String m) {
 	System.out.println("This is the BORJ driver for the BOXER toolkit (version " + Version.version+ ")");
 	System.out.println("Usage: java [options] borj.Driver command:file [command:file] ...");
 	System.out.println("For example:");
