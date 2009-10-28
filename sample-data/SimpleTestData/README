@@ -1,0 +1,33 @@
+This directory contains a 528-example data sample sent by Paul Kantor
+on 2009-09-29
+
+----------------------------------------------------------
+From: paul.kantor@rutgers.edu 
+To: mmsdev, Tong, David, me
+	
+show details Sep 29
+	
+All:
+
+Attached is a sheet with a few hundred data points classed this way:
+
+I set up 3 vectors (1,0,0) and the other two, i generated random
+(uniform) components of vectors. I classified each according to which
+of the unit vectors it had a larger inner product with.
+
+So this is a classification that could be learned easily, and we can ask how the learner converges, what is the effect of eta, etc.
+
+The input to TG is just
+
+Col  value
+
+A    case number
+
+B    class number
+
+C-F components of the feature vector (note that component 4 has no
+effect on classification)
+
+i think you can ignore all the rest.
+
+-paul
