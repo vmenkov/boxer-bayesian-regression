@@ -207,7 +207,9 @@ public class BetaMatrix extends Matrix  {
 	    if (v.size()>0 && v.lastElement().icla >= a.length) {
 		throw new IllegalArgumentException("Adding a short dense vector (length="+a.length+") to a sparse row with higher-numbered columns (" +v.lastElement().icla+ ")");
 	    }
-	    double b[] = Arrays.copyOf(a, a.length);
+	    // error (failing to multiply by q) fixed 2009-10-29
+	    double b[] = new double[a.length];
+	    for(int i=0; i<b.length; i++) b[i] = a[i]*q;
 	    for(Coef c: v) b[c.icla] += c.value;
 	    v.setSize(b.length);
 	    for(int i=0; i<b.length; i++) v.set(i, new Coef(i, b[i]));

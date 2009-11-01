@@ -76,6 +76,9 @@ class Truncation /*implements Cloneable*/ {
 	}
 
 	basicTo = to;
+
+	//System.out.println("Truncation(), new basicTo=" + basicTo);
+
 	K = _K;
 	matrices = _matrices;
 	for(Matrix w: matrices) {
@@ -95,6 +98,7 @@ class Truncation /*implements Cloneable*/ {
     Truncation liveCopy( Matrix[] _matrices) {	
 	applyTruncationToAllRows(); // making sure nothing remains not-yet-applied
 	Truncation trunc = new Truncation(this, _matrices);
+	//System.out.println("Truncation.liveCopy, this.basicTo=" + basicTo);
 	trunc.setT( t );
 	return trunc;
     }
@@ -156,8 +160,11 @@ class Truncation /*implements Cloneable*/ {
 	@param d  feature count
     */
     void requestTruncation(int d) {
+
+	//System.out.println("Requesting truncation, t=" + t);
 	if (mode == MODE.NONE) return;
 	t++;
+	//System.out.println("t:=" + t +", basicTo=" + basicTo);
 	if (t%K != 0) return;
 
 	if (lazy) {
@@ -167,6 +174,11 @@ class Truncation /*implements Cloneable*/ {
 	    for(int i=0; i<truncToApply.length; i++) {
 		truncToApply[i] += basicTo;
 	    }
+	    
+	    //System.out.print("truncToApply=(");
+	    //for(double x :truncToApply) System.out.print(" "+x);
+	    //System.out.println(")");
+
 	}  else  truncateNow();
     }
 
@@ -177,11 +189,13 @@ class Truncation /*implements Cloneable*/ {
 	to score a vector with a non-zero j-th component)
      */
     void applyTruncation(int j) {
+	//System.out.println("call apply Truncation(row "+j+")" + t);
 	if (mode == MODE.NONE) return;
 	if (!lazy) return;
 	if ( truncToApply == null ||  j>=truncToApply.length ) return;
 	double to =  truncToApply[j];
 	if (to==0) return;
+	//System.out.println("to=" + to);
 	truncToApply[j] = 0;
 	for( Matrix _w : matrices) {
 	    if (_w instanceof BetaMatrix) {

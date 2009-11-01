@@ -489,9 +489,9 @@ public class Driver {
 			seLocal.evalScores(x, suite, prob);
 			se[cnt].evalScores(x, suite, prob);
 			x.addLogLik(probLog, suite, 
-				    seLocal.logLikCnt, seLocal.logLik);	
+				    seLocal.likCnt, seLocal.logLik);	
 			x.addLogLik(probLog, suite, 
-				    se[cnt].logLikCnt, se[cnt].logLik);	
+				    se[cnt].likCnt, se[cnt].logLik);	
 
 		    }
 		    if (sw != null) sw.close();
