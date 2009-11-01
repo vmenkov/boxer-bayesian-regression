@@ -8,15 +8,15 @@ import edu.dimacs.mms.boxer.*;
  */
 public class Scores extends Vector<ScoreEntry[]> {
 
-    public double logLik[];
-    public int logLikCnt[];
+    public double[] logLik, linLik;
+    public int likCnt[];
   
     public Scores(Suite suite) {
 	super();	
 	int ndis =suite.disCnt();
 	logLik = new double[suite.disCnt()];
-	logLikCnt = new int[suite.disCnt()];  	    
-	//System.out.println("DEBUG: logLik["+ndis+"]");
+	linLik = new double[suite.disCnt()];
+	likCnt = new int[suite.disCnt()];  	    
     }
 
     /** Updates the numbers (TP etc) needed to calculate recall and
@@ -27,7 +27,8 @@ public class Scores extends Vector<ScoreEntry[]> {
 	// resize as needed
 	int ndis =suite.disCnt();
 	if (logLik.length < ndis) logLik = Arrays.copyOf(logLik, ndis);
-	if (logLikCnt.length < ndis) logLikCnt = Arrays.copyOf(logLikCnt, ndis);
+	if (linLik.length < ndis) linLik = Arrays.copyOf(linLik, ndis);
+	if (likCnt.length < ndis) likCnt = Arrays.copyOf(likCnt, ndis);
 
 	for(int i=0; i<ndis; i++) {
 	    int r = suite.getDisc(i).claCount();
@@ -93,20 +94,45 @@ public class Scores extends Vector<ScoreEntry[]> {
 	return b.toString();
     }
 
-    public String loglikReport( Suite suite, String prefix) {
+    private String likReport1( Suite suite, String prefix, double lik[]) {
 	StringBuffer b = new StringBuffer();
-	for(int j=0;j< logLik.length; j++) {
-	    if (logLikCnt[j]==0) continue; // empty discr
-	    double w = logLik[j]/logLikCnt[j];
+	for(int j=0;j< lik.length; j++) {
+	    if (likCnt[j]==0) continue; // empty discr
+	    double w = lik[j]/likCnt[j];
 	    b.append(prefix+ "[" +suite.getDisc(j).getName()+"] " + w + "\n"); 
 	}
 	return b.toString();
     }
 
+    public String loglikReport( Suite suite, String prefix) {
+	return likReport1(suite, prefix, logLik);
+    }
+
+    public String linlikReport( Suite suite, String prefix) {
+	return likReport1(suite, prefix, linLik);
+    }
+
+    /** Reports log-likelyhoods and linear likelyhood (in this order)
+     * on the same line */
+    public String likReport2( Suite suite, String prefix) {
+	StringBuffer b = new StringBuffer();
+	for(int j=0;j< likCnt.length; j++) {
+	    if (likCnt[j]==0) continue; // empty discr
+	    double wLin = linLik[j]/likCnt[j];
+	    double wLog = logLik[j]/likCnt[j];
+	    b.append(prefix+ "[" +suite.getDisc(j).getName()+"] " + wLog +" "+
+		     wLin + "\n"); 
+	}
+	return b.toString();
+    }
+
+
+
     void deleteDiscr(int delDid) {
 	removeElementAt(delDid);
 	logLik = deleteElement(logLik, delDid);
-	logLikCnt = deleteElement(logLikCnt, delDid);	
+	linLik = deleteElement(linLik, delDid);
+	likCnt = deleteElement(likCnt, delDid);	
     }
 
     /** Removes an element from an array */

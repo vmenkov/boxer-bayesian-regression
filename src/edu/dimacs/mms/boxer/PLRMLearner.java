@@ -203,6 +203,8 @@ public abstract class PLRMLearner extends Learner {
 	    that may be supplied in the learner's description. The
 	    method in PLRMLearner does nothing, but may be overridden
 	    by Learners that have discrimination-specific params.
+
+	    @param a "parameters" XML element
 	*/
 	void parseDSP(Element e) {};
 
@@ -254,7 +256,16 @@ public abstract class PLRMLearner extends Learner {
      */
     final void parseLearner( Element e) throws	org.xml.sax.SAXException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);
-	createAllBlocks(); // ensure all blocks exist
+
+	// First, find and parse the "parameters" tag, if it exists
+	Element pe = findParameters(e);
+	if (pe!=null) {
+	    parseParams(pe); // subclass-defined	    
+	}
+
+	// ensure that all blocks exist, and that they inherit any
+	// applicable "copmmon" parameters (such as commonTrunc)
+	createAllBlocks();
 
 	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
 	    int type = n.getNodeType();
@@ -265,17 +276,7 @@ public abstract class PLRMLearner extends Learner {
 		Element ce = (Element)n;
 		String name = n.getNodeName();
 		if (name.equals( PARAMETERS)) {
-		    parseParams(ce); // subclass-defined
-		    //System.out.println("[DEBUG]: done learner's parseParams");
- 
-		    // make sure that the common params influence each block,
-		    // even if no "parameters" elements for the blocks will
-		    // be specified
-		    for(LearnerBlock block: blocks) {
-			((PLRMLearnerBlock)block).parseDSP((Element)null);
-		    }
-		    
-
+		    // parsed already
 		} else if (name.equals(XMLUtil.CLASSIFIER)) {
 		    String disName = XMLUtil.getAttributeOrException(ce,XMLUtil.DISCRIMINATION);
 		    Discrimination dis = suite.getDisc(disName);
@@ -290,6 +291,23 @@ public abstract class PLRMLearner extends Learner {
 		}		
 	    }
 	}
+    }
+
+
+    /** Finds the "parameters" element enclosed into the given "learner" element
+	@param e A "learner" XML element
+	@return A "parameters" element, or null if none is found
+     */
+    private Element findParameters( Element e) throws org.xml.sax.SAXException {
+	XMLUtil.assertName(e, XMLUtil.LEARNER);
+
+	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+	    if (n.getNodeType() == Node.ELEMENT_NODE) {
+		Element ce = (Element)n;		
+		if (n.getNodeName().equals( PARAMETERS)) return ce;
+	    }
+	}
+	return null;
     }
 
 

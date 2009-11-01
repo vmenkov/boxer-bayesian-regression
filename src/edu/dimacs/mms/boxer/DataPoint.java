@@ -668,6 +668,12 @@ public class DataPoint implements Measurable  {
 
     */
     public void addLogLik(double probLog[][], Suite suite, int logLikCnt[], double logLik[]) {
+	addLogLinLik(probLog, null, suite, logLikCnt, logLik, null);
+    }
+
+    public void addLogLinLik(double probLog[][], double prob[][],
+			  Suite suite, int likCnt[], 
+			  double logLik[], double linLik[]) {
 	 for(int j=0;j<probLog.length; j++) {
 	     Discrimination dis = suite.getDisc(j);
 	     Discrimination.Cla trueC = claForDisc(dis);
@@ -678,12 +684,14 @@ public class DataPoint implements Measurable  {
 		 continue;
 		 //throw new IllegalArgumentException("No 'true class' label is stored for dis=" + dis.name + " in data point x="+name);
 	     } else {
-		 logLikCnt[j]++;
+		 likCnt[j]++;
 		 int trueCPos = trueC.getPos();
-		 logLik[j] += probLog[j][ trueCPos];
+		 if (probLog != null) 	 logLik[j] += probLog[j][ trueCPos];
+		 if (prob != null)       linLik[j] += prob[j][ trueCPos];
 	     }
 	 }
      }
+
     
     /** Returns a string listing the scores with
       * annotations. Specially marks scores for the classes to which

@@ -39,10 +39,13 @@ public class TruncatedGradient extends PLRMLearner {
 	TruncatedGradientLearnerBlock(Discrimination _dis, TruncatedGradientLearnerBlock b) {
 	    // synch any not-yet-applied truncation in b's matrix
 	    if (b!=null) b.trunc.applyTruncationToAllRows(); 
+
+	    if (Suite.verbosity>1) System.out.println("Creating TG block, based on " + (b==null ? "null" : "a non-null block" ));
+
 	    // copy params
 	    dis = _dis;
 	    if (b==null) {
-		trunc = new Truncation( commonTrunc, new Matrix[]{w});		
+		trunc = new Truncation( commonTrunc, new Matrix[]{w});
 	    } else {
 		// copy b's matrices etc
 		//System.out.println("TGLB( b=" + b+")");
@@ -65,9 +68,14 @@ public class TruncatedGradient extends PLRMLearner {
        
 	    for(int i=i1; i<i2; i++) {
 
+		// 1. Acquire an example
 		DataPoint x = xvec.elementAt(i);
 
-		// Actuate any postponed ("lazy evaluation") truncation that
+		// 2. truncate (or, actually, request lazy truncation)
+
+		trunc.requestTruncation(d);	    
+
+		// 2(a). Actuate any postponed ("lazy evaluation") truncation that
 		// needs to be done now because if affects the matrix's rows 
 		// that we'll be using now
 		for(int h=0; h<x.features.length; h++) {
@@ -75,15 +83,24 @@ public class TruncatedGradient extends PLRMLearner {
 		    trunc.applyTruncation(j);
 		}
 
+		// 3. compute predictions
 		double z[] = adjWeights(x);
 		if (z==null) {
 		    if (Suite.verbosity>1) System.out.println("Skip example " + x.name + " not labeled for " + dis.getName());
 		    continue; // example not labeled for this discr
 		}
 
-		trunc.requestTruncation(d);	    
+		if (Suite.verbosity>1) {
+		    // 4. output probability
+		    System.out.print("z vector=[");
+		    for(double q: z) System.out.print(" " + q);
+		    System.out.println("]");
+		    System.out.println("Multiplied by eta=" + eta);
+		}
+
+		// 6. update weights
 		for(int h=0; h<x.features.length; h++) {
-		    int j = x.features[h];		
+		    int j = x.features[h];	
 		    w.addDenseRow(j, z, eta * x.values[h]);
 		}
 		// trunc.requestTruncation(d); // moved to bottom
@@ -93,7 +110,10 @@ public class TruncatedGradient extends PLRMLearner {
 	}
 
 	public void describe(PrintWriter out, boolean verbose) {
-	    out.println("===TruncatedGradient Classifier["+dis.name+"]===");	    out.println("--- W --------------");
+	    
+	    out.println("===TruncatedGradient Classifier["+dis.name+"]===");
+	    out.println(   commonTrunc.describe());
+	    out.println("--- W --------------");
 	    if (verbose) {
 		w.describe( out, suite.getDic());
 	    } else {
@@ -124,13 +144,21 @@ public class TruncatedGradient extends PLRMLearner {
 	    return Sizeof.OBJ +  Sizeof.OBJREF + w.memoryEstimate();
 	}
    
-	/** Parses the element for discrimination-specific parameters, which
-	    may be supplied in the learner's description. Overrides the method 
-	    in the parent class
+	/** Parses the element for discrimination-specific parameters,
+	    which may be supplied in the learner's description. Also,
+	    ensures that the block's Truncation instance is in sync with 
+	    commonTrunc.
+
+	    Overrides the method in the parent class
 	*/    
 	void parseDSP(Element e) {
+	    // Make sure that we actually have a truncation instance
+	    // in sync with the learner's "common" params. 2009-10-29
+	    trunc = new Truncation( commonTrunc, new Matrix[]{w});
+
 	    if (e==null) return;
 	    XMLUtil.assertName(e, PARAMETERS);
+
 	    HashMap<String,Object> h =
 		parseParamsElement(e,new String[] {PARAM.t}, new double[] {0});
 	    int t = ((Number)(h.get(PARAM.t))).intValue();
@@ -163,8 +191,8 @@ public class TruncatedGradient extends PLRMLearner {
 
     public void describe(PrintWriter out, boolean verbose) {
 	out.println("===" + algoName() + " Classifier===");
-	out.println("eta="+ eta +", g=" + g + "\n"+
-			   commonTrunc.describe());
+	out.println("eta="+ eta +", g=" + g);
+	//+ "\n"+		   commonTrunc.describe());
 	for(LearnerBlock b: blocks)  b.describe(out, verbose);
 	out.println("=====================");
 	out.println("[NET] Main tables memory estimate=" + memoryEstimate() + " bytes");

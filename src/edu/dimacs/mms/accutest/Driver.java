@@ -215,12 +215,12 @@ public class Driver {
 	if (argv.length==0) usage();
 	ParseConfig ht = new ParseConfig();
 
-
 	int M =ht.getOption("M", 10);	
+	String out =ht.getOption("out", ".");	
+	if (out.equals("")) out=".";
 
-	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). M="+M);
+	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). M="+M +", out="+out);
 	System.out.println("[VERSION] " + Version.version);
-
 
 	Suite.verbosity = ht.getOption("verbosity", 1);
 	boolean verbose = ht.getOption("verbose", (Suite.verbosity>=3));
@@ -316,6 +316,8 @@ public class Driver {
 	// train
 	memory("Read train set; starting to train");
 
+	NumberFormat fmt = new DecimalFormat("0000");
+
 	for(int k=0; k< trainSizes.length; k++)  {
 
 	    // absorb examples i1 thru i2-1
@@ -340,8 +342,7 @@ public class Driver {
 	    if (Suite.verbosity>0) System.out.println("After training the learner on the first " + i2 + " examples, applying it to the other " + (train.size()-i2) + " examples");
 		
 	    PrintWriter sw = null;
-	    if (scoreFileBase != null) {
-		NumberFormat fmt = new DecimalFormat("0000");
+	    if (Suite.verbosity>0 && scoreFileBase != null) {
 		String scoreFile = scoreFileBase + "." + fmt.format(i2);
 		System.out.println("Scores will go to text file ("+
 				   scoreFile+")");
@@ -358,7 +359,7 @@ public class Driver {
 		double [][] probLog = algo.applyModelLog(x);
 		double [][] prob = expProb(probLog);
 		
-		if (Suite.verbosity>0) {
+		if (Suite.verbosity>1) {
 		    System.out.println("Scored training vector "+i+"; scores=" +
 				       x.describeScores(prob, suite));
 		}
@@ -366,8 +367,9 @@ public class Driver {
 		if (sw!=null) x.reportScoresAsText(prob,suite,runid,sw);
 
 		seLocal.evalScores(x, suite, prob);
-		x.addLogLik(probLog, suite, 
-			    seLocal.logLikCnt, seLocal.logLik);			
+		x.addLogLinLik(probLog, prob, suite, 
+			       seLocal.likCnt,
+			       seLocal.logLik, seLocal.linLik);			
 	    }
 
 	    // score all the *remaining* (i.e., not yet seen) examples,
@@ -377,7 +379,7 @@ public class Driver {
 		// overcoming underflow...
 		double [][] probLog = algo.applyModelLog(x);
 		double [][] prob = expProb(probLog);
-		if (Suite.verbosity>0) {
+		if (Suite.verbosity>1) {
 		    System.out.println("Scored test vector "+i+"; scores=" +
 				       x.describeScores(prob, suite));
 		}
@@ -385,8 +387,9 @@ public class Driver {
 		accuLocal.evalScores(x, suite, prob);
 		/** Adding prob, instead of probLog, because it's not 
 		    logarithmized */
-		x.addLogLik(prob, suite, 
-			    accuLocal.logLikCnt, accuLocal.logLik);			
+		x.addLogLinLik(probLog, prob, suite, 
+			    accuLocal.likCnt, 
+			    accuLocal.logLik,  accuLocal.linLik);
 
 	    }
 
@@ -401,9 +404,9 @@ public class Driver {
 		System.out.println("Scoring report (file "+trainFile+"):");
 		
 		System.out.println(seLocal.scoringReport(suite, "[TRAIN SCORES]["+label+"]"));
-		System.out.println(seLocal.loglikReport(suite, "[LOGLIK]["+label+"]"));
+		System.out.println(seLocal.likReport2(suite, "[TRAIN LOG LIN]["+label+"]"));
 		System.out.println(accuLocal.scoringReport(suite, "[TEST SCORES]["+label+"]"));
-		System.out.println(accuLocal.loglikReport(suite, "[ACCU]["+label+"]"));
+		System.out.println(accuLocal.likReport2(suite, "[TEST LOG LIN]["+label+"]"));
 		
 	    }
 	
@@ -420,6 +423,11 @@ public class Driver {
 		}
 		*/
 	    }
+
+	    if (Suite.verbosity>=0) {
+		suite.serializeLearnerComplex(out + "/out-suite."+ fmt.format(i2) +".xml"); // save the entire model
+	    }
+
 	}
     
 
