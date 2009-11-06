@@ -466,21 +466,23 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 
     /** Enables truncation of the latent coeffient matrix. This method
-     * can only be called before starting to train the classifier. It
-     * sets the truncation parameters for each individual block, as
-     * well the "common" ones (on which blocks' params are modeled)
+     * can only be called before starting to train the classifier. 
+
+     * It does NOT
+     * set the truncation parameters for each individual block - only for 
+     * the "common" ones (on which blocks' params are modeled)
      
      * @param theta Theta; a negative value means "infinity", i.e. "always"
      * @param to Truncate by this much
      */
-    public void setTruncation(double theta, double to, int K) {
+    void setTruncation(double theta, double to, int K) {
 	Object otheta = (theta<0) ? Param.INF : new Double(theta);
 	setTruncation(otheta, to, K);
     }
 
-    public void setTruncation(Object otheta, double to, int K) {
+    void setTruncation(Object otheta, double to, int K) {
 	commonTrunc = new Truncation(otheta, to, K, new Matrix[0], lazyT);
-	for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(otheta, to,  K);
+	//for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(otheta, to,  K);
     }
 
     public void describe(PrintWriter out, boolean verbose) {

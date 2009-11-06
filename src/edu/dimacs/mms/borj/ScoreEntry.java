@@ -15,6 +15,8 @@ class ScoreEntry {
 	    ", Precision=" + tpCnt + "/" + chosenCnt +
 	    (chosenCnt>0? String.format("=%4.3f", (double)tpCnt/(double)chosenCnt) : "");
     }
+
+
 }
 
 /*

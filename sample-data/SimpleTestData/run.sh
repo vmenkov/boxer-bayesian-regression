@@ -3,6 +3,7 @@
 # This script runs BOXER on a small sample
 # Usage: run.sh out-dir learner-param.xml
 
+
 set learner=$1
 if ($learner == "") then
   set learner=./notg-learner-param.xml
@@ -26,7 +27,7 @@ if ($out == "") then
     exit 1
 else if (-e $out) then
     echo "Directory $out already exists"
-    exit 1
+   exit 1
 endif
 
 mkdir $out
@@ -48,12 +49,15 @@ set d=${main}/boxer-bayesian-regression/sample-data/SimpleTestData
 cp $learner $out
 
 #-- -Dmodel=tg
+#-- -Dmodel=eg
 
-time java $opt -Dout=${out} -DM=1 -Dverbosity=1 -Dmodel=tg $driver \
-    read-suite: SimpleTestSuite.xml     read-learner: $learner \
-    train: SimpleTestData.xml : ${out}/myscores.txt > ${out}/run.log
+
+#time java $opt -Dout=${out} -DM=1 -Dverbosity=0 $driver \
+#    read-suite: SimpleTestSuite.xml    read-learner: $learner \
+#   train: SimpleTestData.xml : ${out}/myscores.txt > ${out}/run.log
 
 select.pl $out
 
-perl -pe "s/Title/$base/" cmd.gnu > ${out}/cmd.gnu
+set title=`echo $base | perl -pe 's/-/ /g; s/_/\./g'`
+perl -pe "s/Title/$title/" cmd.gnu > ${out}/cmd.gnu
 

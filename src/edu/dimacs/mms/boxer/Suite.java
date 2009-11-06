@@ -1064,6 +1064,10 @@ public class Suite {
     }
 
 
+    public void deleteAllLearners() {
+	usedByLearners.setSize(0);
+    }
+
     /** Deletes a discrimination from the Suite and from all Learners
        that use this suite.
        @param delDisName The name of the discrimination to be deleted

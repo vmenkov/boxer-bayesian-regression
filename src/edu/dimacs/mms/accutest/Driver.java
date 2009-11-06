@@ -28,9 +28,6 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
 
     The following command are presently supported:
 
-    <h4>Group 1</h4>
-    <ul>
-
     <li>read-suite: Read the description of a "{@link edu.dimacs.mms.boxer.Suite
     suite}" (basically, a list of discriminations, and the classes of
     each one) from an XML file. Such file can be created manually, or
@@ -41,21 +38,6 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     command on the command line, so that the suite will be actually used
     in constructing the model.
 
-    <li>read: Reads a "learner complex" from an XML file. The input
-    file's root element must be <tt>learnercomplex</tt>. It encloses
-    the description of the suite (<tt>suite</tt>) element, the {@link
-    edu.dimacs.mms.boxer.FeatureDictionary feature dictionary} (which can be used to
-    parse input examples, and to produce human readable output), and
-    one or more <tt>learner</tt> elements. Each <tt>learner</tt>
-    element contains algorithm parameters, and optionally also the
-    current inner state of the learning algorithm (such as the
-    coefficient matrix (or matrices) for {@link edu.dimacs.mms.boxer.PLRMLearner
-    PLRM-based algorithms}. A BORJ command line should have only one
-    "read" command, and if given, it must be the first command.
-
-    </ul>
-    <h4>Group 2</h4>
-    <ul>
     <li>read-learner: Reads an XML file with a single <tt>learner</tt>
     element. That creates a new learner in the context of the existing
     suite (if no suite has been read in, an empty one will be created
@@ -63,33 +45,7 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     algorithm parameters, or also (optionally) the initial state of
     the learner.
 
-    </ul>
-    <h4>Group 3</h4>
-    <ul>
 
-    <li>read-labels: Pre-read examples' labels from a separate XML
-    file (a "label file"). The labels will be stored, and whenever a
-    document with a matching id is read from another XML file in the
-    future (with a "train" or "test" command), the labels will be
-    applied to it.  You can use any number of "read-labels" commands
-    anywhere on the command line, but for them to be useful, each label
-    file should be read before the labels from it are used by a
-    "train" or "test" command.
-
-    <br> The label files which the Driver reads with the
-    "read-labels:" command don't need to be "aligned" with the
-    document files supplied with the "train:" and "test:"
-    commands. They may contain labels for more documents than are
-    found in the train and test files; the unnecessary labels will be
-    simply ignored, and the order of the documents does not matter
-    either. One only needs to ensure that the union of the set of doc
-    ids in all the train and test files in a BORJ run is a subset of
-    the union of doc ids in all of the label files read with
-    "read-labels" in this run.
-
-    </ul>
-    <h4>Group 4</h4>
-    <ul>
     <li> train: Read the examples from the XML file specified, and
     train the classifier on it. Any number of the "train" commands may
     appear in any position on the command line, the model being
@@ -110,22 +66,6 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     This command can also be used with two arguments,
     <tt>test:<em>test-set.xml</em>:<em>score-output-file.txt</em></tt>,
     to make BORJ save the test examples' scores to a names file.
-
-    <li>write-suite: Writes out the suite (only the suite, i.e. the
-    list of classes), as it currently stands, into the
-    specified XML file.
-
-    <li>write: Writes out the complete "learner complex" (suite,
-    feature dictionary, and all learners with their parameters and
-    inner states), as it currently stands, into the specified XML
-    file.
-
-    </ul>
-    <h4>Miscellaneous commands</h4>
-    <ul>
-    <li>delete-discr: Deletes a named discrimnation from the suite and
-    all learners.
-    </ul>
 
 <h3>Command line examples</h3>
 
@@ -167,7 +107,7 @@ public class Driver {
 	System.out.println("  java [options] borj.Driver [read-suite:suite-in.xml] train:train1.xml train:train2.xml test:test_a.xml train:train3.xml test:test_b.xml [write:model-out.xml]");
 	System.out.println(" ... etc.");
 	System.out.println("Optons:");
-	System.out.println(" [-Dmodel=eg|tg|trivial] [-Drunid=RUN_ID] [-Dverbose=true|false | -Dverbosity=0|1|2|3]");
+	System.out.println(" [-Dmodel=eg|tg|trivial] [-Drunid=RUN_ID] [-Dverbose=true|false | -Dverbosity=0|1|2|3] [-DM=1] [-Drandom=100]");
 	System.out.println("See Javadoc for borj.Driver for the full list of commands.");
 	if (m!=null) {
 	    System.out.println(m);
@@ -208,6 +148,9 @@ public class Driver {
 	return "" +time;
     }
 
+    static String out, runid;
+    static boolean verbose=false;
+    
     static public void main(String argv[]) 
 	throws IOException, org.xml.sax.SAXException, BoxerXMLException {
 
@@ -216,40 +159,114 @@ public class Driver {
 	ParseConfig ht = new ParseConfig();
 
 	int M =ht.getOption("M", 10);	
-	String out =ht.getOption("out", ".");	
+	out =ht.getOption("out", ".");	
 	if (out.equals("")) out=".";
 
 	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). M="+M +", out="+out);
 	System.out.println("[VERSION] " + Version.version);
 
 	Suite.verbosity = ht.getOption("verbosity", 1);
-	boolean verbose = ht.getOption("verbose", (Suite.verbosity>=3));
+	verbose = ht.getOption("verbose", (Suite.verbosity>=3));
 
-	String runid = ht.getOption("runid", mkRunId());
+	runid = ht.getOption("runid", mkRunId());
 	DataPoint.setDefaultNameBase(runid);
 
-	Suite suite = new Suite("Test_suite");
- 
+	int nRandom= ht.getOption("random", 0);
+
+	Element suiteXML=null, learnerXML = null;
+	String defaultModel=ht.getOption("model", "tg");	
+
 	/** Pointer into argv array */
+	//-----------------
 	CmdManager cm  = new CmdManager(argv);
 	CMD q = cm.next();
 
 	if (q!=null && q.is(CMD.READ_SUITE)) {
 	    System.out.println("Reading discrimination suite from file: "+q.f);
-	    suite = new Suite(new File(q.f));
+	    suiteXML =  ParseXML.readFileToElement(new File(q.f));
 	    q = cm.next();
 	}
-	
+
 	// Any "read-learner" commmands?
 	if (q!=null && q.is(CMD.READ_LEARNER)) {
 	    System.out.println("Getting a learner from file: "+q.f);
-	    suite.addLearner(ParseXML.readFileToElement(new File(q.f)));
+	    learnerXML = ParseXML.readFileToElement(new File(q.f));
 	    q=cm.next(); 
+	}
+
+	if (q==null || !q.is(CMD.TRAIN)) {
+	    throw new AssertionError("Expected a 'train:' command!");
+	}
+	String trainFile = q.f;
+	String scoreFileBase = (q.f2==null) ? "scores.tmp" : q.f2;
+	q = cm.next();
+
+	if (q!=null)  throw new AssertionError("There is an unused command left: " + q);
+
+
+	Suite suite = (suiteXML!=null)? new Suite(suiteXML): new Suite("Test_suite");
+
+	System.out.println("Reading data set ("+trainFile+")");
+	Vector<DataPoint> train = ParseXML.readDataFileXML(trainFile, suite, true);
+
+	//------------------------
+
+
+	if (nRandom ==0) {
+	    runOneOrdering(suite, learnerXML, defaultModel, 
+			   trainFile, train, 
+			   scoreFileBase,  M, -1);
+	} else {
+	    System.out.println("Training on " +nRandom+ " random permutations");
+	    for(int r=0; r<nRandom; r++) {
+		runOneOrdering(suite, learnerXML, defaultModel, 
+			       trainFile, train, 
+			       scoreFileBase,  M, r);
+		suite.deleteAllLearners();
+	    }	    
+	}
+
+	memory("Finished");
+	Calendar now = Calendar.getInstance();	
+	System.out.println("[TIME][FINISH] " +
+			   DateFormat.getDateInstance().format(now.getTime()) +
+			   " ("+	now.getTimeInMillis()+")");
+
+	
+    }
+
+
+    /**
+       @param seed The seed for random number generator. If negative,
+       don't randomize; use the original sequence.
+       
+       @param trainFile the name of the train file. It is only used
+       for labels, not for actual reading.
+
+       @param origTrain Pre-read training+test set
+    */
+    static private void runOneOrdering(Suite suite, Element learnerXML, 
+				       String defaultModel,
+				       String trainFile, 
+				       Vector<DataPoint> origTrain, 
+				       String scoreFileBase,
+				       int M, long seed )
+	throws java.io.IOException,  org.xml.sax.SAXException, BoxerXMLException {
+
+	Vector<DataPoint> train = origTrain;
+	if (seed >= 0) {
+	    int[] perm = randomPermutation(origTrain.size(), seed);
+	    train = new Vector<DataPoint>(origTrain.size());
+	    for(int i=0; i<perm.length; i++) train.addElement( origTrain.elementAt( perm[i]));
+	}
+	
+	// Any "read-learner" commmands?
+	if (learnerXML != null) {
+	    suite.addLearner(learnerXML);
 	} else {
 	    // Creating a "blank" model if none has been read in 
-	    String model=ht.getOption("model", "tg");	
+	    String model=defaultModel;
 	    System.out.println("Default model name: " + model);
-
 	    if (model.equals("eg")) {
 		Learner algo = new ExponentiatedGradient(suite);
 		//usage("eg Not supported now");
@@ -262,22 +279,13 @@ public class Driver {
 	    }
 	}
 
-	if (q==null || !q.is(CMD.TRAIN)) {
-	    throw new AssertionError("Expected a 'train:' command!");
-	}
-	String trainFile = q.f;
-	String scoreFileBase = (q.f2==null) ? "scores.tmp" : q.f2;
-	q = cm.next();
-
-	if (q!=null)  throw new AssertionError("There is an unused command left: " + q);
 
 	int nLearners =  suite.getLearnerCount();
-
 	if (nLearners != 1) throw new AssertionError("nLearners="+nLearners+" There must be exactly one learner!");
 
 	Learner algo= suite.getAllLearners().elementAt(0);
 
-	if (Suite.verbosity>=0) {
+	if (Suite.verbosity>0) {
 	    System.out.println("Describing the learner:");
 	    algo.describe(System.out, false);
 	    System.out.println("-----------------------------------");
@@ -285,18 +293,6 @@ public class Driver {
 
 	
 	int trainCnt = 0, testCnt=0;
-
-	//Scores  se = new Scores(suite);       
-
-	//trainCnt++;
-	// read training set
-	System.out.println("Reading data set ("+trainFile+")");
-	Vector<DataPoint> train = 
-	ParseXML.readDataFileXML(trainFile, suite, true);
-
-	// Do this in case new discriminations (with default classes)
-	// have been added during reading the XML file. (since ver 0.6)
-	//for(DataPoint p: train) p.addDefaultClasses(suite);
 
 	if (Suite.verbosity>0) System.out.println(suite.describe());
 	if (verbose) System.out.println(suite.getDic().describe());
@@ -314,7 +310,7 @@ public class Driver {
 	for(int k=0; k< trainSizes.length; k++)  trainSizes[k] = (k+1)*M;
 
 	// train
-	memory("Read train set; starting to train");
+	if (Suite.verbosity>0) memory("Read train set; starting to train");
 
 	NumberFormat fmt = new DecimalFormat("0000");
 
@@ -325,17 +321,17 @@ public class Driver {
 	    int i2= trainSizes[k];
 	    algo.absorbExample(train, i1, i2);
 
-	    if (Suite.verbosity>=0) {
+	    if (Suite.verbosity>1) {
 		System.out.println("Describing the Learner after "+i2 + " training examples");
 		algo.describe(System.out, false);
 		System.out.println("-----------------------------------");
-	    } else {
+	    } else if (Suite.verbosity>0){
 		System.out.println("[NET] Leaner after " + (i2)+ " examples: net memory use=" + algo.memoryEstimate());
 	    }
 	    // In verbose mode, write out the model after every training file
 	    if (verbose) algo.saveAsXML(algo.algoName() + "-out" + trainCnt + ".xml");
 
-	    memory("Absorbed "+(i2-i1)+" examples from "+trainFile);
+	    if (Suite.verbosity>0) memory("Absorbed "+(i2-i1)+" examples from "+trainFile);
 	    // Now, score all vectors in the REST of the set 
 
 
@@ -348,8 +344,8 @@ public class Driver {
 				   scoreFile+")");
 		sw = new PrintWriter( new FileWriter(scoreFile));
 	    }
-	    Scores seLocal = new Scores(suite);
-	    Scores accuLocal = new Scores(suite);
+	    Scores scoresTrain = new Scores(suite);
+	    Scores scoresTest = new Scores(suite);
 	  
 	    // Score all the training examples used so for, to measure the
 	    // log-likelyhood
@@ -366,10 +362,10 @@ public class Driver {
 
 		if (sw!=null) x.reportScoresAsText(prob,suite,runid,sw);
 
-		seLocal.evalScores(x, suite, prob);
+		scoresTrain.evalScores(x, suite, prob);
 		x.addLogLinLik(probLog, prob, suite, 
-			       seLocal.likCnt,
-			       seLocal.logLik, seLocal.linLik);			
+			       scoresTrain.likCnt,
+			       scoresTrain.logLik, scoresTrain.linLik);			
 	    }
 
 	    // score all the *remaining* (i.e., not yet seen) examples,
@@ -384,12 +380,12 @@ public class Driver {
 				       x.describeScores(prob, suite));
 		}
 		if (sw!=null) x.reportScoresAsText(prob,suite,runid,sw);
-		accuLocal.evalScores(x, suite, prob);
+		scoresTest.evalScores(x, suite, prob);
 		/** Adding prob, instead of probLog, because it's not 
 		    logarithmized */
 		x.addLogLinLik(probLog, prob, suite, 
-			    accuLocal.likCnt, 
-			    accuLocal.logLik,  accuLocal.linLik);
+			    scoresTest.likCnt, 
+			    scoresTest.logLik,  scoresTest.linLik);
 
 	    }
 
@@ -399,19 +395,23 @@ public class Driver {
 
 	    // Print report on scores so far
 	    if (Suite.verbosity>=0) {
-		String label = trainFile+": " + i2 +  "+" + ts;
+		String label = trainFile+": " + seed + " : " + i2 +  "+" + ts;
 
-		System.out.println("Scoring report (file "+trainFile+"):");
+		System.out.println("Scoring report (file "+trainFile+", seed="+seed+"):");
 		
-		System.out.println(seLocal.scoringReport(suite, "[TRAIN SCORES]["+label+"]"));
-		System.out.println(seLocal.likReport2(suite, "[TRAIN LOG LIN]["+label+"]"));
-		System.out.println(accuLocal.scoringReport(suite, "[TEST SCORES]["+label+"]"));
-		System.out.println(accuLocal.likReport2(suite, "[TEST LOG LIN]["+label+"]"));
+		System.out.print(scoresTrain.scoringReport(suite, "[TRAIN SCORES]["+label+"]"));
+		System.out.print(scoresTrain.likReport2(suite, "[TRAIN LOG LIN]["+label+"]"));
+		System.out.println(scoresTrain.wAvgRecallReport(suite, "[TRAIN WARECALL]["+label+"]"));
+
+
+		System.out.print(scoresTest.scoringReport(suite, "[TEST SCORES]["+label+"]"));
+		System.out.print(scoresTest.likReport2(suite, "[TEST LOG LIN]["+label+"]"));
+		System.out.println(scoresTest.wAvgRecallReport(suite, "[TEST WARECALL]["+label+"]"));
 		
 	    }
 	
 
-	    memory("Scored "+ts+" examples from "+trainFile);
+	    if (Suite.verbosity > 0) memory("Scored "+ts+" examples from "+trainFile);
 
 	    if (Suite.verbosity>=0) {
 		/*
@@ -424,19 +424,12 @@ public class Driver {
 		*/
 	    }
 
-	    if (Suite.verbosity>=0) {
+	    if (Suite.verbosity>=0 && seed<0) {
 		suite.serializeLearnerComplex(out + "/out-suite."+ fmt.format(i2) +".xml"); // save the entire model
 	    }
 
 	}
-    
 
-	memory("Finished");
-	Calendar now = Calendar.getInstance();	
-	System.out.println("[TIME][FINISH] " +
-			   DateFormat.getDateInstance().format(now.getTime()) +
-			   " ("+	now.getTimeInMillis()+")");
-	
     }
 
     static void memory() {
@@ -467,6 +460,33 @@ public class Driver {
 	}
 	return prob;
     }
+
+    /** Returns an array of integers, from 0 to n-1, randomly permuted.
+	@param seed The seed for the random number generator. 
+     */
+    static int[] randomPermutation(int n, long seed) {
+	Random gen = new Random(seed); 
+	boolean[] listed=new boolean[n];
+	int p[] = new int[n];
+	for(int i=0; i<n; i++) {
+	    int v;
+	    do {
+		v = gen.nextInt(n);
+	    } while (listed[v]);
+	    p[i] = v;
+	    listed[v]= true;
+	}
+	return p;
+    }
+
+    static int[] identityPermutation(int n) {
+	int p[] = new int[n];
+	for(int i=0; i<n; i++) {
+	    p[i] = i;
+	}
+	return p;
+    }
+    
 
 }
 

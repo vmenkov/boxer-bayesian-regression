@@ -264,7 +264,7 @@ public abstract class Learner implements Model {
 	    throw new AssertionError(blocks.length>nd);
 	}
 
-	System.out.println("Started CMB loop, nd=" + nd);
+	//System.out.println("Started CMB loop, nd=" + nd);
 	for(int did=0; did<nd; did++) {
 	    Discrimination dis = suite.getDisc(did);
 	    //System.out.println("CMB loop, dis(did=" + did + ")=" + dis);
