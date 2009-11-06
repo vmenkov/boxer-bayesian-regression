@@ -68,7 +68,7 @@
         description="Compile the source (without the BB adapter)" >
   <!-- Compile the java code from ${src} into ${build} -->
   <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"
-	 includes="edu/dimacs/**"
+	 includes="edu/dimacs/**"  optimize="on"
 	 debug="on" debuglevel="lines,vars,source" 
 	 />
 </target>

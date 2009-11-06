@@ -94,6 +94,36 @@ public class Scores extends Vector<ScoreEntry[]> {
 	return b.toString();
     }
 
+    public String wAvgRecallReport( Suite suite, String prefix) {
+
+	int disCnt =suite.disCnt();
+  
+	StringBuffer b = new StringBuffer();
+	// order by dicscrimination
+	for(int k=0; k<disCnt; k++) {
+	    ScoreEntry[] q = elementAt(k);
+	    Discrimination dis = suite.getDisc(k);
+	    if (likCnt[k]==0) continue; // empty discr
+	    b.append(prefix  +  "[" +dis.getName()+"] " + wAvgRecall(q)+"\n");
+	}
+	return b.toString();
+    }
+
+    /** Computes average weighted recall for one discrimination - the
+     * measure proposed by Paul Kantor, 2009-11-01. Weighting is done
+     * by class size. In other words, it's the average likelyhood of
+     * an example being assigned to its right class.
+     */
+    double wAvgRecall(ScoreEntry[] q) {
+	int sumC=0, sumTP = 0;
+	for(ScoreEntry se: q) {
+	    sumC += se.oracleCnt;
+	    sumTP += se.tpCnt;
+	}
+	return ((double)sumTP)/sumC;
+    }
+
+
     private String likReport1( Suite suite, String prefix, double lik[]) {
 	StringBuffer b = new StringBuffer();
 	for(int j=0;j< lik.length; j++) {
@@ -126,7 +156,22 @@ public class Scores extends Vector<ScoreEntry[]> {
 	return b.toString();
     }
 
-
+    /** Computes average weighted recall - the measure proposed by
+     * Paul Kantor, 2009-11-01. Weighting is done by class size. In
+     * other words, it's the average likelyhood of an example being
+     * assigned to its right class.
+     */
+    /*
+    double wAvgRecall() {
+	double a[] = new double[ size() ];
+	for(ScoreEntry[] q: this) {
+	    int sumC=0, sumTP = 0;
+	    sumC += oracleCnt;
+	    sumTP += tpCnt;
+	}
+	return ((double)sumTP)/sumC;
+    }
+    */
 
     void deleteDiscr(int delDid) {
 	removeElementAt(delDid);
