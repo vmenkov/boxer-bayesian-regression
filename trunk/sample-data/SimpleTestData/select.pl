@@ -79,13 +79,15 @@ for(my $j=0; $j <= $#sections; $j++) {
     }
 
     for(my $i=1; $i<= $#data; $i++) {
-	my @q = @{$data[$i]};
-	if (defined $q[0]) {
-	    foreach my $k (0..5) {
-		(defined $q[$k]) or die "Missing entry for i=$i, k=$k";
-		${$sums[$i]}[$k] += $q[$k];
+	if (defined $data[$i]) {
+	    my @q = @{$data[$i]};
+	    if (defined $q[0]) {
+		foreach my $k (0..5) {
+		    (defined $q[$k]) or die "Missing entry for i=$i, k=$k";
+		    ${$sums[$i]}[$k] += $q[$k];
+		}
+		print G "$i\t". join("\t", @q) . "\n";
 	    }
-	    print G "$i\t". join("\t", @q) . "\n";
 	}
     }
     close(G);
@@ -94,16 +96,20 @@ for(my $j=0; $j <= $#sections; $j++) {
 #-- averages
 my $n =  $#sections +1;
 for(my $i=1; $i<= $#sums; $i++) {
-    foreach my $k (0..5) {
-	${$sums[$i]}[$k] /= $n;
+    if (defined $sums[$i]) {
+	foreach my $k (0..5) {
+	    ${$sums[$i]}[$k] /= $n;
+	}
     }
 }
 
 open(G, ">$out") or die "Can't write to file $out";
 
 for(my $i=1; $i<= $#sums; $i++) {
-    my @q = @{$sums[$i]};
-    print G "$i\t". join("\t", @q) . "\n";
+    if (defined $sums[$i]) {
+	my @q = @{$sums[$i]};
+	print G "$i\t". join("\t", @q) . "\n";
+    }
 }
 close(G);
 
