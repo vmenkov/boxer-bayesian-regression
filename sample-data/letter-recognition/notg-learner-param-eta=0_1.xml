@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "not-truncated" gradient (theta=0) -->
+<learner name="boxer.TruncatedGradient" version="0.4.001">
+   <parameters>
+                <parameter name="theta" value="0"/>
+                <parameter name="eta" value="0.1"/>
+                <parameter name="g" value="0.1"/>
+                <parameter name="k" value="10"/>
+    </parameters>
+</learner>

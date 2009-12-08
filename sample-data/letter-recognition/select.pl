@@ -44,6 +44,7 @@ my $out = ($#ARGV >=1) ? $ARGV[1] : "$dir/run.dat";
 my $out2 = ($#ARGV >=2) ? $ARGV[2] : "$dir/run-sd.dat";
 (defined $out2) or  &usage("Output (SD) not specified");
 
+my $dis = "letter";
 
 print "Parsing $file, output to $out\n";
 
@@ -53,17 +54,33 @@ if (defined $zfile) {
     open(F, $file) or die "Can't read file $file";
 }
 
+#-- read the log files, and extract relevant lines, placing them into @sections
 my @sections = ();
-
+my $only = undef;
 my $s=undef;
 while(defined ($s=<F>)) {    
-    if ($s=~/\[(TRAIN|TEST) (LOG LIN|WARECALL)\]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]/ ) {
+    if ($s=~/\[(TRAIN|TEST) (LOG LIN|WARECALL)\]\[.*.xml: *([\-\d]+) *: *(\d+)\+\d+\]\[$dis\]/ ) {
 	my $j = $3;
-	if (!defined $sections[$j]) { $sections[$j] = [$s]; }
-	push @{$sections[$j]}, $s; 
+	if ($j>=0) {
+	    if (!defined $sections[$j]) { $sections[$j] = [$s]; }
+	    push @{$sections[$j]}, $s; 
+	} elsif ($j==-1) {
+	    if (!defined $only) { $only = [$s]; }
+	    push @{$only}, $s; 
+	}
     }
 }
 close(F);
+
+if (defined $only) {
+    ($#sections == -1) or "Can't have both numbered and number-less sections";
+    $sections[0] = $only;
+    print "Using number-less section as sec. no. 0\n";
+} else {
+    ($#sections >= 0) or die "No sections found";
+}
+
+printf "Will average sections 0..$#sections\n";
 
 my @sums = ();
 my @sumSqs = ();
@@ -83,13 +100,13 @@ for(my $j=0; $j <= $#sections; $j++) {
     my $ff= "[\d\.\+\-E]+";
 
     foreach my $s (@{$sections[$j]}) {
-	if ($s=~/\[TRAIN LOG LIN\]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)\s+($ff)/ ) {
+	if ($s=~/\[TRAIN LOG LIN\]\[.*.xml: *([\-\d]+) *: *(\d+)\+\d+\]\[$dis\]\s+($ff)\s+($ff)/ ) {
 	    @{$data[$2]}[0..1] = ($3, $4);
-	}elsif ($s=~ /\[TEST LOG LIN\]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)\s+($ff)/ ) {
+	}elsif ($s=~ /\[TEST LOG LIN\]\[.*.xml: *([\-\d]+) *: *(\d+)\+\d+\]\[$dis\]\s+($ff)\s+($ff)/ ) {
 	    @{$data[$2]}[2..3] = ($3, $4);
-	}elsif ($s=~ /\[TRAIN WARECALL]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)/) {
+	}elsif ($s=~ /\[TRAIN WARECALL]\[.*.xml: *([\-\d]+) *: *(\d+)\+\d+\]\[$dis\]\s+($ff)/) {
 	    ${$data[$2]}[4] = $3;
-	}elsif ($s=~ /\[TEST WARECALL]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s*($ff)/) {
+	}elsif ($s=~ /\[TEST WARECALL]\[.*.xml: *([\-\d]+) *: *(\d+)\+\d+\]\[$dis\]\s*($ff)/) {
 	    ${$data[$2]}[5] = $3;
 	}
     }

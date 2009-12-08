@@ -1,0 +1,9 @@
+   <learner name="edu.dimacs.mms.boxer.ExponentiatedGradient" version="0.7.002">
+            <parameters>
+                <parameter name="theta" value="0.0"/>
+                <parameter name="to" value="0.0"/>
+                <parameter name="k" value="1"/>
+                <parameter name="f" value="0.5"/>
+                <parameter name="u" value="10.0"/>
+            </parameters>
+   </learner>
