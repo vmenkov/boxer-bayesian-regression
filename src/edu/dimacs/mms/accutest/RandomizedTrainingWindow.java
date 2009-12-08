@@ -12,7 +12,6 @@ import edu.dimacs.mms.boxer.*;
     Presently, this class is used by WindowRepeater.
  */
 class RandomizedTrainingWindow extends TrainingWindow {
-    final int offset;
     
     private int usedCnt[];
     private int filled = 0;
@@ -32,8 +31,6 @@ class RandomizedTrainingWindow extends TrainingWindow {
     RandomizedTrainingWindow(int _w, int _rep, Learner _learner, Iterator<DataPoint> _src, long seed) {
 	super(_w, _rep, _learner, _src);
 
-	offset = w/rep;
-	if (offset * rep != w) throw new IllegalArgumentException("Window size ("+w+") not divisible by repetition factor " + rep);
 	usedCnt = new int[w];
 	gen = new Random(seed); 
     }
@@ -52,7 +49,7 @@ class RandomizedTrainingWindow extends TrainingWindow {
     */
     boolean absorbNextExample(boolean canFinalize) {
 
-	if (fedCount() % offset == 0) {
+	if (fedCount() % rep == 0) {
 	    if (!src.hasNext()) return false;
 	    DataPoint p = src.next();
 	    srcCnt ++;
