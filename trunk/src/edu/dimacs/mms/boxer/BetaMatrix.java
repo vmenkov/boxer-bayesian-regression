@@ -177,6 +177,33 @@ public class BetaMatrix extends Matrix  {
 	return featureId < matrix.size()? matrix.elementAt(featureId) : null;
     }
 
+    /** Drops the row for the specified feature */
+    void dropRow(int featureId) {
+	if (featureId < matrix.size()) {
+	    matrix.set(featureId, null);
+	}
+    }
+
+    /** Removes zero elements from the specified row */
+    void compressRow(int featureId) {
+	Vector<Coef> v = getRow(featureId);
+	int  to=0;
+	for(int i=0; i<v.size(); i++) {
+	    if (v.elementAt(i).value != 0) {
+		if (to < i) v.set(to, v.elementAt(i));
+		to++;
+	    }
+	}
+	if (to==0) {
+	    // surprise!
+	    //Logging.info("Row " +  featureId + " has become all zeros (surprisingly), and is dropped");
+	    dropRow(featureId);
+	} else {
+	    v.setSize(to);
+	}
+    }
+
+
     Collection<Vector<Coef>> rows() {
 	return matrix;
     }

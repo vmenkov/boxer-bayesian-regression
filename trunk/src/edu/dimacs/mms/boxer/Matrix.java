@@ -101,7 +101,10 @@ public abstract class Matrix implements Measurable {
 	}
 	return e;	
     }
-   
+
+    /** Drops the row for the specified feature */
+    abstract void dropRow(int featureId);
+
 }
 
 /*
