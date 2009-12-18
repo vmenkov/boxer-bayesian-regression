@@ -20,6 +20,23 @@ class Truncation /*implements Cloneable*/ {
 
     MODE mode;
 
+    /** What does the truncation procedure to the physical stored array elements
+     */
+    enum PHYSICAL_DROP { 
+	/** Zeros just stay there. This was the way until 2009-12-18 */
+	DROP_NONE,
+	    /** Drop an entire row when it become all zeros. This applies to bothe BetaMatrix and DenseMatrix */
+	DROP_ZERO_ROWS,
+	    /** Drop an entire row when it become all zeros (this
+	     * applies to bothe BetaMatrix and DenseMatrix), and drop
+	     * every zero element too (in BetaMatrix only) */
+	    DROP_ZERO_ROWS_AND_ELEMENTS;
+    }
+
+    /** What does the truncation procedure to the physical stored array elements
+     */
+    static final PHYSICAL_DROP  dropMode = PHYSICAL_DROP.DROP_ZERO_ROWS;
+
     /** Algorithm parameters. basicTo corresponds to eta*g*K in
       TruncatedGradient writeup  */
     double theta=0, basicTo;
@@ -129,6 +146,8 @@ class Truncation /*implements Cloneable*/ {
 	return value;
     }
 
+    
+
     /** Truncates all elements of W right now
 	FIXME: may want to delete elements that have become 0s.
      */
@@ -198,16 +217,33 @@ class Truncation /*implements Cloneable*/ {
 	//System.out.println("to=" + to);
 	truncToApply[j] = 0;
 	for( Matrix _w : matrices) {
+	    int countNZ = 0;
 	    if (_w instanceof BetaMatrix) {
 		BetaMatrix w = (BetaMatrix)_w;
 		Vector<BetaMatrix.Coef> v= w.getRow(j);
 		if (v==null) return;
-		for( BetaMatrix.Coef c: v)  c.value=truncateValue(c.value, to);
+		for( BetaMatrix.Coef c: v) {
+		    c.value=truncateValue(c.value, to);
+		    countNZ += ((c.value == 0) ? 0 : 1);
+		}
+		if (0 < countNZ  && countNZ < v.size() && 
+		    dropMode == PHYSICAL_DROP.DROP_ZERO_ROWS_AND_ELEMENTS) {
+		    w.compressRow(j);		    
+		}
 	    } else if (_w instanceof DenseMatrix) {
 		DenseMatrix m = (DenseMatrix)_w;
 		double[] v= m.data[j];
 		if (v==null) return;
-		for(int i=0;i<v.length; i++) v[i]=truncateValue(v[i], to);
+		for(int i=0;i<v.length; i++) {
+		    v[i]=truncateValue(v[i], to);
+		    countNZ += ((v[i] == 0) ? 0 : 1);
+		}
+	    }
+
+	    if (countNZ == 0 && dropMode != PHYSICAL_DROP.DROP_NONE) {
+		// Drop the entire row if it becomes all-zeros
+		_w.dropRow(j);
+		//Logging.info("Dropped all-zero row " +  j );
 	    }
 	}
     }

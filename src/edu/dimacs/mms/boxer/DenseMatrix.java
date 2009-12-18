@@ -85,6 +85,9 @@ public class DenseMatrix extends Matrix  {
 	}
     }
 
+   void dropRow(int j) {
+       if (j < data.length) data[j]=null;
+   }
 
 }
 

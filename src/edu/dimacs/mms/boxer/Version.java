@@ -15,10 +15,12 @@ package edu.dimacs.mms.boxer;
     0.7.001 - 2009-09-24. New ID validation process. Using caret instead of
        colon for compact XML format. New package tree structure.
     0.7.002 - 2009-09-28. Lazy truncation made correct in TruncatedGradient, and disabled in ExponentiatedGradient
+    0.7.003 - 2009-12-08. Test BOXER applications added in edu.dimacs.mms.accutest
+    0.7.004 - 2009-12-18. Enabled "physical" truncation 
 </pre>
  */
 public class Version {
-    public final static String version = "0.7.002";
+    public final static String version = "0.7.004";
 }
 
 /*

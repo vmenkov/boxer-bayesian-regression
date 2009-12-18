@@ -89,7 +89,7 @@ if (!$::dry) {
     `java $opt -Dout=${out} -DM=$M -Dranwin=$z -Drep=$rep -Dwindow=$window -Drandom=$nr -Dverbosity=0 $driver read-suite:${d}/letter-recognition-suite.xml  read-learner:$learner train:${d}/letter-recognition-part-1.xml  test:${d}/letter-recognition-part-2.xml > ${out}/run.log`;
 }    
 
-`select.pl $out`;
+`./select.pl $out`;
     
 my $title=$base;
 $title =~ s/-/ /g; 
@@ -104,5 +104,8 @@ if ($pkg eq "letter-recognition") {
 
 print "Plot title should be: $title\n";
 `perl -pe "s/Title/$title/" cmd.gnu > ${out}/cmd.gnu`;
+`perl -pe "s/Title/$title/; s/set term x11.*/set out; set term dumb;/" cmd.gnu > ${out}/tmp.gnu`;
+`(cd $out; gnuplot tmp.gnu)`;
+
 
 

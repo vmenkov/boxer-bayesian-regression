@@ -1,3 +1,4 @@
+set key bottom right;
 set grid xtics  ytics;
 set xlabel "Number of Data Points Trained"
 set title "Title";
@@ -20,3 +21,4 @@ plot "run.dat" using ($1):($6) with lines title "Train wt. avg. recall",  "run.d
 
 set out "war.svg" ; set term svg; replot
 set out "war.png" ; set term png; replot
+
