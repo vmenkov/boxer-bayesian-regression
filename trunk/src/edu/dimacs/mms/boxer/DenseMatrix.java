@@ -20,6 +20,18 @@ public class DenseMatrix extends Matrix  {
 	}
     }
 
+   /** Returns the number of non-zero values actually stored in the matrix.
+	Ignores any stored zeros.
+    */	
+    public int nzCount() {
+	int sum = 0;
+	for(int i=0; i<data.length; i++) {
+	    for(double x: data[i]) if (x!=0) sum++;
+	}	
+	return sum;
+    }
+
+
     /** Ensure that the matrix has at least d rows */
     void resize( int d) {
 	if (data == null) data = new double [d][];

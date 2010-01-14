@@ -70,6 +70,10 @@ public abstract class Matrix implements Measurable {
 	return true;
     }
 
+    /** Returns the number of non-zero values actually stored in the matrix.
+	Ignores any stored zeros.
+    */	
+    abstract public int nzCount();
 
     public Element saveAsXML( Document xmldoc, Discrimination dis, FeatureDictionary dic, String name) {
 	return createMatrixElement(xmldoc, dis, dic, name, toArray());
