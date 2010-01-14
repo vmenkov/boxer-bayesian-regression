@@ -162,9 +162,12 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 	/** Builds a BetaMatrix w from the matrix V (vplus and vminus)
 	 */
-	private BetaMatrix latentToModel(int d) {
+	private BetaMatrix latentToModelAll() {
 	    int r = dis.claCount(); // class count
 	    double z[] = new double[r];  // individual sum for each class
+
+	    int d =  vplus.data.length;
+
 	    double aw[][] = new double[d][];
 
 	    //  store max val for each column, to reduce chances of under/overflow
@@ -300,7 +303,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 	    vplus.resize(d);
 	    vminus.resize(d);
-	    w = latentToModel(d);
+	    w = latentToModelAll();
 
 	    for(int i=i1; i<i2; i++) {
 		trunc.requestTruncation(d);//or we can move to bottom
@@ -337,7 +340,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 		}
 		// convert latent coefficients to the model, to be
 		// ready for scoring the next training vector
-		w = latentToModel(d);
+		w = latentToModelAll();
 		//describe( System.out, false);
 	    }
 
@@ -465,22 +468,38 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 
 
-    /** Enables truncation of the latent coeffient matrix. This method
-     * can only be called before starting to train the classifier. 
+    /** Enables truncation of the latent coeffient matrix.
 
-     * It does NOT
-     * set the truncation parameters for each individual block - only for 
-     * the "common" ones (on which blocks' params are modeled)
+	This method does NOT set the truncation parameters for each
+	individual block - only for the "common" ones (on which
+	blocks' params will be modeled); therefore, this method can
+	only be called before starting to train the classifier.
      
-     * @param theta Theta; a negative value means "infinity", i.e. "always"
-     * @param to Truncate by this much
+	The truncation in EG is currently done using exactly the same
+	paradigm as in TG, but is applied to the elements of V (latent
+	coeff) rather than W (model). Truncation is carried out on
+	each K-th call to absorbExample, before the latentToModel
+	procedure.
+
+	@param theta Theta; a negative value means "infinity",
+	i.e. "always"; 0 means "never"
+
+	@param to Truncate the elements of V by this much every on
+	every K-th step (so this is equivalent to g*K in the
+	TruncatedGriadient write-up). More precisely, Truncation will
+	be carried out in the t-th call to absorbExample (before
+	latentToModel is called) if t is divisible by K; t starts from
+	one.
+
+	@param K Truncate after so many steps
+
      */
-    void setTruncation(double theta, double to, int K) {
+    public void setTruncation(double theta, double to, int K) {
 	Object otheta = (theta<0) ? Param.INF : new Double(theta);
 	setTruncation(otheta, to, K);
     }
 
-    void setTruncation(Object otheta, double to, int K) {
+    public void setTruncation(Object otheta, double to, int K) {
 	commonTrunc = new Truncation(otheta, to, K, new Matrix[0], lazyT);
 	//for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(otheta, to,  K);
     }

@@ -122,6 +122,23 @@ public class BetaMatrix extends Matrix  {
 	return true;
     }
 
+  /** Returns the number of non-zero values actually stored in the matrix.
+	Ignores any stored zeros.
+    */	
+    public int nzCount() {
+	if (matrix==null) return 0;
+	int sum = 0;
+	for(Vector<Coef> v: matrix) {
+	    if (v != null) {
+		for(Coef q: v) { 
+		    if (q.value != 0) sum ++;
+		}
+	    }
+	}
+	return sum;
+    }
+
+
     /** Converts an array of doubles - representing a dense vector - to
 	an array of Coef instances, representing a sparse vector */ 
     private Vector<Coef> denseArray2coefVector(double a[]) {
