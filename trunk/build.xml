@@ -54,15 +54,27 @@
  <property name="build" location="../classes"/>
  <property name="lib" location="../lib"/>
  <property name="javadoc" location="../javadoc"/>
- <property name="classpath" location="${lib}/xercesImpl.jar:${lib}/jena.jar"/>
+ <!-- property name="classpath" location="${lib}/xercesImpl.jar:${lib}/jena.jar"/ -->
  
+
+    <path id="classpath"
+        description="The classpath to use for compiling and running">
+        <fileset dir="${lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+
 <target name="init">
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${lib}"/>
+    <mkdir dir="${build}"/>
     <mkdir dir="${javadoc}"/>
     <mkdir dir=""/>
 </target>
+
 
 <target name="compile" depends="init"
         description="Compile the source (without the BB adapter)" >
@@ -72,6 +84,22 @@
 	 debug="on" debuglevel="lines,vars,source" 
 	 />
 </target>
+
+<target name="compile-blackbook" depends="init"
+        description="Compile the source (including the BB adapter)" >
+  <!-- Compile the java code from ${src} into ${build} -->
+  <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"
+	 includes="edu/dimacs/**,blackbook/**"
+	 optimize="on"
+	 debug="on" debuglevel="lines,vars,source" 
+	 />
+</target>
+
+<target name="jar" depends="compile"
+        description="Builds a Jar file (of Boxer+Borj, but not Blackbook-adapter stuff">
+  <jar destfile="${lib}/boxer.jar"   basedir="${build}"  />
+</target>
+
 
 <target name="javadoc" depends="compile">
   <exec executable="grep" outputproperty="boxer.ver">
