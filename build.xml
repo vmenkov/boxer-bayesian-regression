@@ -57,12 +57,12 @@
  <!-- property name="classpath" location="${lib}/xercesImpl.jar:${lib}/jena.jar"/ -->
  
 
-    <path id="classpath"
-        description="The classpath to use for compiling and running">
-        <fileset dir="${lib}">
-            <include name="*.jar"/>
-        </fileset>
-    </path>
+ <path id="classpath"
+       description="The classpath to use for compiling and running">
+   <fileset dir="${lib}">
+     <include name="*.jar"/>
+   </fileset>
+ </path>
 
 
 <target name="init">
@@ -79,10 +79,11 @@
 <target name="compile" depends="init"
         description="Compile the source (without the BB adapter)" >
   <!-- Compile the java code from ${src} into ${build} -->
-  <javac srcdir="${src}" destdir="${build}" classpath="${classpath}"
+  <javac srcdir="${src}" destdir="${build}" 
 	 includes="edu/dimacs/**"  optimize="on"
-	 debug="on" debuglevel="lines,vars,source" 
-	 />
+	 debug="on" debuglevel="lines,vars,source" >
+    <classpath refid="classpath"/>
+  </javac>
 </target>
 
 <target name="compile-blackbook" depends="init"
@@ -114,14 +115,16 @@
   <javadoc packagenames="edu.dimacs.mms.*"
 	   sourcepath="${src}"
            destdir="${javadoc}"
-	   classpath="${build}:${classpath}"
 	   author="true"
            version="true"
            use="true"
 	   link="http://java.sun.com/j2se/1.5.0/docs/api/"
 	   header="&lt;em&gt;BOXER ${boxer.ver}&lt;/em&gt;"   
 	   windowtitle="BOXER ${boxer.ver} API" 
-	   overview="overview.html"/>
+	   overview="overview.html">
+    <classpath refid="classpath"/>
+    </javadoc>
+
 </target>
 
 </project>
