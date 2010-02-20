@@ -17,10 +17,11 @@ package edu.dimacs.mms.boxer;
     0.7.002 - 2009-09-28. Lazy truncation made correct in TruncatedGradient, and disabled in ExponentiatedGradient
     0.7.003 - 2009-12-08. Test BOXER applications added in edu.dimacs.mms.accutest
     0.7.004 - 2009-12-18. Enabled "physical" truncation 
+    0.7.005 - 2010-02-18. New installation instructions; moving away RDF converters (to avoid using Jena)
 </pre>
  */
 public class Version {
-    public final static String version = "0.7.004";
+    public final static String version = "0.7.005";
 }
 
 /*
