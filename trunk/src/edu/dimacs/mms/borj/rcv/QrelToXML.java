@@ -109,7 +109,7 @@ public class QrelToXML {
 	
 	//String outdir = ht.getOption("out", "/home/vmenkov/boxer/rcv-out");
 	String outdir = ht.getOption("out", null);
-	if (out==null) usage("Option -Dout=... must be set");
+	if (outdir==null) usage("Option -Dout=... must be set");
 
 
 	int from = ht.getOption("from", 0),  to = ht.getOption("to", 0);
