@@ -34,7 +34,7 @@ import java.io.*;
 
     Usage: 
 <pre>
- java [-Dd=/home/rcv] [-Dout=/home/vmenkov/rcv-out] [-Dfrom=1] [-Dto=100] borj.rcv.Driver docids.txt [suite.xml]
+ java [-Dd=/home/rcv] [-Dout=/home/username/rcv-out] [-Dfrom=1] [-Dto=100] borj.rcv.Driver docids.txt [suite.xml]
 </pre>
 
     In the command line above, "docids.txt" is a list of document
@@ -90,7 +90,7 @@ public class QrelToXML {
     }
 
     static void usage(String m) {
-	System.out.println("Usage: java [-Dd=/home/rcv] [-Dout=/home/vmenkov/rcv-out] [-Dfrom=1] [-Dto=100] [-Dout=output-directory | -Doutsuite=suite-out.xml -Doutlabels=labels-out.xml] borj.rcv.Driver docids.txt [suite.xml]");
+	System.out.println("Usage: java [-Dd=/home/rcv] [-Dout=/home/username/rcv-out] [-Dfrom=1] [-Dto=100] [-Dout=output-directory | -Doutsuite=suite-out.xml -Doutlabels=labels-out.xml] borj.rcv.Driver docids.txt [suite.xml]");
 	if (m!=null) {
 	    System.out.println(m);
 	}
@@ -102,9 +102,15 @@ public class QrelToXML {
     static public void main(String argv[]) throws IOException, org.xml.sax.SAXException, BoxerXMLException {
 	//memory();
 	/** The directory where the original rv files are */
-	String d = "/home/vmenkov/rcv";
+	//String d = "/home/vmenkov/rcv";
+	String d = null;
 	d =ht.getOption("d", d);
-	String outdir = ht.getOption("out", "/home/vmenkov/boxer/rcv-out");
+	if (d==null) usage("Option -Dd=... must be set");
+	
+	//String outdir = ht.getOption("out", "/home/vmenkov/boxer/rcv-out");
+	String outdir = ht.getOption("out", null);
+	if (out==null) usage("Option -Dout=... must be set");
+
 
 	int from = ht.getOption("from", 0),  to = ht.getOption("to", 0);
 

@@ -48,8 +48,10 @@ public class PrepareRCV {
 	ParseConfig ht = new ParseConfig();
 
 	/** The directory where the original rv files are */
-	String d = "/home/vmenkov/rcv";
+	//String d = "/home/vmenkov/rcv";
+	String d = null;
 	d =ht.getOption("d", d);
+	if (d==null) usage("Option -Dd=... must be set");
 
 	String out = ht.getOption("out", ".");
 
