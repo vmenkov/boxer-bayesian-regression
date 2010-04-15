@@ -839,6 +839,9 @@ public class Suite {
 	XMLUtil.writeXML(xmldoc, fname);
     }
 
+    /** Creates an XML document made of a LEARNERCOMPLEX element,
+      which will describe all the learners for this suite.
+     */
     public Document serializeLearnerComplex() {
 	
 	Document xmldoc= new DocumentImpl();

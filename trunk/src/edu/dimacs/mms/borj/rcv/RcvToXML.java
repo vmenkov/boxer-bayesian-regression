@@ -11,7 +11,7 @@ import java.io.*;
 
     Sample usage:
  <pre> 
-    java  -Dfrom=1 -Dto=100 [-Dqrel=true] [-Dout=../rcv-out/out.xml] [-Dd=/home/vmenkov/rcv] borj.rcv.RcvToXML  id-list.txt lyrl2004_tokens_test_pt*.dat
+    java  -Dfrom=1 -Dto=100 [-Dqrel=true] [-Dout=../rcv-out/out.xml] [-Dd=/home/username/rcv] borj.rcv.RcvToXML  id-list.txt lyrl2004_tokens_test_pt*.dat
 </pre>
 
    The file listing the document IDs (data point IDs) is specified
@@ -36,7 +36,7 @@ public class RcvToXML {
 
     static void usage() {
 	System.out.println("Usage:");
-	System.out.println("     java  -Dfrom=1 -Dto=100 [-Dqrel=true] [-Dout=../rcv-out/out.xml] [-Dd=/home/vmenkov/rcv] borj.rcv.RcvToXML  id-list.txt lyrl2004_tokens_test_pt*.dat");
+	System.out.println("     java  -Dfrom=1 -Dto=100 [-Dqrel=true] [-Dout=../rcv-out/out.xml] [-Dd=/home/username/rcv] borj.rcv.RcvToXML  id-list.txt lyrl2004_tokens_test_pt*.dat");
 	System.out.println("Read the Javadoc pages for more details.");
 	usage(null);
     }
@@ -83,8 +83,9 @@ public class RcvToXML {
 	Discrimination disInd = suite.addDiscrimination(INDUSTRY);
 	disInd.setDefaultClass(NONE);
 
-	String d = "/home/vmenkov/rcv";
+	String d = null; // "/home/vmenkov/rcv";
 	d =ht.getOption("d", d);
+	if (d==null) usage("Option -Dd=... must be set");
 
 	if (addQrel) {
 	    System.out.println("Reading QREL files...");
