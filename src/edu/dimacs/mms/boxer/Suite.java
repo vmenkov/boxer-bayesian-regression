@@ -35,6 +35,11 @@ import org.xml.sax.SAXException;
     one has to be careful to make sure that DataPoints parsed in
     the context of one suite are only used with that suite.
 
+    <p>Within a suite, the individual discriminations it contains can
+    be accessed by their zero-based integer ID using the method {@link
+    #getDisc(int did)}, or by name, using  {@link
+    #getDisc(String disName)}
+
  */
 public class Suite {
 
@@ -1159,18 +1164,35 @@ public class Suite {
      */
     public Learner deserializeLearner( Element e) throws  org.xml.sax.SAXException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);	
-	String a = XMLUtil.getAttributeOrException(e, ParseXML.ATTR.NAME_ATTR);
+
+	// saved version
+	String version= e.getAttribute(ParseXML.ATTR.VERSION_ATTR);
+	if (version == null) version =  Version.version;
+
+	String name = XMLUtil.getAttributeOrException(e, ParseXML.ATTR.NAME_ATTR);
+	//	String algoName = XMLUtil.getAttributeOrException(e, ParseXML.LEARNER.ALGORITHM);
+	String algoName = e.getAttribute( ParseXML.ATTR.LEARNER.ALGORITHM);
+	if (algoName==null) {
+	    if (Version.compare(version, "0.7.006") < 0 &&
+		name != null) {
+		// Backward compatibility: use the value of the "name" attrib as
+		// if it was the "algorithm" prop
+		Logging.warning("XML learner element with name='"+name+"' has no 'algorithm' property. Using 'name' as if it was 'algorithm', for backward compatibility reasons (input XML version="+version+")");
+	    } else {
+		throw new IllegalArgumentException("Learner element with name='" + name +"' has no 'algorithm' property, which now is mandatory.");
+	    }
+	}
 
 	//Class algoClass = Class.forName(a);
 	
-	if (a.endsWith("boxer.TrivialLearner")) {
+	if (algoName.endsWith("boxer.TrivialLearner")) {
 	    return new TrivialLearner(this, e );
-	} else if (a.endsWith("boxer.TruncatedGradient")) {
+	} else if (algoName.endsWith("boxer.TruncatedGradient")) {
 	    return new TruncatedGradient(this, e );
-	} else if (a.endsWith("boxer.ExponentiatedGradient")) {
+	} else if (algoName.endsWith("boxer.ExponentiatedGradient")) {
 	    return new ExponentiatedGradient(this, e );
 	} else {
-	    throw new IllegalArgumentException("Model reading for name='"+a+"' is not supported.");
+	    throw new IllegalArgumentException("Model reading for algorithm='"+algoName+"' is not supported.");
 	}
 
     }
@@ -1304,6 +1326,13 @@ public class Suite {
     public Suite lightweightCopyOf(String newName) {
 	return new Suite(newName, this);
     }
+
+    /** Only used by anon learner name generator */
+    static private int anonLearnerCnt = 0;
+    /** Gets a new name to use for an "anonymous" learner  */
+    String makeNewAnonLearnerName() {
+	return "AnonymousLearner_" + (anonLearnerCnt++);
+    } 
 
 }
    

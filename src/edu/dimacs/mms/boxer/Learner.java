@@ -67,7 +67,7 @@ public abstract class Learner implements Model {
 	@param p DataPoint to score
 
 	@return double[], an array of probabilities for all classes of
-	the specified discriminations.
+	the specified discriminations. 
 	*/
 	abstract public double [] applyModel( DataPoint p);
 
@@ -147,10 +147,20 @@ public abstract class Learner implements Model {
 	  full content of coefficient matrices
 	*/
 	void describe(PrintWriter out, boolean verbose) {}
-    };
+    }; // End of class LearnerBlock 
 
     /** Classifiers for individual discriminations */
     LearnerBlock[] blocks;
+
+    /** The name of this learner (for reporting purposes). It is
+     * distinct from the name of the algorithm implemented by the
+     * learner */
+    //final
+    String name;
+    /** The name of this learner (for reporting purposes). It is
+     * distinct from the name of the algorithm implemented by the
+     * learner */
+    public String getName() { return name; }
 
     /** The suite of discriminations into which we classify. Besides
 	this learnber, there may be other learners using the same Suite
@@ -165,7 +175,7 @@ public abstract class Learner implements Model {
 
 	@param p An example to apply the model to
 	@return An array of the probabilities of membership in
-	different classes. 
+	different classes. For details, see {@link Model#applyModel( DataPoint p)}
 
      */
     final public double [][] applyModel( DataPoint p) {
@@ -174,6 +184,12 @@ public abstract class Learner implements Model {
 	return s;	
     }
 
+    /** Similar to {@link #applyModel( DataPoint p)}, but returns
+     * <em>logarithms</em> of probabilities, rather than probabilities
+     * themselves. This is useful when one want to look at the
+     * smallest values, and to prevent digital underflow from making
+     * them look like zeros. 
+     */
     final public double [][] applyModelLog( DataPoint p) {
 	double [][] s = new double[blocks.length][];
 	for(int did=0; did<s.length; did++) {
@@ -392,10 +408,10 @@ public abstract class Learner implements Model {
 
     /** Saves the complete internal state of the classifier (with the
      * current values of all parameters, any latent coefficients or
-     * whatever, as well as its {@link edu.dimacs.mms.boxer.Suite Suite}) as an XML
-     * Document object, which can later be written into an XML
-     * file. The file can be read in later on to re-create the
-     * classifier.
+     * whatever, as well as its {@link edu.dimacs.mms.boxer.Suite
+     * Suite}) as an XML Document object, which can later be written
+     * into an XML file. The file can be read in later on to re-create
+     * the classifier.
      @return An XML document that can be saved to the file
 
      @see #describe() describe()
@@ -403,7 +419,8 @@ public abstract class Learner implements Model {
     public Element saveAsXML(Document xmldoc) {
 		
 	Element root = xmldoc.createElement( XMLUtil.LEARNER);
-	root.setAttribute(ParseXML.ATTR.NAME_ATTR, algoName());
+	root.setAttribute(ParseXML.ATTR.NAME_ATTR, getName());
+	root.setAttribute(ParseXML.ATTR.LEARNER.ALGORITHM, algoName());
 	root.setAttribute("version", Version.version);
 	root.appendChild( saveParamsAsXML(xmldoc));
 
@@ -499,7 +516,7 @@ public abstract class Learner implements Model {
       @return a HashMap mapping each param name to an object (Double
       or Param constant) corresponding to the found value.
      */
-    static HashMap<String,Object> parseParamsElement(Element pe, //String name[], 
+    static HashMap<String,Object> parseParamsElement(Element pe,  
 						     HashMap<String,Object> h)  {
 
 	final boolean ignoreCase=true;
@@ -722,6 +739,29 @@ public abstract class Learner implements Model {
 				   new Object[] {});
     }
 
+    /** Sets the name - from the XML element if available, and as an
+     * anon learner, otherwise. This method must be called from all
+     * derived class constructors.
+     */
+    protected void initName(Element e) {
+	if (e!=null) {
+	    XMLUtil.assertName(e, XMLUtil.LEARNER);	    
+	    name = e.getAttribute( ParseXML.ATTR.NAME_ATTR);
+	}
+	if (name==null) name = suite.makeNewAnonLearnerName();
+	if (name==null) throw new AssertionError("Failed to set learner name. Why?!");
+	if (!nameIsUnique()) throw new IllegalArgumentException("Learner name '"+name+"' is not unique within the suite '"+suite.getName()+"'");
+    }
+
+    /** Is the name of this learner unique among the names of all
+     * learners associated with the same suite? This method is used in
+     * Learner constructors, as part of the validation of the input data. */
+    boolean nameIsUnique() {
+	for(Learner other: suite.getAllLearners()) {
+	    if (other != this && name.equals(other.getName())) return false;
+	}
+	return true;
+    }
 
 
 }

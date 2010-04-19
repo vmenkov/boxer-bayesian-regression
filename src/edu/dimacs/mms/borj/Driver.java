@@ -193,7 +193,8 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
 
     This command can also be used with two arguments,
     <tt>test:<em>test-set.xml</em>:<em>score-output-file.txt</em></tt>,
-    to make BORJ save the test examples' scores to a names file.
+    to make BORJ save the test examples' scores to the second-named
+    file. For the format of that file, see {@link edu.dimacs.mms.boxer.DataPoint#reportScoresAsText(double prob[][], Suite, String runid, PrintWriter)}
 
     <li>write-suite: Writes out the suite (only the suite, i.e. the
     list of classes), as it currently stands, into the
@@ -465,14 +466,17 @@ public class Driver {
 		if (Suite.verbosity>0) System.out.println("Test set no. " +testCnt+ " ("+q.f+") contains " + test.size() + " points, memory use=" + Sizeof.sizeof(test) + " bytes");
 
 		cnt=0;
+
+		PrintWriter sw = null;
+		if ( q.f2 != null) {
+		    System.out.println("Scores will go to text file ("+q.f2+")");
+		    sw = new PrintWriter( new FileWriter(q.f2));
+		}
+		
 		for(Learner algo: suite.getAllLearners()) {
 		    if (Suite.verbosity>0) System.out.println("Scoring test set ("+q.f+") using learner " + cnt);
 				
-		    PrintWriter sw = null;
-		    if (cnt==0 && q.f2 != null) {
-			System.out.println("Scores will go to text file ("+q.f2+")");
-			sw = new PrintWriter( new FileWriter(q.f2));
-		    }
+
 		    Scores seLocal = new Scores(suite);
   
 		    for(int i=0; i<test.size(); i++){
@@ -484,7 +488,7 @@ public class Driver {
 			if (Suite.verbosity>0) System.out.println("Scored test vector "+i+"; scores=" +
 					   x.describeScores(prob, suite));
 
-			if (sw!=null) x.reportScoresAsText(prob,suite,runid,sw);
+			if (sw!=null) x.reportScoresAsText(prob,algo,runid,sw);
 
 			seLocal.evalScores(x, suite, prob);
 			se[cnt].evalScores(x, suite, prob);
@@ -494,7 +498,6 @@ public class Driver {
 				    se[cnt].likCnt, se[cnt].logLik);	
 
 		    }
-		    if (sw != null) sw.close();
 		    // Print report on scores so far
 		    if (Suite.verbosity>=0) {
 			System.out.println("Scoring report (file "+q.f+"):");
@@ -504,7 +507,9 @@ public class Driver {
 			
 		    }
 		    cnt++;
-		}
+		} // for all learners
+		if (sw != null) sw.close();
+
 		int ts = test.size();
 		test = null;		
 		memory("Scored "+ts+" examples from "+q.f);

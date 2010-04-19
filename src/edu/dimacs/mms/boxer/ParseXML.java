@@ -48,6 +48,7 @@ public class ParseXML {
     public static class ATTR {
 	public final static String LABEL_ATTR[] = {"dis", "class"};
 	final static String FEATURE_ATTR[] = {"name", "value"};
+	/** Used by many elements, includeing DataPoint and Learner */
 	final static String NAME_ATTR = "name";
 	/** For the Suite element */	
 	final static String
@@ -74,6 +75,10 @@ public class ParseXML {
 		QREL = "qrel";
 	    /** value is "true" if this is the fallback discr of the suite */
 	    final static String FALLBACK = "fallback";
+	}
+	/** Attributes specifically for the Learner element */
+	static class LEARNER {
+	    final static String ALGORITHM = "algorithm";	    
 	}
     }
 
