@@ -15,5 +15,7 @@ set w=write:${out}/rcv-model3-out.xml
 
 
 time java $opt $driver \
-    read-suite:${d}/rcv-small-cat-suite.xml  $qa \
+    read-suite:${d}/rcv-small-cat-suite.xml  \
+    write:${out}/eg-learner-tmp.xml \
+    $qa \
     $a $a1    $a $a1    $a $a1 $w > $out/run-rcv-small-aa.log 

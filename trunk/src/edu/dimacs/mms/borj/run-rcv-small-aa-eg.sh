@@ -14,5 +14,7 @@ set a1=test:${d}/train1000.xml:${out}/rcv-small-aa-scores-eg.txt
 set w=write:${out}/model-out-eg.xml
 
 time java -Dmodel=eg $opt $driver \
-    read-suite:${d}/rcv-small-cat-suite.xml  $qa \
+    read-suite:${d}/rcv-small-cat-suite.xml \
+    write:${out}/eg-learner-tmp.xml \
+    $qa \
     $a $a1    $a $a1    $a $a1 $w > $out/run-rcv-small-aa-eg.log 

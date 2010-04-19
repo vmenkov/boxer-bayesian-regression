@@ -24,8 +24,6 @@ public class TruncatedGradient extends PLRMLearner {
     double g=0.1;
     private int K = 10;
     
-    Truncation commonTrunc; 
-
     class TruncatedGradientLearnerBlock extends PLRMLearner.PLRMLearnerBlock {
 
 	Truncation trunc; 
@@ -180,13 +178,7 @@ public class TruncatedGradient extends PLRMLearner {
       
     */
     TruncatedGradient(Suite _suite, Element e) throws org.xml.sax.SAXException {
-	setSuite( _suite);
-	commonTrunc = new Truncation( Param.INF, g*eta, K, new BetaMatrix[0], lazyT);
-	if (e==null) {
-	    createAllBlocks();
-	} else {
-	    parseLearner(e);
-	}
+	super.init(_suite, e);
     }
 
     public void describe(PrintWriter out, boolean verbose) {
@@ -225,11 +217,20 @@ public class TruncatedGradient extends PLRMLearner {
 	eta =  ((Double)(h.get("eta"))).doubleValue();
 	g =  ((Double)(h.get("g"))).doubleValue();
 	K = ((Number)(h.get(PARAM.K))).intValue();
+	if (K<=0) throw new IllegalArgumentException("K=" + K + " in the XML learner definition. K must be a positive integer");
 	t = ((Number)(h.get(PARAM.t))).intValue();
-	commonTrunc = new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT);
+	commonTrunc = defaultCommonTrunc(otheta);
 	commonTrunc.setT(t); // part of saved history	
     }
     
+    Truncation defaultCommonTrunc() {
+	return defaultCommonTrunc(Param.INF);
+    }
+
+    private Truncation defaultCommonTrunc(Object otheta) {
+	return  new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT);
+    }
+
        
     TruncatedGradientLearnerBlock createBlock(Discrimination dis, LearnerBlock model) {
 

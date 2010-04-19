@@ -573,7 +573,17 @@ public class DataPoint implements Measurable  {
      /** Returns a string listing the scores with
       * annotations. Specially marks scores for the classes to which
       * this data point is known to be assigned according to its
-      * classes array */
+      * classes array.
+
+      <p> This method is designed to produce a compact, but still
+      readable representation, so it does not print class names. Each
+      lines contains scores for all classes in one discrimination; the
+      discrimination name appears first, and all classes' scores
+      (probabilities) follow. The probability for the supposed
+      "correct" class (when known) are marked with square brackets, so
+      that one could see at a glance if the classifier's predictions
+      are "correct" or not.
+ */
      public String describeScores(double prob[][], Suite suite) {
     	 boolean y[] = getY(suite);
     	 boolean ysec[][] = suite.splitVectorByDiscrimination(y);
@@ -726,8 +736,12 @@ public class DataPoint implements Measurable  {
      /** Prints information about the scores of a data point with
        respect to all classes in a plain text form, one score per
        line, complete with all other information (run id, dis name,
-       class name etc)
+       class name etc).
+       
 
+       <p>
+       Column details:
+       
        <ol>
        <li>  RUN_ID : This is something that the user is required to supply to BORJ.
 
@@ -735,26 +749,38 @@ public class DataPoint implements Measurable  {
 
        <li>  SUITE_NAME: Name of the Suite.
 
+       <li>  LEARNER_NAME: Name of the Learner (since ver. 0.7.006)
+
        <li>  DISCRIMINATION_NAME : Name of the discrimination.
 
        <li>  LINE_CLASS_NAME : Name of the class that this line is reporting on.
 
        <li>  PROB : The probability, p, that the model predicts for the example EXAMPLE_ID belonging the class LINE_CLASS_NAME from discrimination DISCRIMINATION_NAME.  BOXER provides this and it's always in the closed interval [0.0, 1.0].
 
-       <li>  "PRED:"PREDICTED_CLASS_NAME : the class that BOXER would pick for the example if forced to choose.  The main purpose of this is to allow consistent handling of tied scores.  An application using BOXER can always override its choice.
+       <li>  PREDICTED_CLASS_NAME : the class that BOXER would pick for the example if forced to choose.  The main purpose of this is to allow consistent handling of tied scores.  An application using BOXER can always override its choice.
 
-       <li>  "TRUE:"TRUE_CLASS_NAME :  inserted by BORJ when known.
+       <li>  TRUE_CLASS_NAME :  inserted by BORJ when known.
   </ol>
+
+  <p> Normally, one would invoke this method after the DataPoint has
+  been scored with a learner's {@link Learner#applyModel( DataPoint
+  p)} method.
+
+  @param prob the probability array, e.g. as returned by {@link Learner#applyModel( DataPoint p)}
+  @param suite Suite in the context of which the data point has been scored
+  @param out PrintWriter to which the text will be printed.
   
       */
-     public void reportScoresAsText(double prob[][], Suite suite, String runid, PrintWriter out) {
+     public void reportScoresAsText(double prob[][], Learner learner, String runid, PrintWriter out) {
+	 Suite suite = learner.getSuite();
 	 Discrimination.Cla[] chosen=interpretScores(prob,suite);
 
 	 for(int did = 0; did < prob.length; did ++) {	     
 	     Discrimination dis = suite.getDisc(did);
 	     for(int i=0; i<prob[did].length; i++) {		 
 		 Discrimination.Cla trueCla = claForDisc(dis);
-		 String q[] = {runid,  name,  suite.name, dis.name, 
+		 String q[] = {runid,  name,  suite.name, learner.getName(),
+			       dis.name, 
 			       dis.getClaById(i).name, ""+  prob[did][i],
 			       chosen[did].name, (trueCla==null? "null" : trueCla.name)};
 		 for(int j=0; j<q.length; j++) {

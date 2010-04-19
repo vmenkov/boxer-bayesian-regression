@@ -4,7 +4,7 @@
 
 source set.sh
 
-set d=${main}/src/sample-data
+set d=../../../../../sample-data
 
 set a=train:${d}/train-set.xml 
 set a1=test:${d}/train-set.xml:${out}/sample-aa-scores-tg.txt 

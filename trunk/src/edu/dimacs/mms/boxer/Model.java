@@ -13,8 +13,15 @@ public interface Model {
 	probabilities of membership in different classes.
 	
 	@param p An example to apply the model to
+
 	@return An array of the probabilities of membership in
-	different classes. 
+	different classes. It's a two-dimensional array; each element
+	of it is a one-dimensional array corresponding to a single
+	discirmination. The elements of this one-dim array are the
+	probability estimates the DataPoint's belonging to various
+	classes of this discriminations, and should sum to 1.0. They
+	are ordered in the same way the classes are ordered in the
+	discrimination by class id (see {@link Discrimination#getClaById(int)})
 
      */
     public double [][] applyModel( DataPoint p);

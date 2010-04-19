@@ -37,7 +37,10 @@ public class ExponentiatedGradient extends PLRMLearner {
 	Fixed defaults set as of Ver 0.5.006 (2009-04-21)
      */
     double commonU=10.0, commonF=1.0;
-    Truncation commonTrunc = new Truncation(lazyT);
+
+    Truncation defaultCommonTrunc() {
+	return new Truncation(lazyT);
+    }
 
     /** If these flags are true, U and f will be computed on each
 	training example based on our heuristics. This was default prior to 
@@ -130,6 +133,8 @@ public class ExponentiatedGradient extends PLRMLearner {
 		U=commonU;
 		f=commonF;
 		classSizesMatrix.enable(0, dis.claCount());
+		if (commonTrunc==null) throw new IllegalArgumentException("commonTrunc=null");
+
 		trunc = new Truncation( commonTrunc, new Matrix[]{ vplus, vminus});
 	    } else {
 		U=b.U;
@@ -458,12 +463,7 @@ public class ExponentiatedGradient extends PLRMLearner {
     */
     public ExponentiatedGradient(Suite _suite, Element e) throws
 	org.xml.sax.SAXException {
-	setSuite( _suite);
-	if (e==null) {
-	    createAllBlocks();
-	} else {
-	    parseLearner(e);
-	}
+	super.init(_suite, e);
     }
 
 

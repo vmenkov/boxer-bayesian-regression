@@ -19,7 +19,6 @@ public abstract class PLRMLearner extends Learner {
 	  through learning */
 	protected BetaMatrix w = new BetaMatrix();
 
-
 	/** Returns true if this learning block contains no
 	non-trivial information obtained from learning.
 	
@@ -241,20 +240,47 @@ public abstract class PLRMLearner extends Learner {
 
     } // end of inner class
 
-    /** Names of parameters, as they appear in XML files */
-    static class PARAM {
-	final static String f = "f", U = "u" , maxInfNorm = "maxInfNorm",
-	    classSizes = "classSizes",
-	    K = "k", t = "t";
-    }
+    /** Truncation modailities, if any. Should be set in the
+     * constructor (after reading any params from the XML input,
+     * if given) */
+    Truncation commonTrunc; 
+    /** Called from the constructor */
+    abstract Truncation defaultCommonTrunc();
+    
 
-    abstract void parseParams(Element e);
+    /** Common initialization procedures for all derived classes. The
+      values are initialized based on the content of an XML element
+      (which may be the top-level element of an XML file), or more
+      often, an element nested within a "learners" element within a
+      "learner complex" element.
+      
+      <p> This method should not be invoked other than from child
+      class constructors'.
+
+      @param _suite in the context of which the learner will exist. Must be non-null
+      @param e XML element ("learner") to read the learner's description for. Optional; may be null, in which case all defaults are used.
+
+    */
+ 
+    protected void init(Suite _suite, Element e) throws
+	org.xml.sax.SAXException {
+	setSuite( _suite);
+	if (e==null) {
+	    name = suite.makeNewAnonLearnerName();
+	    commonTrunc = defaultCommonTrunc();
+	    createAllBlocks();
+	} else {
+	    parseLearner(e); 
+	}
+	initName(e);
+     }
+
 
     /** Initializes various parts of the learner from an XML
      * element. This method is invoked from the XML-based constructors
      * of the derived classes.
-     */
-    final void parseLearner( Element e) throws	org.xml.sax.SAXException {
+     */    
+    private final void parseLearner( Element e) throws	org.xml.sax.SAXException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);
 
 	// First, find and parse the "parameters" tag, if it exists
@@ -264,7 +290,7 @@ public abstract class PLRMLearner extends Learner {
 	}
 
 	// ensure that all blocks exist, and that they inherit any
-	// applicable "copmmon" parameters (such as commonTrunc)
+	// applicable "common" parameters (such as commonTrunc)
 	createAllBlocks();
 
 	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
@@ -292,6 +318,17 @@ public abstract class PLRMLearner extends Learner {
 	    }
 	}
     }
+
+    /** Names of parameters, as they appear in XML files */
+    static class PARAM {
+	final static String f = "f", U = "u" , maxInfNorm = "maxInfNorm",
+	    classSizes = "classSizes",
+	    K = "k", t = "t";
+    }
+
+    /** Derived classes must have their own implementation, looking
+     * for parameters they need */
+    abstract void parseParams(Element e);
 
 
     /** Finds the "parameters" element enclosed into the given "learner" element

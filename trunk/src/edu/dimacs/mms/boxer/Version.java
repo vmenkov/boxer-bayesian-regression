@@ -12,16 +12,46 @@ package edu.dimacs.mms.boxer;
     0.6.006 - 2009-06-24. Boxer: improved DataPoint name management; 
        ParseXML enhancements (in connection with standard-scenarios.html)
     0.6.007 - 2009-06-28. Only updated docs
+
     0.7.001 - 2009-09-24. New ID validation process. Using caret instead of
        colon for compact XML format. New package tree structure.
     0.7.002 - 2009-09-28. Lazy truncation made correct in TruncatedGradient, and disabled in ExponentiatedGradient
     0.7.003 - 2009-12-08. Test BOXER applications added in edu.dimacs.mms.accutest
     0.7.004 - 2009-12-18. Enabled "physical" truncation 
     0.7.005 - 2010-02-18. New installation instructions; moving away RDF converters (to avoid using Jena)
+    0.7.006 - 2010-04-19. The semantics of the "name" attribute of the "learner" element is now shifted to the "algorithm" attribute, while "name" has now a new independent meaning. The new (4th) column in the score files.
 </pre>
  */
 public class Version {
-    public final static String version = "0.7.005";
+    public final static String version = "0.7.006";
+
+    /** Compares two version number (described as strings). 
+	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.
+     */
+    static public int compare(String v1, String v2) 
+	throws IllegalArgumentException {
+	if (v1.equals(v2)) return 0;
+	String[] a1=v1.split("\\.");
+	String[] a2=v2.split("\\.");
+	int i=0;
+	for(;i<a1.length && i<a2.length; i++) {
+	    int x1, x2;
+	    try {
+		x1 = Integer.parseInt(a1[i]);
+	    } catch ( NumberFormatException ex) {
+		throw new IllegalArgumentException("Not a valid version number: " + v1);
+	    }
+	    try {
+		x2 = Integer.parseInt(a2[i]);
+	    } catch ( NumberFormatException ex) {
+		throw new IllegalArgumentException("Not a valid version number: " + v2);
+	    }
+	    int d  = x1-x2;
+	    if (d!=0) return d;
+	}
+	// either no string has any non-compared sections left, or only one does
+	return  (a1.length - a2.length);
+    }
 }
 
 /*

@@ -79,6 +79,7 @@ public class TrivialLearner extends Learner {
 	org.xml.sax.SAXException {
 	this(suite);
 	XMLUtil.assertName(e, XMLUtil.LEARNER);
+	initName(e);
     }
 
 
