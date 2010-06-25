@@ -3,7 +3,7 @@
 <body>
 <h1>Boxer and BORJ installation notes</h1>
 
-<em>Updated 2010-04-07</em>
+<em>Updated 2010-06-18</em>
 
 <h2>Prerequisites</h2>
 
@@ -39,6 +39,10 @@ To compile and use Boxer and Borj, you  need an external JAR file:
 <li>xercesImpl.jar: There are multiple sources on the internet (including the official site, <a href="http://xerces.apache.org/">Apache Xerces</a>), and if you've downloaded some of popular Java-based applications (e.g., Apache Ant), you probably already haver this file on. This library is essential for Boxer's parsing of XML files.
 </ul>
 
+<P>(This is how to find xercesImpl.jar on the official Apache Xerces site: go to the binary download section of that site, 
+<a href="http://xerces.apache.org/mirrors.cgi#binary">http://xerces.apache.org/mirrors.cgi#binary</a>, find the "Xerces2 Java" subsection, and download e.g. the zip file from that subsection. (As of June 2010,  it is labeled "Xerces2 Java 2.9.1 - zip".) Once the zip file has been downloaded, unpack it (or, in MS Windows, "open" it using whatever program you use to "open" ZIP files), and extract from it xercesImpl.jar).
+</P> 
+
 <p>Once downloaded, you should locate the Jar file somewhere where it
 would be included in your classpath. This will be explained in more
 details below.
@@ -72,6 +76,9 @@ or
 </pre>
 (to run our small Boxer application, BORJ).
 </p>
+
+<p><strong>Note</strong>: If you're using MS Windows rather than Linux/UNIX, you should use semicolon (;) rather than colon (:) between the components of the classpath in the examples above.
+</P>
 
 <h2>Downloading and compiling from source</h2>
 
