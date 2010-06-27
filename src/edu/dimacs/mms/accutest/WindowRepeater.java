@@ -281,7 +281,7 @@ public class WindowRepeater {
 					   x.describeScores(prob, suite));
 		    }
 		    
-		    //if (sw!=null) x.reportScoresAsText(prob,suite,runid,sw);
+		    //if (sw!=null) x.reportScoresAsText(prob,algo,runid,sw);
 		    
 		    scoresTrain.evalScores(x, suite, prob);
 		    x.addLogLinLik(probLog, prob, suite, 
@@ -299,7 +299,7 @@ public class WindowRepeater {
 			System.out.println("Scored test vector "+i+"; scores=" +
 					   x.describeScores(prob, suite));
 		    }
-		    if (sw!=null) x.reportScoresAsText(prob,suite,runid,sw);
+		    if (sw!=null) x.reportScoresAsText(prob,algo,runid,sw);
 		    scoresTest.evalScores(x, suite, prob);
 		    /** Adding prob, instead of probLog, because it's not 
 			logarithmized */
