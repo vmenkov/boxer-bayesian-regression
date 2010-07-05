@@ -205,7 +205,7 @@ public abstract class PLRMLearner extends Learner {
 
 	    @param a "parameters" XML element
 	*/
-	void parseDSP(Element e) {};
+	void parseDSP(Element e)  throws BoxerXMLException{};
 
 	/** Returns a list of matrix that we should look for in the input XML
 	 */
@@ -216,7 +216,7 @@ public abstract class PLRMLearner extends Learner {
 	    matrices, and setting the discrimination-specific
 	    algorithm parameters, if any.
 	*/
-	final void parseDisc(Element e) {
+	final void parseDisc(Element e) throws BoxerXMLException {
 	    HashMap<String, Matrix> h =  listMatrices();// subclass-defined
 	    for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
 		if ( n.getNodeType() == Node.ELEMENT_NODE) {
@@ -241,10 +241,17 @@ public abstract class PLRMLearner extends Learner {
     } // end of inner class
 
     /** Truncation modailities, if any. Should be set in the
-     * constructor (after reading any params from the XML input,
-     * if given) */
+     * constructor (after reading any params from the XML input, if
+     * given). This object is used as the default pattern for all
+     * learner blocks, although they may have their own individual
+     * rules, if provided for in the XML definition. */
     Truncation commonTrunc; 
-    /** Called from the constructor */
+    /** Creates the default {@link edu.dimacs.mms.boxer.Truncation
+     * Truncation} object that will be used by all blocks of the
+     * learner if no discirmination-specific truncation rules are
+     * supplied in the learner's XML description. This meathod is
+     * called (directly or indirectly) from the learner's
+     * constructor. */
     abstract Truncation defaultCommonTrunc();
     
 
@@ -263,7 +270,7 @@ public abstract class PLRMLearner extends Learner {
     */
  
     protected void init(Suite _suite, Element e) throws
-	org.xml.sax.SAXException {
+	org.xml.sax.SAXException, BoxerXMLException{
 	setSuite( _suite);
 	if (e==null) {
 	    name = suite.makeNewAnonLearnerName();
@@ -280,7 +287,7 @@ public abstract class PLRMLearner extends Learner {
      * element. This method is invoked from the XML-based constructors
      * of the derived classes.
      */    
-    private final void parseLearner( Element e) throws	org.xml.sax.SAXException {
+    private final void parseLearner( Element e) throws	org.xml.sax.SAXException,  BoxerXMLException{
 	XMLUtil.assertName(e, XMLUtil.LEARNER);
 
 	// First, find and parse the "parameters" tag, if it exists
@@ -328,14 +335,14 @@ public abstract class PLRMLearner extends Learner {
 
     /** Derived classes must have their own implementation, looking
      * for parameters they need */
-    abstract void parseParams(Element e);
+    abstract void parseParams(Element e) throws BoxerXMLException;
 
 
     /** Finds the "parameters" element enclosed into the given "learner" element
 	@param e A "learner" XML element
 	@return A "parameters" element, or null if none is found
      */
-    private Element findParameters( Element e) throws org.xml.sax.SAXException {
+    private Element findParameters( Element e) throws org.xml.sax.SAXException,  BoxerXMLException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);
 
 	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {

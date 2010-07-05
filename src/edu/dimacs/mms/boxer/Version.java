@@ -20,10 +20,12 @@ package edu.dimacs.mms.boxer;
     0.7.004 - 2009-12-18. Enabled "physical" truncation 
     0.7.005 - 2010-02-18. New installation instructions; moving away RDF converters (to avoid using Jena)
     0.7.006 - 2010-04-19. The semantics of the "name" attribute of the "learner" element is now shifted to the "algorithm" attribute, while "name" has now a new independent meaning. The new (4th) column in the score files.
+
+    0.8.000 - 2010-07-05. Transitionary version to the new "individual priors". I/O for individual priors has been added, but not the actual arithmetic yet
 </pre>
  */
 public class Version {
-    public final static String version = "0.7.006";
+    public final static String version = "0.8.000";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

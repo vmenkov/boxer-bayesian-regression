@@ -132,6 +132,9 @@ public class TruncatedGradient extends PLRMLearner {
 	    return de;
 	}
 
+	/** List of names of matrices that we may need to serialize
+	 * (and deserialize)
+	 */
 	HashMap<String, Matrix> listMatrices() {
 	    HashMap<String, Matrix> h = new HashMap<String, Matrix>();
 	    h.put("W", w);
@@ -149,7 +152,7 @@ public class TruncatedGradient extends PLRMLearner {
 
 	    Overrides the method in the parent class
 	*/    
-	void parseDSP(Element e) {
+	void parseDSP(Element e) throws BoxerXMLException  {
 	    // Make sure that we actually have a truncation instance
 	    // in sync with the learner's "common" params. 2009-10-29
 	    trunc = new Truncation( commonTrunc, new Matrix[]{w});
@@ -166,7 +169,7 @@ public class TruncatedGradient extends PLRMLearner {
 
     } // end of inner class
 
-    public TruncatedGradient(Suite _suite) throws org.xml.sax.SAXException  {
+    public TruncatedGradient(Suite _suite) throws org.xml.sax.SAXException, BoxerXMLException  {
 	this(_suite, null);
     }
 
@@ -177,7 +180,7 @@ public class TruncatedGradient extends PLRMLearner {
       element.
       
     */
-    TruncatedGradient(Suite _suite, Element e) throws org.xml.sax.SAXException {
+    TruncatedGradient(Suite _suite, Element e) throws org.xml.sax.SAXException,  BoxerXMLException  {
 	super.init(_suite, e);
     }
 
@@ -199,7 +202,7 @@ public class TruncatedGradient extends PLRMLearner {
 			   new Double(g),  new Integer(commonTrunc.K) });
     }
 
-    void parseParams(Element e) {
+    void parseParams(Element e) throws BoxerXMLException  {
 	XMLUtil.assertName(e, Learner.PARAMETERS);
 
 	Object otheta = Param.INF; // truncation with no threshold
@@ -227,6 +230,9 @@ public class TruncatedGradient extends PLRMLearner {
 	return defaultCommonTrunc(Param.INF);
     }
 
+    /** Creates a truncation object that has correct parameters, but applies
+	truncation to no matrix.
+     */
     private Truncation defaultCommonTrunc(Object otheta) {
 	return  new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT);
     }
