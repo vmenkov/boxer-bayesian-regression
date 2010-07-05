@@ -42,6 +42,7 @@ public class ParseXML {
 	    DATAPOINT = "datapoint",
 	    LABELS = "labels", LABEL = "label",
 	    FEATURES = "features",	    FEATURE = "feature";
+
     }
 
     /** XML atributes */
@@ -92,7 +93,8 @@ public class ParseXML {
      document isn't good XML
     */
     public static Element readFileToElement(File f)
- 	throws IOException, SAXException{
+ 	throws IOException, SAXException
+    {
 	//Logging.info("Parsing XML file " + f.getPath());
 	return readFileToElement(f.getPath());
     }
@@ -106,7 +108,7 @@ public class ParseXML {
      document isn't good XML
  */
     public static Element readFileToElement(String fname) 
-	throws IOException, SAXException{
+	throws IOException, SAXException {
 	if (!(new File(fname)).exists()) {
 	    throw new IllegalArgumentException("Input file " + fname + 
 					       " does not exist");
@@ -388,6 +390,7 @@ public class ParseXML {
     public Vector<Object> validateDatasetElement2(Element e,
 					     Suite originalSuite, 
 					     boolean isDefinitional) 
+	throws BoxerXMLException
     //throws SAXException
     {
 	Suite validator = originalSuite.lightweightCopyOf("Validator");
@@ -422,6 +425,7 @@ public class ParseXML {
 	return v;
     }
 
+	
 
 }
 

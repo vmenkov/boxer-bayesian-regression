@@ -52,19 +52,79 @@ public class XMLUtil {
     /** Verifies that the specified XML Node is indeed an element with
      a particular name
      
-     @throws An exception if the Node is not an Element node at all,
+     @throws  BoxerXMLException if the Node is not an Element node at all,
      or if the name of the element is * not what's expected
      */
-    static public void assertName(Node /*Element*/ e, String expectedName) {
+    static public void assertName(Node /*Element*/ e, String expectedName) 
+	throws BoxerXMLException {
+	if (!(e instanceof Element))  throw new BoxerXMLException("Found a node of a non-element type where element was expected: " + e);
 	String name = ((Element)e).getTagName();
 	if (!name.equals(expectedName)) 
-	    throw new IllegalArgumentException("Found element is '"+ name +"' where '" + expectedName + "' was expected" );	
+	    throw new BoxerXMLException("Found element is '"+ name +"' where '" + expectedName + "' was expected" );	
     }
 
-    static String getAttributeOrException(Element e, String aname) {
+    static public boolean isNamedElement(Node /*Element*/ e, String expectedName) 
+	throws BoxerXMLException {
+	if (!(e instanceof Element)) return false;	    
+	String name = ((Element)e).getTagName();
+	return  (name.equals(expectedName)) ;
+    }
+
+    /** Can this node be just ignored? Empty text nodes can.
+     */
+    static public boolean isIgnorable(Node n) {
+	int type= n.getNodeType();
+	String val= n.getNodeValue();
+
+	return (type == Node.TEXT_NODE && val.trim().length()==0);
+    }
+
+
+    /** Gets an attribute, as a string. If absent, throws an exception */
+    static String getAttributeOrException(Element e, String aname) throws BoxerXMLException {
 	String a = e.getAttribute(aname);
-	if (!XMLUtil.nonempty(a)) throw new IllegalArgumentException("There is no '"+aname+"' attribute in the XML element '"+e.getTagName()+"'");
+	if (!XMLUtil.nonempty(a)) throw new BoxerXMLException("There is no '"+aname+"' attribute in the XML element '"+e.getTagName()+"'");
 	return a;
+    }
+
+    /** Gets an attribute, and converts it to an int value. If absent,
+      throws an exception */
+    static int getAttributeInt(Element e, String aname) throws BoxerXMLException {
+	return  Integer.parseInt( getAttributeOrException(e,aname));
+    }
+
+    /** Gets an attribute, and converts it to an int value. If absent,
+      returns the specified default value. */
+    static int getAttributeInt(Element e, String aname, int defValue) throws BoxerXMLException {
+	String a = e.getAttribute(aname);
+	return  (XMLUtil.nonempty(a)) ?  Integer.parseInt(a) : defValue;
+    }
+    /** Gets an attribute, and converts it to a double value. If absent,
+      throws an exception */
+    static double getAttributeDouble(Element e, String aname) throws BoxerXMLException {
+	return  Double.parseDouble( getAttributeOrException(e,aname));
+    }
+
+    /** Gets an attribute, and converts it to a double value. If absent,
+      returns the specified default value. */
+    static double getAttributeDouble(Element e, String aname, double defValue) throws BoxerXMLException {
+	String a = e.getAttribute(aname);
+	return  (XMLUtil.nonempty(a)) ?  Double.parseDouble(a) : defValue;
+    }
+
+  /** Gets an attribute, and converts it to a boolean value. (The
+      expected raw value of the attribute is "true" or "false".)
+      If absent, throws an      exception */
+    static boolean getAttributeBoolean(Element e, String aname) throws BoxerXMLException {
+	return  Boolean.parseBoolean( getAttributeOrException(e,aname));
+    }
+
+  /** Gets an attribute, and converts it to a boolean value. (The
+      expected raw value of the attribute is "true" or "false".)
+      If absent,  returns the specified default value. */
+    static boolean getAttributeBoolean(Element e, String aname, boolean defValue) throws BoxerXMLException {
+	String a = e.getAttribute(aname);
+	return  (XMLUtil.nonempty(a)) ?  Boolean.parseBoolean(a) : defValue;
     }
 
 

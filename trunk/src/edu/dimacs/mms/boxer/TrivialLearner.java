@@ -76,7 +76,7 @@ public class TrivialLearner extends Learner {
       
     */
     TrivialLearner(Suite suite, Element e) throws
-	org.xml.sax.SAXException {
+	org.xml.sax.SAXException, BoxerXMLException  {
 	this(suite);
 	XMLUtil.assertName(e, XMLUtil.LEARNER);
 	initName(e);

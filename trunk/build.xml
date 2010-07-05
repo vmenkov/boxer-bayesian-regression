@@ -97,8 +97,13 @@
 </target>
 
 <target name="jar" depends="compile"
-        description="Builds a Jar file (of Boxer+Borj, but not Blackbook-adapter stuff">
-  <jar destfile="${lib}/boxer.jar"   basedir="${build}"  />
+        description="Builds a Jar file that will include all Boxer and BORJ class files (but not the Blackbook-adapter stuff). It will include all of our own class files, and can be used as a binary distribution. The manifest file will specify the BORJ Driver class as the main class">
+  <jar destfile="${lib}/boxer.jar"   basedir="${build}">
+    <manifest> <!-- file="manifest-data.dat" mode="replace" -->
+      <attribute name="Main-Class" value="edu.dimacs.mms.borj.Driver"/>
+      <attribute name="Class-Path" value="xercesImpl.jar"/>	
+    </manifest>
+  </jar>
 </target>
 
 

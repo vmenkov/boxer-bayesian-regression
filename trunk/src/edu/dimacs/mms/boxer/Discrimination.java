@@ -854,7 +854,8 @@ public class Discrimination /* extends DiscriminationFallback */{
 	    null;
     }
 
-    /** Is this a suitable fallback discrimination for Situation 1, as per
+    /** Is this a suitable fallback discrimination for Situation 1
+	("multiple binary"), as per
 	boxer-make-common-case-trivial-20090430.pdf ?
      */
     boolean  isSimpleBinaryFallback() {
@@ -862,7 +863,9 @@ public class Discrimination /* extends DiscriminationFallback */{
     }
 
     /** Is this a suitable binary discrimination for Situation 1, as per
-	boxer-make-common-case-trivial-20090430.pdf ?
+	boxer-make-common-case-trivial-20090430.pdf (i.e., a "simple binary discrimination")? 
+	Such a discrimination must have exactly 2 classes, whose names are based on the name of 
+	the discrimination itself.
      */
     boolean isSimpleBinary() {
 	return isSimpleBinary(notName(name), name);

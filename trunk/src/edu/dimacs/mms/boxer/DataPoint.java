@@ -767,7 +767,7 @@ public class DataPoint implements Measurable  {
   p)} method.
 
   @param prob the probability array, e.g. as returned by {@link Learner#applyModel( DataPoint p)}
-  @param suite Suite in the context of which the data point has been scored
+  @param learner Learner with which the data point has been scored. It is mostly passed in so that the method can access the suite associated with the learner, in whose context the data point has been scored
   @param out PrintWriter to which the text will be printed.
   
       */

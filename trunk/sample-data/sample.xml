@@ -22,7 +22,7 @@
       <feature name="elevation" value="179"/>
   </features>
 </datapoint>
-<datapoint name="New Brunswick, NJ">
+<datapoint name="New_Brunswick,_NJ">
   <labels>    Countries^US Climate^temperate  </labels>
   <features>lat^40.5 lon^-74.5 seaside^0 elevation^21</features>
 </datapoint>

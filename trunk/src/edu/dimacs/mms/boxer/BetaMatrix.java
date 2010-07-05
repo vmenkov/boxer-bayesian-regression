@@ -27,6 +27,10 @@ public class BetaMatrix extends Matrix  {
 	int icla;
 	double value;
 	Coef(int i, double v) { icla =i; value=v;}
+	void setValue(Coef c) {
+	    value = c.value;
+	}
+
 	/** Compares column position */
 	public int compareTo(Coef x) {
 	    return icla - x.icla;
@@ -281,7 +285,7 @@ public class BetaMatrix extends Matrix  {
 	    if (iw>=w.size()) {
 		w.add(q);
 	    } else if (w.elementAt(iw).icla == q.icla) {
-		w.elementAt(iw).value = q.value;
+		w.elementAt(iw).setValue(q);
 	    } else {
 		w.add(iw++, q);
 	    }

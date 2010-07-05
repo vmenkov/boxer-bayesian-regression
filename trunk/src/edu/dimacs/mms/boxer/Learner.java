@@ -132,7 +132,7 @@ public abstract class Learner implements Model {
 	/** Reads in the data - parameters and the classifier's state
 	    - pertaining to this particular discrimination
 	 */
-	abstract void parseDisc(Element e);
+	abstract void parseDisc(Element e) throws BoxerXMLException;
 
 	/** Saves the data - parameters and the classifier's state -
 	    pertaining to this particular discrimination
@@ -617,10 +617,13 @@ public abstract class Learner implements Model {
 	return getClass().getName();
     }
 
-    /** Creates a new Learner instance from an XML file that has been
-	created on an earlier run with {@link #saveAsXML(String)
-	saveAsXML}. Same functionality as {@link
-	#deserializeLearnerComplex(Element)}. 
+    /** Creates a new Suite instance, and a set of Learners using it,
+	from an XML file that has been created on an earlier run with
+	{@link #saveAsXML(String) saveAsXML}. 
+
+	This method is a wrapper around {@link
+	#deserializeLearnerComplex(Element)}, and has the same
+	functionality.
 
 	@throws BoxerXMLException if no proper Suite can be created from the XML 
     */
@@ -644,6 +647,13 @@ public abstract class Learner implements Model {
     }
     */
 
+    /** Creates a new Suite instance, and a set of Learners using it,
+	from an XML element that has been created on an earlier run with
+	{@link #saveAsXML(String) saveAsXML}. Same functionality as
+	{@link #deserializeLearnerComplex(Element)}.
+
+	@throws BoxerXMLException if no proper Suite can be created from the XML 
+    */
     static public Suite deserializeLearnerComplex( Element e)
 	throws  SAXException, BoxerXMLException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER_COMPLEX);
@@ -743,7 +753,7 @@ public abstract class Learner implements Model {
      * anon learner, otherwise. This method must be called from all
      * derived class constructors.
      */
-    protected void initName(Element e) {
+    protected void initName(Element e) throws BoxerXMLException {
 	if (e!=null) {
 	    XMLUtil.assertName(e, XMLUtil.LEARNER);	    
 	    name = e.getAttribute( ParseXML.ATTR.NAME_ATTR);

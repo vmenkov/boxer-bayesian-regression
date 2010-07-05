@@ -194,7 +194,7 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     This command can also be used with two arguments,
     <tt>test:<em>test-set.xml</em>:<em>score-output-file.txt</em></tt>,
     to make BORJ save the test examples' scores to the second-named
-    file. For the format of that file, see {@link edu.dimacs.mms.boxer.DataPoint#reportScoresAsText(double prob[][], Suite, String runid, PrintWriter)}
+    file. For the format of that file, see {@link edu.dimacs.mms.boxer.DataPoint#reportScoresAsText(double [][], Learner, String, PrintWriter)}
 
     <li>write-suite: Writes out the suite (only the suite, i.e. the
     list of classes), as it currently stands, into the
@@ -338,6 +338,14 @@ public class Driver {
 	    suite = new Suite("Basic_BORJ_suite");	    
 	}
 
+	// Any "read-priors" command?
+	if (q!=null && q.is(CMD.READ_PRIORS)) {
+	    System.out.println("Reading priors from file: "+q.f);
+	    Priors p = new Priors(new File(q.f), suite);
+	    suite.setPriors(p);
+	    q = cm.next();
+	}
+
 	// Any "read-learner" commmands?
 	for( ; q!=null && q.is(CMD.READ_LEARNER); q=cm.next()) {
 	    System.out.println("Adding a learner from file: "+q.f);
@@ -392,6 +400,9 @@ public class Driver {
 	    } else if  (q.is(CMD.READ_LABELS)) {		
 		System.out.println("Reading labels from file: "+q.f);
 		qrelStore.readXML(q.f);
+	    } else if  (q.is(CMD.WRITE_PRIORS)) {		
+		System.out.println("Saving the priors (only) to file: "+q.f);
+		suite.getPriors().saveAsXML(q.f); // save the suite only
 	    } else if  (q.is(CMD.WRITE_SUITE)) {		
 		System.out.println("Saving the suite (only) to file: "+q.f);
 		suite.saveAsXML(q.f); // save the suite only

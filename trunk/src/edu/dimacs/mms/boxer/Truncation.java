@@ -61,7 +61,9 @@ class Truncation /*implements Cloneable*/ {
     */
     Matrix matrices[] = null;
      
-    double truncToApply[];
+    /** The count of not-yet-applied truncation operations for each row.
+     */
+    private int truncToApply[];
 
     /** No-truncation constructor */
     Truncation( boolean  _lazy) {
@@ -104,7 +106,7 @@ class Truncation /*implements Cloneable*/ {
 	    }
 	}
 
-	if (lazy) truncToApply= new double[0]; // dic.getDimension()];
+	if (lazy) truncToApply= new int[0]; // dic.getDimension()];
     }
 
     /** Creates a copy of this Truncation, which copies not only
@@ -148,8 +150,10 @@ class Truncation /*implements Cloneable*/ {
 
     
 
-    /** Truncates all elements of W right now
-	FIXME: may want to delete elements that have become 0s.
+    /** Truncates all matrix elements right now.  
+
+	FIXME: for sparsity's sake, we may want to delete elements
+	that have become 0s.
      */
     void truncateNow() {
 	if (mode ==MODE.NONE) return;
@@ -191,11 +195,11 @@ class Truncation /*implements Cloneable*/ {
 		truncToApply= Arrays.copyOf( truncToApply, d);
 	    }
 	    for(int i=0; i<truncToApply.length; i++) {
-		truncToApply[i] += basicTo;
+		truncToApply[i] ++;
 	    }
 	    
 	    //System.out.print("truncToApply=(");
-	    //for(double x :truncToApply) System.out.print(" "+x);
+	    //for(int x :truncToApply) System.out.print(" "+x);
 	    //System.out.println(")");
 
 	}  else  truncateNow();
@@ -212,7 +216,7 @@ class Truncation /*implements Cloneable*/ {
 	if (mode == MODE.NONE) return;
 	if (!lazy) return;
 	if ( truncToApply == null ||  j>=truncToApply.length ) return;
-	double to =  truncToApply[j];
+	double to =  basicTo * truncToApply[j];
 	if (to==0) return;
 	//System.out.println("to=" + to);
 	truncToApply[j] = 0;

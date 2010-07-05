@@ -415,7 +415,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	    @param e Element to parse. If null, just initialize the
 	    params of this block from the "common" values.
 	*/    
-	void parseDSP(Element e) {
+	void parseDSP(Element e) throws BoxerXMLException{
 	    HashMap<String,Object> h = makeHashMap
 		(new String[] {PARAM.f, PARAM.U, PARAM.t, PARAM.maxInfNorm },
 		 new Object[] { reportCommonF(),reportCommonU(),Zero, Zero});
@@ -451,7 +451,7 @@ public class ExponentiatedGradient extends PLRMLearner {
     } // end of inner class
 
 
-    public ExponentiatedGradient(Suite _suite) throws org.xml.sax.SAXException  {
+    public ExponentiatedGradient(Suite _suite) throws org.xml.sax.SAXException, BoxerXMLException   {
 	this(_suite, null);
     }
 
@@ -462,7 +462,7 @@ public class ExponentiatedGradient extends PLRMLearner {
       
     */
     public ExponentiatedGradient(Suite _suite, Element e) throws
-	org.xml.sax.SAXException {
+	org.xml.sax.SAXException, BoxerXMLException {
 	super.init(_suite, e);
     }
 
@@ -529,7 +529,7 @@ public class ExponentiatedGradient extends PLRMLearner {
      * parameters. Makes sure that if a param is not supplied, we
      * keep the defaul
      */
-    void parseParams(Element e) {
+    void parseParams(Element e) throws BoxerXMLException  {
 	XMLUtil.assertName(e, Learner.PARAMETERS);
 
 	Object otheta = Zero; // no truncation

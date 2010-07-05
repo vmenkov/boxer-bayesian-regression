@@ -6,16 +6,19 @@ import java.util.*;
 
 /** An auxiliary class used in command line parsing in borj.Driver */
 public class CMD {
+    /** All command-line commands acceptable by the Driver */
     public final static String 
-	    TRAIN = "train", TEST = "test", 
-	    VALIDATE="validate", 	    
-	    READ_SUITE="read-suite", 
-	    READ_LABELS="read-labels", 
-	    WRITE_SUITE="write-suite", 
-	    READ="read", 
-	    READ_LEARNER="read-learner", 
-	    WRITE="write",
-	    DELETE_DISCR="delete-discr";
+	TRAIN = "train", TEST = "test", 
+	VALIDATE="validate", 	    
+	READ_SUITE="read-suite", 
+	READ_LABELS="read-labels", 
+	READ_PRIORS = "read-priors",
+	WRITE_SUITE="write-suite", 
+	WRITE_PRIORS = "write-priors",
+	READ="read", 
+	READ_LEARNER="read-learner", 
+	WRITE="write",
+	DELETE_DISCR="delete-discr";
     /** The command, such as "read" */
     String cmd;
     /** The command's argument (usually, a file name) */

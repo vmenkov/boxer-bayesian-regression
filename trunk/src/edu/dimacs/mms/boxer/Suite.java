@@ -40,6 +40,15 @@ import org.xml.sax.SAXException;
     #getDisc(int did)}, or by name, using  {@link
     #getDisc(String disName)}
 
+    <p>It is important to note that the numeric discrimination ID is
+    not guaranteed to stay constant during a BOXER application
+    run. That is, it's not really an "ID", but merely a sequential
+    number of the given discrimination in the array of all
+    dscriminations of the suite; and since discriminations can be
+    deleted, the "IDs" of the remaining discriminations will change!
+    On the other hand, the stirng "discrimination name" is both unique
+    within the suite and is guaranteed to remain constant.
+
  */
 public class Suite {
 
@@ -52,11 +61,24 @@ public class Suite {
     /** The feature dictionary associated with this suite */
     FeatureDictionary dic = new FeatureDictionary();
 
+    /** The priors set associated with the suite. It should be set
+	before any learners are created; it will affect all TG learners
+	associated with this suite. */
+    private Priors priors=null;
+    /** Associates a set of priors with the suite. This should be done
+	before any learners are created. The priors will affect all TG learners
+	associated with this suite. */
+    public void setPriors(Priors p) { priors = p; }
+    public Priors getPriors() { return priors; }
+
     /** All discriminations we've got in this suite, accessible by their name.
      */
     HashMap <String, Discrimination> discr = 
 	new HashMap<String, Discrimination>();
-    /** All discriminations ordered by numeric id. */
+    /** All discriminations ordered by numeric id. Note that elements
+     * can be removed from this array, when discriminations are
+     * deleted. This means that the discrimination ID may not stay
+     * constant throughout a run. */
     Vector<Discrimination> did2discr = new  Vector<Discrimination>();
 
     /** Pointer to one of the discriminations in did2discr, which is
@@ -1112,8 +1134,7 @@ public class Suite {
        <p> The current implementation of this method is simply a
        wrapper around Learner.deserializeLearner()
     */
-    public Learner addLearner( Element e) throws //IOException,
- SAXException{
+    public Learner addLearner( Element e) throws SAXException, BoxerXMLException {
 	return deserializeLearner( e);
     }
 
@@ -1128,7 +1149,7 @@ public class Suite {
       @param e The "learners" element to parse. Each children should
       all be "learner" elements.
      */
-    void deserializeLearners(Element e) throws org.xml.sax.SAXException {
+    void deserializeLearners(Element e) throws org.xml.sax.SAXException, BoxerXMLException {
 	XMLUtil.assertName(e, XMLUtil.LEARNERS);	
 	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
 	    int type = n.getNodeType();
@@ -1162,7 +1183,7 @@ public class Suite {
 
       @param e The "learner" element to parse. 
      */
-    public Learner deserializeLearner( Element e) throws  org.xml.sax.SAXException {
+    public Learner deserializeLearner( Element e) throws  org.xml.sax.SAXException, BoxerXMLException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);	
 
 	// saved version
@@ -1262,12 +1283,14 @@ public class Suite {
 	    SupportsSimpleLabels.No;
     }
 
+    /** Names that can be used as the discrimination names in the
+     * default discrimination in the MultipleBinary mode. */
     static final String DIS_NAME = "@DiscriminationName",
 	NOT_DIS_NAME =  "@NotDiscriminationName";
 
     static public final String SYSDEFAULTS = "sysdefaults";
 
-    /** Initializes fallback with sysdefaults */
+    /** Creates a fallback discrimination in this suite, and initializes it with sysdefaults.  */
     private void initFallback() {
 	String[] cnames = 
 	    (supportsSimpleLabels==SupportsSimpleLabels.MultipleBinary) ?
