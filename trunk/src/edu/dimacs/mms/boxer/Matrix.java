@@ -70,6 +70,10 @@ public abstract class Matrix implements Measurable {
 	return true;
     }
 
+
+    /** Number of rows */
+    abstract public int getNRows();
+
     /** Returns the number of non-zero values actually stored in the matrix.
 	Ignores any stored zeros.
     */	

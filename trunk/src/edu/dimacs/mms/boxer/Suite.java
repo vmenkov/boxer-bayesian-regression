@@ -253,7 +253,17 @@ public class Suite {
        associated with this suite */
     public FeatureDictionary getDic() { return dic;}
 
-    void setDic( FeatureDictionary _dic) { dic = _dic;}
+    /** Sets the suite's FeatureDictionary. This method should not be
+      called if the suite already has a nonempty dictionary.
+
+      @throws IllegalArgumentException If the suite already has a non-empty dictionary
+     */
+    void setDic( FeatureDictionary _dic) { 
+	if (dic != null &&  getDic().getDimension()>0) {
+	    throw new IllegalArgumentException("One ought not call Suite.setDic() once the suite already has a non-empty dictionary! Current size=" +  getDic().getDimension());
+	}
+	dic = _dic;
+    }
  
     /** Returns the total number of classes in all discriminations of this
 	suite */
@@ -878,6 +888,12 @@ public class Suite {
 
 	root.appendChild( saveAsXML(xmldoc));
 	root.appendChild(dic.createFeaturesElement( xmldoc));
+	if (priors!=null) {
+	    Logging.info("Saving priors into the LearnerComplex XML");
+	    root.appendChild(priors.saveAsXML( xmldoc));
+	} else {
+	    Logging.info("No priors to save");
+	}
 
 	Element le = xmldoc.createElement(XMLUtil.LEARNERS);
 	for(Learner algo: usedByLearners) {
@@ -918,6 +934,7 @@ public class Suite {
 
 	dic = old.dic; // sharing
 	verbosity = old.verbosity;
+	priors = old.priors; // sharing
 
 	supportsSimpleLabels =  old.supportsSimpleLabels;
 	createNDMode = old.createNDMode;
@@ -1187,18 +1204,18 @@ public class Suite {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);	
 
 	// saved version
-	String version= e.getAttribute(ParseXML.ATTR.VERSION_ATTR);
-	if (version == null) version =  Version.version;
+	String version= XMLUtil.getAttributeString(e, ParseXML.ATTR.VERSION_ATTR, Version.version);
 
 	String name = XMLUtil.getAttributeOrException(e, ParseXML.ATTR.NAME_ATTR);
 	//	String algoName = XMLUtil.getAttributeOrException(e, ParseXML.LEARNER.ALGORITHM);
-	String algoName = e.getAttribute( ParseXML.ATTR.LEARNER.ALGORITHM);
+	String algoName = XMLUtil.getAttributeString( e, ParseXML.ATTR.LEARNER.ALGORITHM, null);
 	if (algoName==null) {
 	    if (Version.compare(version, "0.7.006") < 0 &&
 		name != null) {
 		// Backward compatibility: use the value of the "name" attrib as
 		// if it was the "algorithm" prop
 		Logging.warning("XML learner element with name='"+name+"' has no 'algorithm' property. Using 'name' as if it was 'algorithm', for backward compatibility reasons (input XML version="+version+")");
+		algoName = name;
 	    } else {
 		throw new IllegalArgumentException("Learner element with name='" + name +"' has no 'algorithm' property, which now is mandatory.");
 	    }

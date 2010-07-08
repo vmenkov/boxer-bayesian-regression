@@ -43,14 +43,18 @@ public class TruncatedGradient extends PLRMLearner {
 	    // copy params
 	    dis = _dis;
 	    if (b==null) {
-		trunc = new Truncation( commonTrunc, new Matrix[]{w});
+		trunc = new Truncation( commonTrunc, new Matrix[]{w}, dis); // ZZ
 	    } else {
 		// copy b's matrices etc
 		//System.out.println("TGLB( b=" + b+")");
 		super.initFrom(b);
 		// copy truncation and its state
-		trunc = b.trunc.liveCopy( new Matrix[]{w} );
+		trunc = b.trunc.liveCopy( new Matrix[]{w}, dis ); // ZZ
 	    }
+
+	    System.out.println("TG Block created for dis=" + dis.getName());
+	    System.out.println("trunc=" + trunc.describe());
+
 	}
 
 
@@ -155,7 +159,7 @@ public class TruncatedGradient extends PLRMLearner {
 	void parseDSP(Element e) throws BoxerXMLException  {
 	    // Make sure that we actually have a truncation instance
 	    // in sync with the learner's "common" params. 2009-10-29
-	    trunc = new Truncation( commonTrunc, new Matrix[]{w});
+	    trunc = new Truncation( commonTrunc, new Matrix[]{w}, dis); // ZZ
 
 	    if (e==null) return;
 	    XMLUtil.assertName(e, PARAMETERS);
@@ -234,7 +238,7 @@ public class TruncatedGradient extends PLRMLearner {
 	truncation to no matrix.
      */
     private Truncation defaultCommonTrunc(Object otheta) {
-	return  new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT);
+	return  new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT, suite.getPriors(), null); // ZZ
     }
 
        

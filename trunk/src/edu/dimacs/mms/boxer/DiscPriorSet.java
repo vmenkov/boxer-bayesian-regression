@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 //import org.xml.sax.SAXException;
 
 
-/** An auxiliary class for Priors: Priors of several levels for one
+/** An auxiliary class for {@link Priors}: stores Priors of several levels for one
     discrimination, or the defaults for all discriminations. */
 class DiscPriorSet {
     /* L4 prior; or, when used for "all discriminations", the L1 prior. */
@@ -23,6 +23,8 @@ class DiscPriorSet {
 	@return The applicable prior, or null if none has been found.	 
     */
     Prior get(Discrimination.Cla c, int fid) {
+	if (this instanceof CrossDiscPriorSet && c!=null) throw new AssertionError("DiscPriorSet(c!=null, fid) should not be called on CrossDiscPriorSet");
+
 	Prior  p = L567.get( new CFKey(c, fid));
 	if (p!=null) return p;
 	// L6: (D.c, *)
@@ -30,21 +32,6 @@ class DiscPriorSet {
 	if (p!=null) return p;
 	// L5: (D.*, f)
 	p = L567.get( new CFKey(null, fid));
-	if (p!=null) return p;
-	return L_overall;
-    }
-
-    /** Looks up the applicable cross-discrimination prior (one of
-	L1,L2,L3). This method should be invoked only if this is a
-	cross-discrimination priors set.
-     */
-    Prior getCrossDiscPrior(String cname, int fid) {
-	// If none applies, then use cross-discrimination priors
-	// L3
-	Prior p =  L567.get(new CFKey(cname));
-	if (p!=null) return p;
-	// L2
-	p = L567.get(new CFKey(null, fid));
 	if (p!=null) return p;
 	return L_overall;
     }
@@ -77,6 +64,11 @@ class DiscPriorSet {
     /** @param dis The pertinent discrimination, or null (for cross-discr)
      */
     public Element saveClassSpecificAsXML(Document xmldoc, Discrimination dis) {
+	if ((dis==null) ^ (this instanceof CrossDiscPriorSet)) {
+	    throw  new IllegalArgumentException("dis==null should be only used with cross disc data set");
+	}
+								  
+
 	Element e = xmldoc.createElement(Priors.NODE.CLASSES);
 	Set<CFKey> keys = L567.keySet(); 
 	for(Iterator<CFKey> it = keys.iterator() ; it.hasNext(); ) {
@@ -91,9 +83,15 @@ class DiscPriorSet {
 	return e;
     }
 
-  /** @param dis The pertinent discrimination, or null (for cross-discr)
+  /** @param dis The pertinent discrimination
      */
     public Element saveCoeffSpecificAsXML(Document xmldoc,  FeatureDictionary dic, Discrimination dis) {
+
+	if (dis==null) {
+	    throw  new IllegalArgumentException("dis==null should be used for coeff specific data");
+	}
+
+
 	Element e = xmldoc.createElement(Priors.NODE.COEFFICIENTS);
 	Set<CFKey> keys = L567.keySet(); 
 	for(Iterator<CFKey> it = keys.iterator() ; it.hasNext(); ) {
@@ -108,6 +106,22 @@ class DiscPriorSet {
 	}
 	return e;
     }
+
+    /** How many priors are stored? */
+    int objectCnt() {
+	return  (L_overall==null? 0: 1) + L567.size();
+    }
+
+    /** Print all stored priors */
+    public String toString() {
+	String s= "{ overall: " +  L_overall + "\n";
+	for(Map.Entry<CFKey, Prior> en: 	 L567.entrySet() ) {
+	    s += en.getKey() + ": " + en.getValue() + "\n";
+	}
+	return s +"\n";
+  	
+    }
+
 
 }
 

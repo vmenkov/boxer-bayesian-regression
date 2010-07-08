@@ -20,6 +20,10 @@ public class DenseMatrix extends Matrix  {
 	}
     }
 
+    /** Number of rows */
+    public int getNRows() { return data.length; }
+
+
    /** Returns the number of non-zero values actually stored in the matrix.
 	Ignores any stored zeros.
     */	

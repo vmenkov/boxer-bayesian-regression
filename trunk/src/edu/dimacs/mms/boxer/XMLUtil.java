@@ -87,6 +87,14 @@ public class XMLUtil {
 	return a;
     }
 
+    /** Gets an attribute as a string value. If absent,
+      returns the specified default value. */
+    static String getAttributeString(Element e, String aname, String defValue) throws BoxerXMLException {
+	String a = e.getAttribute(aname);
+	return  (XMLUtil.nonempty(a)) ?  a: defValue;
+    }
+
+
     /** Gets an attribute, and converts it to an int value. If absent,
       throws an exception */
     static int getAttributeInt(Element e, String aname) throws BoxerXMLException {
@@ -99,6 +107,7 @@ public class XMLUtil {
 	String a = e.getAttribute(aname);
 	return  (XMLUtil.nonempty(a)) ?  Integer.parseInt(a) : defValue;
     }
+
     /** Gets an attribute, and converts it to a double value. If absent,
       throws an exception */
     static double getAttributeDouble(Element e, String aname) throws BoxerXMLException {

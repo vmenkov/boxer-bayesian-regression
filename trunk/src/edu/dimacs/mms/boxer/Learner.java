@@ -652,6 +652,14 @@ public abstract class Learner implements Model {
 	{@link #saveAsXML(String) saveAsXML}. Same functionality as
 	{@link #deserializeLearnerComplex(Element)}.
 
+	<p>The proper child order is as follows:
+	<pre>
+	suite
+	features
+	priors
+	discriminations
+	</pre>
+
 	@throws BoxerXMLException if no proper Suite can be created from the XML 
     */
     static public Suite deserializeLearnerComplex( Element e)
@@ -671,10 +679,22 @@ public abstract class Learner implements Model {
 		String name = n.getNodeName();
 		if (name.equals(XMLUtil.SUITE)) {
 		    suite = new Suite((Element)n);
-		    suite.setDic(dic);
+		    if (dic !=null)  suite.setDic(dic);
 		} else if (name.equals( FeatureDictionary.XML.FEATURES)) {
+		    if (suite!=null && suite.getDic().getDimension()>0) {
+			    throw new BoxerXMLException("The 'features' element appeared too late in the learner complex. "+ suite.getDic().getDimension()+" features had already been initialized in the suite (via a 'priors' element, perhaps");
+		    }
+
 		    dic = new FeatureDictionary((Element)n);
-		    if (suite!=null) suite.setDic(dic);
+		    if (suite!=null) {
+			suite.setDic(dic);
+		    }
+		} else if (name.equals( Priors.NODE.PRIORS)) {
+		    if (suite==null) {
+			throw new BoxerXMLException("Cannot read the priors element before the suite element!");
+		    }
+		    Priors p = new Priors((Element)n, suite);
+		    suite.setPriors(p);
 		} else if (name.equals(XMLUtil.LEARNERS)) {
 		    if (suite==null) throw new AssertionError("Missing suite info");
 		    if (suite.getDic()==null) throw new AssertionError("Missing feature dictionary info");
