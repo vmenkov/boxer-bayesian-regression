@@ -39,11 +39,21 @@ class CFKey implements Comparable<CFKey> {
 	/** First by fid, then by cid */
 	public int compareTo(CFKey x) {
 	    int z = fid - x.fid;
-	    return (z!=0) ? z : cid - x.cid;
+	    return (z!=0) ? z :
+		( cid==BY_NAME && x.cid == BY_NAME) ?  
+		cname.compareTo(cname) :  cid - x.cid;
+	}
+
+	public boolean equals(Object _x) {
+	    if (_x==null || !(_x instanceof CFKey)) return false;
+	    CFKey x = (CFKey) _x;
+	    return (fid == x.fid) && (cid == x.cid) &&
+		(cid != BY_NAME || cname.equals(x.cname));
 	}
 
 	public int  hashCode() {
-	    return (cid << 16) | (fid & 0xFFFF);
+	    return ((cid << 16) | (fid & 0xFFFF)) +
+		(cid==BY_NAME? cname.hashCode() : 0);
 	}
 	CFKey(int c, int f) {
 	    cid = c;

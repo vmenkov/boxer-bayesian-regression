@@ -135,12 +135,12 @@ public class ExponentiatedGradient extends PLRMLearner {
 		classSizesMatrix.enable(0, dis.claCount());
 		if (commonTrunc==null) throw new IllegalArgumentException("commonTrunc=null");
 
-		trunc = new Truncation( commonTrunc, new Matrix[]{ vplus, vminus});
+		trunc = new Truncation( commonTrunc, new Matrix[]{ vplus, vminus}, dis);
 	    } else {
 		U=b.U;
 		f=b.f;
 		classSizesMatrix=new ClassSizesMatrix(b.classSizesMatrix);
-		trunc = b.trunc.liveCopy( new Matrix[]{vplus, vminus} );
+		trunc = b.trunc.liveCopy( new Matrix[]{vplus, vminus}, dis);
 	    }
 	}
 
@@ -152,7 +152,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 	/** Sets the block's truncation parameters */
 	public void setTruncation(Object otheta, double to, int K) {
-	    trunc = new Truncation(otheta, to, K, new Matrix[] {vplus, vminus}, lazyT);
+	    trunc = new Truncation(otheta, to, K, new Matrix[] {vplus, vminus}, lazyT, null /* no individual priors in EG */, dis);
 	}
 
 
@@ -500,7 +500,7 @@ public class ExponentiatedGradient extends PLRMLearner {
     }
 
     public void setTruncation(Object otheta, double to, int K) {
-	commonTrunc = new Truncation(otheta, to, K, new Matrix[0], lazyT);
+	commonTrunc = new Truncation(otheta, to, K, new Matrix[0], lazyT, null /** no individual priors in EG */, null);
 	//for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(otheta, to,  K);
     }
 

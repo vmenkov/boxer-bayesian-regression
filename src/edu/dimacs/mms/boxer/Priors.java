@@ -13,16 +13,12 @@ import org.xml.sax.SAXException;
     particular discrimination. An single prior is represented as 
     a (m,lambda) pair.
 
-   The matrix is stored as a sparse matrix, by row; for
-   each element, the element value and the column index are
-   stored. The column indexes refer to classes positions in the
-   suite's master index, which means that all indexes will need to be
-   adjusted if a discrimination is removed from the suite.
+    <p>The feature name "@dummy" ({@link
+    FeatureDictionary#DUMMY_LABEL}) is used for the intercept feature.
 
-   The class is designed similarly to {@link BetaMatrix}
+
 */
-public class Priors //implements Measurable 
-{
+public class Priors {
     /** The suite for which these priors are */
     private Suite suite;
     /** Used to look up feature IDs during initialization */
@@ -37,7 +33,12 @@ public class Priors //implements Measurable
     Prior getL1() { return crossDisc.L_overall; }
     void setL1(Prior p) { crossDisc.L_overall=p; }
 
-    DiscPriorSet crossDisc = new     DiscPriorSet();
+    /** Cross-discrimination priors */
+    CrossDiscPriorSet crossDisc = new     CrossDiscPriorSet();
+
+    /** This flag will be set to true once L1 has been used at least once;
+	after that, the value must not be changed */
+    private boolean usedBase=false;
 
     /* L4 thru L7 are here, split by discrimination. 
 
@@ -60,12 +61,14 @@ public class Priors //implements Measurable
 		  Prior p		  ) {	
 
 	if (dis==null) {
+	    //System.out.println("store CD(" + key + ", " + p+")");
 	    crossDisc.put(key, p);
 	} else {
 	    DiscPriorSet dps =  discPriors.get( dis.getName());
 	    if (dps==null) {
 		discPriors.put(dis.getName(), dps=new DiscPriorSet());
 	    }
+	    //System.out.println("store prior for dis="+dis+", (" + key + ", " + p+")");
 	    dps.put(key, p);
 	}
     }
@@ -89,11 +92,12 @@ public class Priors //implements Measurable
 	DiscPriorSet dps =  discPriors.get( c.getDisc().getName());
 	if (dps!=null) {
 	    Prior p = dps.get(c,fid);
+	    //System.out.println("dps["+c.getDisc().getName()+"].get("+c+", "+fid+")=" + p);
 	    if (p!=null) return p;
 	}
 
 	// If none applies, then use cross-discrimination priors
-	return crossDisc.getCrossDiscPrior(c.getName(), fid);
+	return crossDisc.get(c.getName(), fid);
     }
 
     /** XML element names */
@@ -196,7 +200,8 @@ Or like this:
 		for(Node x=n.getFirstChild(); x!=null; x=x.getNextSibling()) {
 		    if (XMLUtil.isIgnorable(x)) continue;
 		    if ( XMLUtil.isNamedElement(x,NODE.OVERALL)) {
-			setL1( getEnclosedPrior((Element)x));
+			if (usedBase) throw new BoxerXMLException("An L1 prior ("+NODE.CROSS_DISCRIMINATION + "/"+ NODE.OVERALL+" element) has been found too late, after we may have already used L0 in place of L1 for scaling");
+			setL1( parseEnclosedPrior((Element)x, null));
 		    } else if  ( XMLUtil.isNamedElement(x,NODE.FEATURES)) {
 			parseFeatureSpecific((Element) x, null);
 		    } else if  ( XMLUtil.isNamedElement(x,NODE.CLASSES)) {
@@ -226,7 +231,7 @@ Or like this:
 			for(Node x=v.getFirstChild(); x!=null; x=x.getNextSibling()) {
 			    if (XMLUtil.isIgnorable(x)) continue;
 			    if ( XMLUtil.isNamedElement(x,NODE.OVERALL)) {
-				Prior p = getEnclosedPriorOrNull((Element)x);
+				Prior p = parseEnclosedPriorOrNull((Element)x, getL1());
 				if (p!=null) setL4(dis,p);
 			    } else if  ( XMLUtil.isNamedElement(x,NODE.FEATURES)) {
 				parseFeatureSpecific((Element) x, dis);
@@ -272,7 +277,7 @@ Or like this:
 		String f =  XMLUtil.getAttributeOrException((Element)x, Prior.ATTR.FEATURE);
 		int fid = suite.getDic().getIdAlways(f);
 		CFKey key = new CFKey(null, fid);		
-		storePrior(dis, key, getEnclosedPrior((Element)x));
+		storePrior(dis, key, parseEnclosedPrior((Element)x, getL1()));
 	    } else {
 		throw new BoxerXMLException("Invalid child type " + x + " in a " + NODE.FEATURES + " element");
 	    }
@@ -305,7 +310,7 @@ Or like this:
 		    if (c==null) throw new BoxerXMLException("Discrimination " + dis + " does not have a class named " + cname + ", mentioned in the priors file");
 		    key = new CFKey(c);		
 		}
-		storePrior(dis, key, getEnclosedPrior((Element)x));
+		storePrior(dis, key, parseEnclosedPrior((Element)x, getL1()));
 	    } else {
 		throw new BoxerXMLException("Invalid child type " + x + " in a " + NODE.CLASSES + " element");
 	    }
@@ -328,7 +333,7 @@ Or like this:
 		int fid = suite.getDic().getIdAlways(f);
 
 		CFKey key = new CFKey(c, fid);		
-		storePrior(dis, key, getEnclosedPrior((Element)x));
+		storePrior(dis, key, parseEnclosedPrior((Element)x, getL1()));
 	    } else {
 		throw new BoxerXMLException("Invalid child type " + x + " in a " + NODE.COEFFICIENTS + " element");
 	    }
@@ -343,25 +348,32 @@ Or like this:
 
 	@param e An XML Element which is expected to have one child, a "prior" element 
 
+	@param base The L1 prior which will be used to scale the prior now being read if the latter is not absolute
+
 	@throws BoxerXMLException If none, or more than one, child of
 	the desired type has been found
     */
-    Prior getEnclosedPrior(Element e) throws BoxerXMLException {
-	Prior p = getEnclosedPriorOrNull(e);
+    private Prior parseEnclosedPrior(Element e, Prior base) throws BoxerXMLException {
+	Prior p = parseEnclosedPriorOrNull(e, base);
 	if (p==null) throw new  BoxerXMLException("Element " + e + " has no child of the type '"+NODE.PRIOR+"'");
 	else return p;
     }
 
     /**
        Returns null if no child is found
+
+	@throws BoxerXMLException If more than one child of the
+	desired type has been found, or if a child node of a different
+	type has been found
      */
-    Prior getEnclosedPriorOrNull(Element e) throws BoxerXMLException {
+    private Prior parseEnclosedPriorOrNull(Element e, Prior base) throws BoxerXMLException {
 	Prior p = null;
 	for(Node x=e.getFirstChild(); x!=null; x=x.getNextSibling()) {
 	    if (XMLUtil.isIgnorable(x)) continue;
 	    if ( XMLUtil.isNamedElement(x,NODE.PRIOR)) {
 		if (p != null) throw new  BoxerXMLException("Element " + e + " has more than one children of the type '"+NODE.PRIOR+"'");
-		p = new Prior((Element)x);
+		p = Prior.parsePrior((Element)x, base);
+		if (base != null) usedBase = true;
 	    } else {
 		throw new  BoxerXMLException("Element " + e + " has a child of a type different than '"+NODE.PRIOR+"'");
 	    }
@@ -428,6 +440,24 @@ Or like this:
 
 	return root;
     }
+
+    int objectCnt() {
+	int cnt = crossDisc.objectCnt();
+	for( DiscPriorSet q: 	 discPriors.values() ) cnt += q.objectCnt();
+	return cnt;
+    }
+
+    String reportSize() {
+	int cnt = crossDisc.objectCnt();
+	String s = "Cross-disc: " + cnt + "\n";
+	for(Map.Entry<String,DiscPriorSet> en: 	 discPriors.entrySet() ) {
+	    int n = en.getValue().objectCnt();
+	    s += en.getKey() +": " + n + "\n";
+	    cnt += n;
+	}
+	return s;
+    }
+
 
 }
 

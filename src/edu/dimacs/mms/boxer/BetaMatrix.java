@@ -224,6 +224,8 @@ public class BetaMatrix extends Matrix  {
 	}
     }
 
+    /** Number of rows */
+    public int getNRows() { return matrix.size(); }
 
     Collection<Vector<Coef>> rows() {
 	return matrix;

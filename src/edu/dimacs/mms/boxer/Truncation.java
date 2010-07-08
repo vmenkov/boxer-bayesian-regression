@@ -9,6 +9,12 @@ import java.util.Vector;
  elements need to be periodically truncated. */
 class Truncation /*implements Cloneable*/ {
 
+    /** The discrimination this Truncation object is for. This would
+      be null if this is a "common" truncation object; a non-null if 
+      this is a truncaiton object for a particular learning block. The point
+     */
+    private Discrimination dis=null;
+
     public enum MODE { 
 	/* No truncation will be done, all calls will be ignored */
 	NONE, 
@@ -50,6 +56,11 @@ class Truncation /*implements Cloneable*/ {
      (to know when to request truncation the next time) */
     int t=0;
 
+    /** If the Priors object has been set (in the constructor), we are
+	using individual priors instead of the usual truncation toward
+	zero */	
+    private final Priors priors;
+   
     /** Reduce the coefficient value by this much at each truncation  */
     public double getBasicTo() {return basicTo; }
 
@@ -61,31 +72,36 @@ class Truncation /*implements Cloneable*/ {
     */
     Matrix matrices[] = null;
      
-    /** The count of not-yet-applied truncation operations for each row.
+    /** The count of not-yet-applied truncation operations for each
+	row of the matrix (i.e., for each feature).
      */
     private int truncToApply[];
 
     /** No-truncation constructor */
     Truncation( boolean  _lazy) {
-	this((Object)(new Double(0)), 0.0, 1, new Matrix[]{}, _lazy);
+	this((Object)(new Double(0)), 0.0, 1, new Matrix[]{}, _lazy, null, null);
     }
 
     /** Creates a truncation object for truncation of elements of a single 
 	marix */
-    Truncation(Object _theta, double to, int _K, Matrix w, boolean  _lazy) {
-	this( _theta, to, _K, new Matrix[] {w}, _lazy);
+    Truncation(Object _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
+	this( _theta, to, _K, new Matrix[] {w}, _lazy, _priors, _dis);
     }
 
-    Truncation(Truncation orig, Matrix[] _matrices) {	
-	this( orig.reportTheta(), orig.basicTo, orig.K,  _matrices, orig.lazy);
+    Truncation(Truncation orig, Matrix[] _matrices, Discrimination _dis) {	
+	this( orig.reportTheta(), orig.basicTo, orig.K,  _matrices, orig.lazy,
+	      orig.priors, _dis);
     }
 
     /**
        @param _matrices An array of matrices to which this truncation applies
        @param _lazy If true, use lazy truncation
+       @param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
      */
-    Truncation(Object _theta, double to, int _K, Matrix[] _matrices, boolean _lazy) {	
+    Truncation(Object _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
 	lazy = _lazy;
+	priors = _priors;
+	dis = _dis;
 	if (_theta.equals(Param.INF)) {
 	    mode = MODE.ALWAYS;
 	    theta = -1;
@@ -114,9 +130,9 @@ class Truncation /*implements Cloneable*/ {
 	creating a copy of a living Learner (e.g., in
 	AssumeDefaultHistory mode)
      */
-    Truncation liveCopy( Matrix[] _matrices) {	
+    Truncation liveCopy( Matrix[] _matrices, Discrimination _dis) {	
 	applyTruncationToAllRows(); // making sure nothing remains not-yet-applied
-	Truncation trunc = new Truncation(this, _matrices);
+	Truncation trunc = new Truncation(this, _matrices, _dis);
 	//System.out.println("Truncation.liveCopy, this.basicTo=" + basicTo);
 	trunc.setT( t );
 	return trunc;
@@ -136,42 +152,37 @@ class Truncation /*implements Cloneable*/ {
 	    new Double(mode==MODE.NONE? 0:theta);
     }
 
+    /** If diff (the distance from 0, or, in general, from the mode value)
+	within the threshold theta value? */
+    boolean withinTheta(double diff) {
+	return mode==MODE.ALWAYS || 
+	    mode==MODE.BY_THETA && Math.abs(diff)<=theta;
+    }
+
     /** Applies "truncation", by a specified amount, to a particular
 	single value */
-    double truncateValue(double value, double to) {
-	if (mode==MODE.ALWAYS || 
-	    mode==MODE.BY_THETA && Math.abs(value)<=theta) {
+    private double truncateValue(double value, double to) {
+	if (withinTheta(value)) {
 	    if (value > to) value -= to;
 	    else  if (value < -to) value += to;
 	    else value = 0;
 	}
 	return value;
     }
-
-    
+   
 
     /** Truncates all matrix elements right now.  
-
-	FIXME: for sparsity's sake, we may want to delete elements
-	that have become 0s.
      */
     void truncateNow() {
 	if (mode ==MODE.NONE) return;
 	for( Matrix _w : matrices) {
 	    if (_w instanceof BetaMatrix) {
-		BetaMatrix w = (BetaMatrix)_w;
-		for( Vector<BetaMatrix.Coef> v: w.rows()) {
-		    if (v == null) continue;
-		    for( BetaMatrix.Coef c: v) c.value=truncateValue(c.value, basicTo);
-		}	
-	    } else if (_w instanceof DenseMatrix) {
-		DenseMatrix m = (DenseMatrix)_w;
-		for(double[] v: m.data) {
-		    if (v == null) continue;
-		    for(int i=0;i<v.length; i++) v[i]=truncateValue(v[i], basicTo);
+		for(int j=0; j< _w.getNRows(); j++) {
+		    truncateRow(_w, j, 1);
 		}
-	    } else throw new AssertionError("Unknown matrix class");
+	    }
 	}
+
     }
 
 
@@ -205,6 +216,63 @@ class Truncation /*implements Cloneable*/ {
 	}  else  truncateNow();
     }
 
+    /** Apply truncation immediately to every element of the j-th row of a
+	specified matrix 
+
+	@param j The row index
+
+	@param mult The "multiplier", indicating how many times the
+	truncation needs to be done now. It may be greater than one if
+	we are using lazy truncation, and there are several deferred
+	truncations that are finally going to be done now.
+     */
+    private void truncateRow(Matrix _w, int j, int mult) {
+	double to = basicTo * mult;
+	int countNZ = 0;
+
+	if (priors!=null && dis==null) throw new AssertionError("We ought not have created a Truncation instance with priors but without a discrimination link!");
+
+	if (_w instanceof BetaMatrix) {
+	
+	    BetaMatrix w = (BetaMatrix)_w;
+	    Vector<BetaMatrix.Coef> v  = w.getRow(j);
+
+	    if (v==null) return;
+	    for( BetaMatrix.Coef c: v) {
+		if (priors != null) {
+		    Prior p = priors.get( dis.getClaById(c.icla), j);
+		    c.value = p.apply(c.value, this, mult);
+		} else {
+		    c.value=truncateValue(c.value, to);
+		}
+		countNZ += ((c.value == 0) ? 0 : 1);
+	    }
+	    if (0 < countNZ  && countNZ < v.size() && 
+		dropMode == PHYSICAL_DROP.DROP_ZERO_ROWS_AND_ELEMENTS) {
+		w.compressRow(j);		    
+	    }
+	} else if (_w instanceof DenseMatrix) {
+	    DenseMatrix m = (DenseMatrix)_w;
+	    double[] v= m.data[j];
+	    if (v==null) return;
+	    for(int i=0;i<v.length; i++) {
+		if (priors != null) {
+		    Prior p = priors.get( dis.getClaById(i), j);
+		    v[i] = p.apply(v[i], this, mult);
+		} else {
+		    v[i]=truncateValue(v[i], to);
+		}
+		countNZ += ((v[i] == 0) ? 0 : 1);
+	    }
+	} else throw new AssertionError("Unknown matrix class");
+
+	if (countNZ == 0 && dropMode != PHYSICAL_DROP.DROP_NONE) {
+	    // Drop the entire row if it becomes all-zeros
+	    _w.dropRow(j);
+	    //Logging.info("Dropped all-zero row " +  j );
+	}
+    }
+
     /** Looks at the not-applied-yet truncation amount for the j-th
 	row of the matrix(es), and if it's non-zero, applies it
 	now. If one uses lazy truncation, it is necessary to call this
@@ -216,39 +284,11 @@ class Truncation /*implements Cloneable*/ {
 	if (mode == MODE.NONE) return;
 	if (!lazy) return;
 	if ( truncToApply == null ||  j>=truncToApply.length ) return;
-	double to =  basicTo * truncToApply[j];
-	if (to==0) return;
-	//System.out.println("to=" + to);
+	int mult = truncToApply[j];
+	if ( mult == 0) return;
 	truncToApply[j] = 0;
 	for( Matrix _w : matrices) {
-	    int countNZ = 0;
-	    if (_w instanceof BetaMatrix) {
-		BetaMatrix w = (BetaMatrix)_w;
-		Vector<BetaMatrix.Coef> v= w.getRow(j);
-		if (v==null) return;
-		for( BetaMatrix.Coef c: v) {
-		    c.value=truncateValue(c.value, to);
-		    countNZ += ((c.value == 0) ? 0 : 1);
-		}
-		if (0 < countNZ  && countNZ < v.size() && 
-		    dropMode == PHYSICAL_DROP.DROP_ZERO_ROWS_AND_ELEMENTS) {
-		    w.compressRow(j);		    
-		}
-	    } else if (_w instanceof DenseMatrix) {
-		DenseMatrix m = (DenseMatrix)_w;
-		double[] v= m.data[j];
-		if (v==null) return;
-		for(int i=0;i<v.length; i++) {
-		    v[i]=truncateValue(v[i], to);
-		    countNZ += ((v[i] == 0) ? 0 : 1);
-		}
-	    }
-
-	    if (countNZ == 0 && dropMode != PHYSICAL_DROP.DROP_NONE) {
-		// Drop the entire row if it becomes all-zeros
-		_w.dropRow(j);
-		//Logging.info("Dropped all-zero row " +  j );
-	    }
+	    truncateRow(_w, j, mult);
 	}
     }
 
@@ -264,7 +304,9 @@ class Truncation /*implements Cloneable*/ {
 	return mode==MODE.NONE ? 
 	    "No truncation" :
 	    "Truncation every "+K+" steps (done "+t+" steps so far) by "+
-	    basicTo+" with theta="+ reportTheta();
+	    basicTo+" with theta="+ reportTheta() + "\n" +
+	    (priors == null? "No priors" : "Priors:\n" + priors.reportSize());
+	
     }
 }
 

@@ -13,7 +13,14 @@
   <features>lat^52.1 lon^-106.65 seaside^0 elevation^481</features>
 </datapoint>
 <datapoint name="Wuhan">
-  <labels>    Countries^China Climate^temperate Port^river </labels>
+  <labels>    Countries^China Climate^temperate  Port^river </labels>
   <features>lat^30.5 lon^114.3 seaside^0 elevation^100</features>
 </datapoint>
+
+<datapoint name="Beijing">
+  <labels>    Countries^China Climate^temperate  Port^no </labels>
+  <features>lat^40 lon^115 seaside^0 elevation^200</features>
+</datapoint>
+
 </dataset>
+

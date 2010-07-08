@@ -31,9 +31,10 @@ public class FeatureDictionary {
     /** If this flag is true, we add a dummy component x_0=1 to each vector
 	when we read it in, and strip it on the output. */
     final static boolean ADD_DUMMY_COMPONENT=true;
-    final static String DUMMY_LABEL = "@dummy";
+    /** The value (@dummy) used for the intercept feature */
+    final static public String DUMMY_LABEL = "@dummy";
 
-    /** Maps an integer 0-based ferature id to feature label. All
+    /** Maps an integer 0-based feature id to feature label. All
      * values stored here are supposed to be syntactically legal
      * feature labels; thus, validation is done before every add call. */
     private Vector<String> id2label = new Vector<String>();
@@ -47,7 +48,8 @@ public class FeatureDictionary {
 	}
     }
 
-    /** Retrieves the ID for the given feature label - provided it's in the dictionary already */
+    /** Retrieves the (0-based integer) ID for the given feature label
+      - provided it's in the dictionary already */
     synchronized public int getId(String label) { 
 	return label2id.get(label).intValue();
     }
