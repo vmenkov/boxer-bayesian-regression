@@ -20,17 +20,6 @@ public class Truncation /*implements Cloneable*/ {
      */
     private Discrimination dis=null;
 
-    public enum MODE { 
-	/* No truncation will be done, all calls will be ignored */
-	NONE, 
-	    /* Truncation only of matrix elements with abs value less or equal than theta */
-	    BY_THETA, 
-	    /* Truncation of all matrix elements */
-	    ALWAYS; 
-    }
-
-    MODE mode;
-
     /** What does the truncation procedure to the physical stored array elements
      */
     enum PHYSICAL_DROP { 
@@ -48,9 +37,15 @@ public class Truncation /*implements Cloneable*/ {
      */
     static final PHYSICAL_DROP  dropMode = PHYSICAL_DROP.DROP_ZERO_ROWS;
 
-    /** Algorithm parameters. basicTo corresponds to eta*g*K in
+    /** An algorithm parameter, indicating the threshold, values
+	within whose range are subject to truncation. The value theta=0
+	means "no truncation", and theta=Double.POSITIVE_INFINITY means,
+	"truncate all values".
+     */
+    double theta=0;
+   /** An algorithm parameter, basicTo corresponds to eta*g*K in
       TruncatedGradient writeup  */
-    double theta=0, basicTo;
+    double basicTo;
 
     /** How often truncation is exercised? After every K training
      * vectors. The TG default is 10 (truncate after each 10 vectors),
@@ -84,17 +79,17 @@ public class Truncation /*implements Cloneable*/ {
 
     /** No-truncation constructor */
     Truncation( boolean  _lazy) {
-	this((Object)(new Double(0)), 0.0, 1, new Matrix[]{}, _lazy, null, null);
+	this(0.0, 0.0, 1, new Matrix[]{}, _lazy, null, null);
     }
 
     /** Creates a truncation object for truncation of elements of a single 
 	marix */
-    public Truncation(Object _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
+    public Truncation(double  _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
 	this( _theta, to, _K, new Matrix[] {w}, _lazy, _priors, _dis);
     }
 
     Truncation(Truncation orig, Matrix[] _matrices, Discrimination _dis) {	
-	this( orig.reportTheta(), orig.basicTo, orig.K,  _matrices, orig.lazy,
+	this( orig.theta, orig.basicTo, orig.K,  _matrices, orig.lazy,
 	      orig.priors, _dis);
     }
 
@@ -105,17 +100,10 @@ public class Truncation /*implements Cloneable*/ {
        @param _lazy If true, use lazy truncation
        @param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
      */
-    public Truncation(Object _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
+    public Truncation(double _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
 	lazy = _lazy;
 	priors = _priors;
 	dis = _dis;
-	if (_theta.equals(Param.INF)) {
-	    mode = MODE.ALWAYS;
-	    theta = -1;
-	} else {
-	    theta = ((Double)_theta).doubleValue();
-	    mode = 	(theta==0)? MODE.NONE: MODE.BY_THETA;
-	}
 
 	basicTo = to;
 
@@ -152,18 +140,18 @@ public class Truncation /*implements Cloneable*/ {
 	t = _t;
     }
     
-    /** Reports the (mode, theta) pair as a single number. 
-	@return Param.INF instead of infinity, or a Double otherwise */
-    Object reportTheta() { 
-	return mode==MODE.ALWAYS ? Param.INF : 
-	    new Double(mode==MODE.NONE? 0:theta);
+    /** Just prints the value of theta, which may be 0, a positive
+      number, or "Infinity"
+     */
+    String reportTheta() { 
+	return ""+theta;
+	//mode==MODE.ALWAYS ? Param.INF :    new Double(mode==MODE.NONE? 0:theta);
     }
 
     /** If diff (the distance from 0, or, in general, from the mode value)
 	within the threshold theta value? */
     boolean withinTheta(double diff) {
-	return mode==MODE.ALWAYS || 
-	    mode==MODE.BY_THETA && Math.abs(diff)<=theta;
+	return Double.isInfinite(theta) ||   Math.abs(diff)<=theta;
     }
 
     /** Applies "truncation", by a specified amount, to a particular
@@ -181,7 +169,7 @@ public class Truncation /*implements Cloneable*/ {
     /** Truncates all matrix elements right now.  
      */
     void truncateNow() {
-	if (mode ==MODE.NONE) return;
+	if (theta ==0) return;
 	for( Matrix _w : matrices) {
 	    if (_w instanceof BetaMatrix) {
 		for(int j=0; j< _w.getNRows(); j++) {
@@ -203,7 +191,7 @@ public class Truncation /*implements Cloneable*/ {
     void requestTruncation(int d) {
 
 	//System.out.println("Requesting truncation, t=" + t);
-	if (mode == MODE.NONE) return;
+	if (theta == 0) return;
 	t++;
 	//System.out.println("t:=" + t +", basicTo=" + basicTo);
 	if (t%K != 0) return;
@@ -288,7 +276,7 @@ public class Truncation /*implements Cloneable*/ {
      */
     void applyTruncation(int j) {
 	//System.out.println("call apply Truncation(row "+j+")" + t);
-	if (mode == MODE.NONE) return;
+	if (theta == 0) return;
 	if (!lazy) return;
 	if ( truncToApply == null ||  j>=truncToApply.length ) return;
 	int mult = truncToApply[j];
@@ -301,14 +289,14 @@ public class Truncation /*implements Cloneable*/ {
 
     /** Applies not-yet-applied truncation amounts to all rows */
     void applyTruncationToAllRows() {
-	if (mode == MODE.NONE) return;
+	if (theta == 0) return;
 	if (!lazy) return;
 	for(int j=0; j<	truncToApply.length; j++)  applyTruncation(j);
     }
 
 
     String describe() {
-	return mode==MODE.NONE ? 
+	return theta==0 ? 
 	    "No truncation" :
 	    "Truncation every "+K+" steps (done "+t+" steps so far) by "+
 	    basicTo+" with theta="+ reportTheta() + "\n" +

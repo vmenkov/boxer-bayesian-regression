@@ -146,13 +146,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 
 	/** Sets the block's truncation parameters */
 	public void setTruncation(double theta, double to, int K) {
-	    Object otheta = (theta<0) ? Param.INF : new Double(theta);
-	    setTruncation(otheta, to, K);
-	}
-
-	/** Sets the block's truncation parameters */
-	public void setTruncation(Object otheta, double to, int K) {
-	    trunc = new Truncation(otheta, to, K, new Matrix[] {vplus, vminus}, lazyT, null /* no individual priors in EG */, dis);
+	    trunc = new Truncation(theta, to, K, new Matrix[] {vplus, vminus}, lazyT, null /* no individual priors in EG */, dis);
 	}
 
 
@@ -495,12 +489,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 
      */
     public void setTruncation(double theta, double to, int K) {
-	Object otheta = (theta<0) ? Param.INF : new Double(theta);
-	setTruncation(otheta, to, K);
-    }
-
-    public void setTruncation(Object otheta, double to, int K) {
-	commonTrunc = new Truncation(otheta, to, K, new Matrix[0], lazyT, null /** no individual priors in EG */, null);
+	commonTrunc = new Truncation(theta, to, K, new Matrix[0], lazyT, null /** no individual priors in EG */, null);
 	//for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(otheta, to,  K);
     }
 
@@ -532,7 +521,7 @@ public class ExponentiatedGradient extends PLRMLearner {
     void parseParams(Element e) throws BoxerXMLException  {
 	XMLUtil.assertName(e, Learner.PARAMETERS);
 
-	Object otheta = Zero; // no truncation
+	double theta = 0; // no truncation
 	double to = 0;
 	int K = 1;
 	HashMap<String,Object> h = makeHashMap
@@ -541,7 +530,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	
 	h =  parseParamsElement(e,h);
 
-	otheta = h.get("theta");
+	theta =  ((Double)(h.get("theta"))).doubleValue();
 	to =  ((Double)(h.get("to"))).doubleValue();
 	
 	Object o = h.get(PARAM.f);
@@ -554,7 +543,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	
 	K = ((Number)(h.get(PARAM.K))).intValue();
 		
-	setTruncation(otheta, to, K);
+	setTruncation(theta, to, K);
 
 	//System.out.println("[DEBUG]: EG.parseParams: commonF=" +  reportCommonF()+
 	//			   " commonU=" +  reportCommonU());
