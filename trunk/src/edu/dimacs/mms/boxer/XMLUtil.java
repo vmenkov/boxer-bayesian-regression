@@ -9,7 +9,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-/** Constants and auxiliary classes for producing and parsing XML files 
+/** Constants and auxiliary methods for producing and parsing XML files. 
  */
 public class XMLUtil {
 

@@ -273,6 +273,27 @@ point to a Learner several times as a training example, or you can
 later apply the Learner to it to see how correctly it will score it.
 </p>
 
+<h4>BMR-format data</h4>
+
+<p>It is possible to read data points from data files in the
+BBR/BMR/BXR format (same as
+the <a href="http://svmlight.joachims.org/">SVMlight</a>format),
+rather than the usual XML format. Since the data points' lines in this
+format do not carry discrimination labeles (there is only one
+discrimination, of course!), it is necessary to switch BOXER into the
+SupportsSimpleLabels.Polytomous mode. For this, the appropriate flag
+should be set on the suite, and the suite should contain a suitable
+discrimination (a non-fallback non-empty discrimination with a default
+class). A suitable suite can be created with a definition file similar
+to <a href="doc-files/WalletSuite.xml">WalletSuite.xml</a>.
+
+<p>A sample BORJ command line for this:
+<pre>
+java  edu.dimacs.mms.borj.Driver read-suite:WalletSuite.xml \
+read-learner:  tg-learner-param-eta=1_0-g=1_0-K=1.xml  \
+train:../wallet/wallet.data.bmr test:../wallet/wallet.data.bmr:scores.dat 
+</pre>
+
 <h3>Creating data points</h3> 
 
 <p>

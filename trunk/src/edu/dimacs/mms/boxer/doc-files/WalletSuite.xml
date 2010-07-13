@@ -1,0 +1,9 @@
+<!-- This suite has one polytmous discrimination, whose existence
+     will trigger Situation 2, and to which all simple labels
+     will be added -->
+
+<suite name="WalletSuite" SupportsSimpleLabels="Polytomous">
+<discrimination name="Wallet" defaultclass="1">
+<classes>1 2 3 4</classes>
+</discrimination>
+</suite>

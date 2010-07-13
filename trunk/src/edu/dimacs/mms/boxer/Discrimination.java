@@ -22,7 +22,7 @@ import org.w3c.dom.*;
 
  */
 
-public class Discrimination /* extends DiscriminationFallback */{
+public class Discrimination {
 
     /** Discrimination class structure (DCS) */
     Suite.DCS dcs = Suite.DCS.Bounded;
