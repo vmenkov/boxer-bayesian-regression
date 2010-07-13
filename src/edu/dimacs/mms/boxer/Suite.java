@@ -351,7 +351,7 @@ public class Suite {
 	if (d.claCount() > 0 && d.getDefaultCla() != null)  {
 	    return d;
 	} else {
-	    throw new AssertionError("Where's my simple polytomous discrimination?");
+	    throw new AssertionError("Where's my simple polytomous discrimination? I need a non-fallback discrimination with a default class!");
 	}
     }	
 

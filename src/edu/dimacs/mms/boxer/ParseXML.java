@@ -136,6 +136,24 @@ public class ParseXML {
 
     }
 
+    /** Builds a vector of DataPoints out of the content of a data
+	file in XML or BMR format. It tries to determine the file type
+	from the extension of the file name, ".xml" being XML and
+	everything else being BMR. This is basically a wrapper around
+	{@link #readDataFileXML( String, Suite, boolean)} and 
+	{@link BXRReader#readDataFileBMR( String, Suite, boolean)} 
+     */
+    public static Vector <DataPoint> readDataFileMultiformat(String fname,    
+						     Suite suite, 
+						     boolean isDefinitional)
+	throws IOException, SAXException, BoxerXMLException {
+	if (fname.toLowerCase().endsWith(".xml")) {
+	    return readDataFileXML(fname, suite,  isDefinitional);
+	} else {
+	    return BXRReader.readDataFileBMR(fname, suite,  isDefinitional);
+	}
+    }
+
     /** Builds a vector of DataPoints out of the content of an XML
       element (which, typically, is the top-level element of an XML
       file)

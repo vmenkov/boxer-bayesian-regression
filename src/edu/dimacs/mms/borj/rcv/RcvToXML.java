@@ -14,17 +14,20 @@ import java.io.*;
     java  -Dfrom=1 -Dto=100 [-Dqrel=true] [-Dout=../rcv-out/out.xml] [-Dd=/home/username/rcv] borj.rcv.RcvToXML  id-list.txt lyrl2004_tokens_test_pt*.dat
 </pre>
 
+<p>
    The file listing the document IDs (data point IDs) is specified
    with the "list" option.  The "from" and "to" options (either or
    both can be omitted) specify what sections of the file will be
    used.
 
+<p>
    If qrel=true, the output XML file will include both data points'
    features and their labels. Otherwise (qrel=false by default),
    only the features will be written to the XML file; this file can
    then be used with multiple Qrel XML files (which can be produced
    using QrelToXML)
 
+<p>
    The "d" options specifies the location of the original QREL files, and the
    "out" option, the path for the output file.
    

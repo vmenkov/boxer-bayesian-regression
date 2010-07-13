@@ -93,7 +93,7 @@ import edu.dimacs.mms.boxer.*;
 
     <li><strong>Command Group 4: Training, testing, and
     output.</strong> Any number of <tt>train:</tt>, <tt>test:</tt>,
-    <tt>test:</tt>, <tt>write:</tt>, and <tt>write-suite:</tt>
+    <tt>write:</tt>, and <tt>write-suite:</tt>
     commands may now be supplied to train the existing learners, apply
     them to test sets, and to deserialize the suite and/or the learners.
     <br>
@@ -146,6 +146,11 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     PLRM-based algorithms}. A BORJ command line should have only one
     "read" command, and if given, it must be the first command.
 
+    <li>read-priors: Supplies a priors definition file. Can only
+    appear after a read-suite command, so that the priors will be
+    interpreted in the context of that particular suite, and
+    associated with the suite.
+
     </ul>
     <h4>Group 2</h4>
     <ul>
@@ -183,7 +188,7 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     </ul>
     <h4>Group 4</h4>
     <ul>
-    <li> train: Read the examples from the XML file specified, and
+    <li> train: Read the examples from the XML (or BMR) file specified, and
     train the classifier on it. Any number of the "train" commands may
     appear in any position on the command line, the model being
     incrementally trained on each one. The examples in the file may
@@ -191,16 +196,16 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     case, the labels should have been pre-loaded with an earlier
     "read-labels" command.
 
-    <li>test: Apply the model to each example from the XML specified
-    file.  Any number of the "test" commands may appear in any
-    position on the command line, although of course you may not want
-    to use one before you've trained the model (or have read in a
+    <li>test: Apply the model to each example from the specified XML
+    (or BMR) file.  Any number of the "test" commands may appear in
+    any position on the command line, although of course you may not
+    want to use one before you've trained the model (or have read in a
     pre-computed model). As with the "train" command, the examples in
     the file may contain both features and labels, or only features;
     in the latter case, the labels should have been pre-loaded with an
     earlier "read-labels" command.<br>
 
-    This command can also be used with two arguments,
+    The <tt>test:</tt> command can also be used with two arguments,
     <tt>test:<em>test-set.xml</em>:<em>score-output-file.txt</em></tt>,
     to make BORJ save the test examples' scores to the second-named
     file. For the format of that file, see {@link edu.dimacs.mms.boxer.DataPoint#reportScoresAsText(double [][], Learner, String, PrintWriter)}
@@ -210,9 +215,9 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     specified XML file.
 
     <li>write: Writes out the complete "learner complex" (suite,
-    feature dictionary, and all learners with their parameters and
-    inner states), as it currently stands, into the specified XML
-    file.
+    feature dictionary, individual priors [if any], and all learners
+    with their parameters and inner states), as it currently stands,
+    into the specified XML file.
 
     </ul>
     <h4>Miscellaneous commands</h4>
@@ -441,7 +446,7 @@ public class Driver {
 		// read training set
 		System.out.println("Reading training set no. " +trainCnt+ " ("+q.f+")");
 		Vector<DataPoint> train = 
-		    ParseXML.readDataFileXML(q.f, suite, true);
+		    ParseXML.readDataFileMultiformat(q.f, suite, true);
 		// Update labels from LabelStore
 		qrelStore.applyTo(train, suite, true);
 
@@ -480,7 +485,7 @@ public class Driver {
 		// read test set
 		System.out.println("Reading test set ("+q.f+")");
 		Vector<DataPoint> test=
-		    ParseXML.readDataFileXML(q.f,suite,false);
+		    ParseXML.readDataFileMultiformat(q.f,suite,false);
 		qrelStore.applyTo(test, suite, false);
 		// score each test vector
 		if (Suite.verbosity>0) System.out.println("Test set no. " +testCnt+ " ("+q.f+") contains " + test.size() + " points, memory use=" + Sizeof.sizeof(test) + " bytes");

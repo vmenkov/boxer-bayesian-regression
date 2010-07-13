@@ -2,6 +2,7 @@ package edu.dimacs.mms.boxer;
 
 import java.util.Vector;
 import java.util.regex.*;
+import java.io.*;
 
 /** Class for reading input files in the format that was used in BXR
     and BMR, as well as for parsing compact-format lists of features
@@ -24,38 +25,47 @@ public class BXRReader {
     static final String PAIR_SEPARATOR_REGEX = 
 	(PAIR_SEPARATOR == '^' ? "\\":"") + PAIR_SEPARATOR;
 
-    private static Pattern nonWsPat = Pattern.compile("\\s*(\\S+)");
+    /** To support BMR data, where the separator is still a colon, not
+     * a caret... */
+    static final char BMR_PAIR_SEPARATOR = ':';    
 
-    /** Pattern for feature names and values */
-    private static Pattern fpat = Pattern.compile("\\s*([^\\s:]+)\\s*"+
-					  PAIR_SEPARATOR_REGEX +
-					  "\\s*([0-9\\.eE]+)");
+
+    private static Pattern nonWsPat = Pattern.compile("\\s*(\\S+)");
 
     /** 
 	@param s "label feature_id:value feature_id:value ...." 
-	Feature IDs are positive integers 
+	@param  PAIR_SEPARATOR the character (typically, colon or caret) that is expected to separate feature IDs and feature values
     */
-    public DataPoint readDataPoint(String s, Suite suite, boolean isDefinitional) throws BoxerXMLException {
+    public static DataPoint readDataPoint(String s, Suite suite,  boolean isDefinitional, char PAIR_SEPARATOR) throws BoxerXMLException {
 	Matcher m = nonWsPat.matcher(s);
 	if (!m.lookingAt()) {
 	    throw new IllegalArgumentException("This string has no class label: " +s);
 	} 
 	String label = m.group(1);
 	
-	DataPoint p=new DataPoint( readFeatureVector(s.substring(m.end()),suite.getDic()),
+	DataPoint p=new DataPoint( readFeatureVector
+				   (s.substring(m.end()),suite.getDic(), PAIR_SEPARATOR),
 				   suite.getDic());
 
 	Vector<Discrimination.Cla> v=new Vector<Discrimination.Cla>();
-	Discrimination.Cla c = suite.getClaAlways(null /*"default"*/, label, isDefinitional);
+	Discrimination.Cla c = suite.getClaAlways(null, /*  "default"*/
+						  label, isDefinitional);
 	v.add( c );
 	p.setClasses( v, suite);
 	return p;
     }
 
     
-    static private Vector<DataPoint.FVPair> readFeatureVector(String s, 
-						      FeatureDictionary dic)
-    throws BoxerXMLException {
+    static private Vector<DataPoint.FVPair> 
+	readFeatureVector(String s, FeatureDictionary dic, char PAIR_SEPARATOR)
+	throws BoxerXMLException {
+
+	String ps_regex = 
+	    (PAIR_SEPARATOR == '^' ? "\\":"") + PAIR_SEPARATOR;
+	// Pattern for feature names and values 
+	Pattern fpat = Pattern.compile("\\s*([^\\s:]+)\\s*"+
+				       ps_regex +
+				       "\\s*([0-9\\.eE]+)");
     
 	int pos=0;
 	Vector<DataPoint.FVPair> v = new Vector<DataPoint.FVPair>();	    
@@ -70,7 +80,7 @@ public class BXRReader {
 		String rem = s.substring(pos).trim();
 		if (rem.length()>0) {
 		    // The rest of the line is unparsable!
-		    throw new IllegalArgumentException("Could not parse string s as a list of feature:value pairs. Unparsable remainder: " + rem);
+		    throw new IllegalArgumentException("Could not parse string `"+s+"' as a list of feature:value pairs. Unparsable remainder: " + rem);
 		}
 		break;
 	    } 
@@ -79,7 +89,7 @@ public class BXRReader {
 	    int fid = (dic == null)? Integer.parseInt(fs) :dic.getIdAlways(fs);
 	    double fval = Double.parseDouble(vals);
 	    v.add(new DataPoint.FVPair(fid, fval));
-	    pos = m.end();
+	    pos += m.end();
 	}
 	return v;
     }
@@ -108,6 +118,48 @@ public class BXRReader {
 	return v;
     }
 
+    /** Builds a vector of DataPoints out of the content of an BBR/BMR
+	file. We support it so that one can easily run BOXER on
+	BBR/BMR/BXR data files.<p>
+
+	<p> The Data file format for training or testing is similar to
+	that used by Joachims' <a
+	href="http://svmlight.joachims.org/">SVMlight software</a> for
+	training support vector machines (SVM). Each line represents
+	an instance. The line format is:
+
+<pre> 
+         <label>{ <feature_id>:<value>}
+ </pre> 
+
+         The label here may be any integer; feature_id must be a
+	 positive integer; each value is a number in double float
+	 notation. Lines starting with '#' are ignored and can be used
+	 for comments.
+
+	@param fname The name of the file to read
+	@param isDefinitional Set this flag to true if you're reading the training set. This will affect the way "new categories" encountered in the file are processed
+    */
+    public static Vector <DataPoint> readDataFileBMR(String fname,    
+						     Suite suite, 
+						     boolean isDefinitional)
+	throws IOException, BoxerXMLException {
+
+
+	LineNumberReader r = new LineNumberReader( new FileReader(fname));
+	Vector<DataPoint> v = new Vector<DataPoint>();
+	String s=null;
+	int cnt=0;
+	while( (s=r.readLine()) != null) {
+	    s=s.trim();
+	    if (s.equals("")) continue;
+	    if (s.startsWith("#")) continue;
+	    cnt++;
+	    DataPoint p = readDataPoint(s, suite, isDefinitional, BMR_PAIR_SEPARATOR);
+	    v.add(p);	
+	}
+	return v;
+    }
 
 
 }
