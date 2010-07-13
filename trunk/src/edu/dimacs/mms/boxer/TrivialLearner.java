@@ -7,7 +7,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 
-/* A trivial learner always assigns equal probabilities to all classes
+/** A trivial learner always assigns equal probabilities to all classes.
  */
 public class TrivialLearner extends Learner {
 

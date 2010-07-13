@@ -9,13 +9,29 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-/** A Priors object is used to store individual priors for a
-    particular discrimination. An single prior is represented as 
-    a (m,lambda) pair.
+/** A Priors object is used to store a set of individual priors for a
+    particular discrimination. A single prior is represented as a
+    {@link Prior} object, which is basically a
+    (type, mode,variance,absolute,skew) tuple.
 
     <p>The feature name "@dummy" ({@link
     FeatureDictionary#DUMMY_LABEL}) is used for the intercept feature.
 
+    <p>The hierarchy of the priors (the built-in Level-0 prior, and
+    the configuration-controlled Level-1 thru Level-7 priors, are described 
+    by the following chart:
+
+    <p>
+    <img src="doc-files/priors-hierarchy1.jpg">
+    <br>(The JPEG file above is generated from an SVG file, which you can find <a href="doc-files/priors-hierarchy1.svg">here</a>)
+
+    <p>The set of priors is usually created by reading a "priors" XML
+    elemnet from an XML file. A sample priors definition file can be found in <a
+    href="doc-files/sample-priors.xml">sample-priors.xml</a>
+
+    <p>As of ver. 0.8.001, the only type of priors we have are
+    Laplacian ones, and the only learning algorithm that uses priors
+    is {@link TruncatedGradient}.
 
 */
 public class Priors {
@@ -121,7 +137,15 @@ public class Priors {
     }
 
 
-    /** Creates a priors object based  on the XML description
+    /** Creates a priors object based  on the XML description.
+
+	<p> Once you have created a Priors object with this
+	constructor, you should pass it to your suite with {@link
+	Suite#setPriors(Priors)}. This all normally should be
+	done once you've created a Suite object, but before you've
+	started adding learners to it. This way, the priors will be be
+	properly used when learners are created.
+	
 
 <priors name=...>
 
@@ -153,13 +177,11 @@ public class Priors {
 </priors> 
 
 
-Inside each element:
+<!-- Inside each element: -->
 
-<prior type="l|g" mode=... variance=... skew=... absolute=... 
-   [discrimination="..."] [class="..." ] [feature="..."]
->
+<prior type="l|g" mode=... variance=... skew=... absolute=... >
 
-Or like this:
+<!-- Or like this: -->
 
 <discrimnation name="...">
 <overall><prior ...><overall>
@@ -251,7 +273,7 @@ Or like this:
 	}
     }
 
-    /** Just a convenience wrapper around {@link #Priors(Element,  FeatureDictionary )}
+    /** Just a convenience wrapper around {@link #Priors(Element, Suite)}
 
 	@throws SAXException If the W3C DOM parser finds that the
      document isn't good XML

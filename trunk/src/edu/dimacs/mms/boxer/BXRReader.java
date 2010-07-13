@@ -3,9 +3,15 @@ package edu.dimacs.mms.boxer;
 import java.util.Vector;
 import java.util.regex.*;
 
-/** Class for reading input files in the format that was used in BXR,
-    as well as for parsing compact-format lists of features and class
-    labels in XML input files.*/
+/** Class for reading input files in the format that was used in BXR
+    and BMR, as well as for parsing compact-format lists of features
+    and class labels in XML input files.
+
+    <p>Input file line format:
+    <pre>
+    label feature_id:feature_value feature_id:feature_value ...
+    </pre>
+*/
 public class BXRReader {
 
     /** The character that separate the discrimination name from the

@@ -13,13 +13,13 @@ import edu.dimacs.mms.borj.*;
      with Paul Kantor in October 2009.
 
     <pre>
-java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN_ID]  test.Driver command:file [command:file ...]
+java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN_ID]  edu.dimacs.mms.accutest.Driver command:file [command:file ...]
     </pre>
 
-    The command line can contain any number of commands. They are
-    executed sequentially, in the order they appear in the command
-    line. Each command is followed by the file name (or sometimes file
-    names) it applies to <p>
+    The command line can contain any number of preliminary commands,
+    and one "train" command. They are executed sequentially, in the
+    order they appear in the command line. Each command is followed by
+    the file name (or sometimes file names) it applies to <p>
 
     The type of the learning model, and certain other options or it, 
     can be specified as Java system properties, with the -D command-line
@@ -27,6 +27,7 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     <p>
 
     The following command are presently supported:
+<ul>
 
     <li>read-suite: Read the description of a "{@link edu.dimacs.mms.boxer.Suite
     suite}" (basically, a list of discriminations, and the classes of
@@ -46,44 +47,23 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     the learner.
 
 
-    <li> train: Read the examples from the XML file specified, and
-    train the classifier on it. Any number of the "train" commands may
-    appear in any position on the command line, the model being
-    incrementally trained on each one. The examples in the file may
-    contain both features and labels, or only features; in the latter
-    case, the labels should have been pre-loaded with an earlier
-    "read-labels" command.
+    <li> train: The specified data file is used for a series of experiments. 
+    In the k-th experiment, the first k*M examples from the file will be 
+    used as the training set, and all the remaining examples, as the test set.
+    The value of k will vary from 1 to N/(2*M), where N is the total number of
+    examples in the file.
 
-    <li>test: Apply the model to each example from the XML specified
-    file.  Any number of the "test" commands may appear in any
-    position on the command line, although of course you may not want
-    to use one before you've trained the model (or have read in a
-    pre-computed model). As with the "train" command, the examples in
-    the file may contain both features and labels, or only features;
-    in the latter case, the labels should have been pre-loaded with an
-    earlier "read-labels" command.<br>
+    <br> This command can take the second argument, which is the
+    output files for scores.
 
-    This command can also be used with two arguments,
-    <tt>test:<em>test-set.xml</em>:<em>score-output-file.txt</em></tt>,
-    to make BORJ save the test examples' scores to a names file.
+</ul>    
 
 <h3>Command line examples</h3>
 
 <p>
- (A): Read a suite (ontology) file from suite.xml, read algo params
- from tg-param.xml, train on a train set, test on a test set, and dump
- the current learner state (complete with suite etc) into learner-blob.xml:
-
-<p><tt>
-read-suite:suite.xml read-learner:tg-param.xml train:train-set.xml test:test-set.xml write:learner-blob.xml
-</tt>
- 
-<p>
-(B): Read an algo description; start with an empty suite, learning on a training file (filling one's suite based on the labels in it); score a training set, saving scores to text file; save just the suite
-
-<p><tt>
-read-learner:tg-param.xml  train:train-set.xml test:test-set.xml:save-scores.txt write-suite:suite-out.xml 
-</tt>
+set out=/home/vmenkov/out<br>
+set learner=tg-learner.xml<br>
+java -Drandom=100 -Dout=${out} -DM=1 -Dverbosity=0  edu.dimacs.mms.accutest.Driver read-suite: SimpleTestSuite.xml read-learner:$learner   train: SimpleTestData.xml : ${out}/myscores.txt
 
 <h3>See also</h3>
 
@@ -108,6 +88,7 @@ public class Driver {
 	System.out.println(" ... etc.");
 	System.out.println("Optons:");
 	System.out.println(" [-Dmodel=eg|tg|trivial] [-Drunid=RUN_ID] [-Dverbose=true|false | -Dverbosity=0|1|2|3] [-DM=1] [-Drandom=100]");
+	System.out.println("  -Drandom=nn : repeat the experiment nn times, with different orderings");
 	System.out.println("See Javadoc for borj.Driver for the full list of commands.");
 	if (m!=null) {
 	    System.out.println(m);

@@ -2,6 +2,13 @@
 This package includes a few sample applications using BOXER API. They
 are designed to run various series of experiments and tabulate the results.
 
+<p>
+Some experimental data obtained with this package can be found at
+http://comminfo.rutgers.edu/~vmenkov/data/
+
+<p>
+This package uses both BOXER and BORJ; the latter is used for such things as command-line parsing.
+
 */
 package edu.dimacs.mms.accutest;
 
