@@ -215,43 +215,42 @@ public class TruncatedGradient extends PLRMLearner {
 	return createParamsElement
 	    (xmldoc, 
 	     new String[] {"theta","eta","g", PARAM.K},
-	     new Object[] {commonTrunc.reportTheta(),new Double(eta),
+	     new Object[] {new Double(commonTrunc.theta),new Double(eta),
 			   new Double(g),  new Integer(commonTrunc.K) });
     }
 
     void parseParams(Element e) throws BoxerXMLException  {
 	XMLUtil.assertName(e, Learner.PARAMETERS);
 
-	Object otheta = Param.INF; // truncation with no threshold
+	double theta =Double.POSITIVE_INFINITY;
 	int t=0; // saved position in the truncation sequence
 
 	HashMap<String,Object> h = makeHashMap
 	    ( new String[] { "theta","eta","g",PARAM.K, PARAM.t},
-	      new Object[] {otheta, new Double(eta), new Double(g), 
+	      new Object[] {new Double(theta), new Double(eta), new Double(g), 
 			    new Integer(K),  new Integer(0)});
 	
 	h = parseParamsElement(e,h);
 
-
-	otheta = h.get("theta");
+	theta = ((Double)(h.get("theta"))).doubleValue();
 	eta =  ((Double)(h.get("eta"))).doubleValue();
 	g =  ((Double)(h.get("g"))).doubleValue();
 	K = ((Number)(h.get(PARAM.K))).intValue();
 	if (K<=0) throw new IllegalArgumentException("K=" + K + " in the XML learner definition. K must be a positive integer");
 	t = ((Number)(h.get(PARAM.t))).intValue();
-	commonTrunc = defaultCommonTrunc(otheta);
+	commonTrunc = defaultCommonTrunc(theta);
 	commonTrunc.setT(t); // part of saved history	
     }
     
     Truncation defaultCommonTrunc() {
-	return defaultCommonTrunc(Param.INF);
+	return defaultCommonTrunc(Double.POSITIVE_INFINITY);
     }
 
     /** Creates a truncation object that has correct parameters, but applies
 	truncation to no matrix.
      */
-    private Truncation defaultCommonTrunc(Object otheta) {
-	return  new Truncation(otheta,  K*g*eta, K, new BetaMatrix[0], lazyT, suite.getPriors(), null); // ZZ
+    private Truncation defaultCommonTrunc(double theta) {
+	return  new Truncation(theta,  K*g*eta, K, new BetaMatrix[0], lazyT, suite.getPriors(), null); 
     }
 
        

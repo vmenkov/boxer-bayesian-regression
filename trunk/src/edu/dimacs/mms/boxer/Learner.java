@@ -550,11 +550,12 @@ public abstract class Learner implements Model {
 		    o = Param.valueOf(aval);
 		    // System.out.println(aval + " --> " + o);
 		} catch ( java.lang.IllegalArgumentException ex) {
-		    o =  new Double(aval);
+		    // Use our customized parsing for double
+		    o =  new Double( XMLUtil.parseDouble(aval) );
 		}
 		h.put(aname, o);
 		cnt++;
-	    } else if (type==Node.TEXT_NODE && n.getNodeValue().trim().length()==0 || type==Node.COMMENT_NODE ) { 
+	    } else if (XMLUtil.isIgnorable(n)) {
 		// skip blank
 	    } else { 
 		throw new IllegalArgumentException("Unexpected child found within a PARAMETERS element: " + n);

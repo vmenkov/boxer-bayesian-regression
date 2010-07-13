@@ -109,14 +109,20 @@ public class XMLUtil {
 	return  (XMLUtil.nonempty(a)) ?  Integer.parseInt(a) : defValue;
     }
 
+    /** A wrapper over Double.parseDouble(), with additional support for the 
+	"legacy" constant "INF"
+     */
+    static double parseDouble(String a) throws NumberFormatException {
+	return  a.equalsIgnoreCase("INF")  ?    Double.POSITIVE_INFINITY :
+	    Double.parseDouble(a);
+    }
+
     /** Gets an attribute, and converts it to a double value. 
 	The value "Infinity" or "INF" is converted to Double.POSITIVE_INFINITY (the former, by Double.valueOf(), the latter by our own rule). 
 	@throws BoxerXMLException If no attribute with the expected name is found.
     */
     static double getAttributeDouble(Element e, String aname) throws BoxerXMLException {
-	String a = getAttributeOrException(e,aname);
-	return  a.equalsIgnoreCase(Param.INF.toString())  ?
-	    Double.POSITIVE_INFINITY :	    Double.parseDouble(a);
+	return parseDouble( getAttributeOrException(e,aname));
     }
 
     /** Gets an attribute, and converts it to a double value. 
@@ -124,9 +130,7 @@ public class XMLUtil {
 	If absent,  returns the specified default value. */
     static double getAttributeDouble(Element e, String aname, double defValue) throws BoxerXMLException {
 	String a = e.getAttribute(aname);
-	return  !XMLUtil.nonempty(a) ?   defValue :
-	    a.equals(Param.INF.toString()) ?	 Double.POSITIVE_INFINITY :
-	    Double.parseDouble(a);
+	return  !XMLUtil.nonempty(a) ?   defValue : parseDouble(a);
     }
 
   /** Gets an attribute, and converts it to a boolean value. (The
