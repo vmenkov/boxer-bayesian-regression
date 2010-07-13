@@ -6,8 +6,13 @@ import java.util.Vector;
 /** An auxiliary class for TruncatedGradient or for any other learners
  that apply truncation to some coefficient matrices. A Truncation
  object is created and associated with one or several matrices whose
- elements need to be periodically truncated. */
-class Truncation /*implements Cloneable*/ {
+ elements need to be periodically truncated.
+
+ <p>A BOXER API user typically won't need to create, or even access
+ directly, Truncation objects; they are created as needed by the
+ constructors of {@link Learner} classes.
+*/
+public class Truncation /*implements Cloneable*/ {
 
     /** The discrimination this Truncation object is for. This would
       be null if this is a "common" truncation object; a non-null if 
@@ -84,7 +89,7 @@ class Truncation /*implements Cloneable*/ {
 
     /** Creates a truncation object for truncation of elements of a single 
 	marix */
-    Truncation(Object _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
+    public Truncation(Object _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
 	this( _theta, to, _K, new Matrix[] {w}, _lazy, _priors, _dis);
     }
 
@@ -93,12 +98,14 @@ class Truncation /*implements Cloneable*/ {
 	      orig.priors, _dis);
     }
 
-    /**
+    /** Creates a truncation object for truncation of elements of one
+      or several specified matrices
+
        @param _matrices An array of matrices to which this truncation applies
        @param _lazy If true, use lazy truncation
        @param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
      */
-    Truncation(Object _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
+    public Truncation(Object _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
 	lazy = _lazy;
 	priors = _priors;
 	dis = _dis;
