@@ -15,7 +15,7 @@ public class LaplacePrior extends Prior {
 	} catch (BoxerXMLException ex) { throw new AssertionError(); }
     }
 
-    /** Returns the type of this prior, i.e. Type.l
+    /** Returns the type of this prior, i.e Type.l
      */
     public Type getType() { return Type.l; }
 
@@ -39,15 +39,12 @@ public class LaplacePrior extends Prior {
     }
 
 
-    /** Applies the prior to a particular element. 
-	@param trunc Encodes the cur-off threshold theta (directly,
-	and via trunc.mode)
-     */
+
     public double apply(double val, Truncation trunc, int mult) {
 	if (!completed) throw new AssertionError("LaplacePrior not properly initialized");
 	final double diff = val - mode;
 	if (skew * diff < 0) val = mode;
-	else if (trunc.withinTheta(diff)) {
+	else if (trunc==null || trunc.withinTheta(diff)) {
 	    if (Double.isInfinite(lambda)) val = mode;
 	    else {
 		double to = lambda * mult;

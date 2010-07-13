@@ -25,8 +25,31 @@ import org.xml.sax.SAXException;
     <img src="doc-files/priors-hierarchy1.jpg">
     <br>(The JPEG file above is generated from an SVG file, which you can find <a href="doc-files/priors-hierarchy1.svg">here</a>)
 
-    <p>The set of priors is usually created by reading a "priors" XML
-    elemnet from an XML file. A sample priors definition file can be found in <a
+    <p>In the 8-level system of priors, more specific priors override
+    less specific (solid lines in the chart above), and those with
+    higher level number override those with lower number (dashed
+    lines). For example, the prior for a given coeffient (d.c,f)
+    (i.e., the coefficient for the matrix element for a particular
+    class <em>c</em> in a particular discrimination <em>d</em> and a
+    particular feature <em>f</em>) would be given by a matching
+    Level-7 prior, if it exists in the current set of priors. If the
+    set has no prior for this particular (d.c,f) combination, but has
+    a Level-6 prior that would apply for all features' elements in
+    this <em>d.c</em> column of the matrix, this Level-6 prior will be
+    used. Absent the Level-6 prior, BOXER will check if there is a
+    Level-5 prior, which applies to all coefficients for feature
+    <em>f</em> in this discrimination matrix, and so on. Absent any
+    applicable Level-2 through Level-7 priors, the "overall" Level-1
+    prior will be used. BOXER behaves as if the Level-1 prior always
+    exists in the set of priors: if the XML file defining the set of
+    priors did not have a Level-1 prior, the Level-1 prior will be
+    initialized from the built-in Level-0 prior.
+
+    <p>In BOXER-based applications, the set of priors is usually
+    created by reading a "priors" XML element, from an XML file,
+    although an application can, of course, assemble such an XML
+    element itself as well.  A sample priors definition file can be
+    found in <a
     href="doc-files/sample-priors.xml">sample-priors.xml</a>
 
     <p>As of ver. 0.8.001, the only type of priors we have are

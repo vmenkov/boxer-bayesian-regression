@@ -100,7 +100,9 @@ abstract public class Prior //implements Measurable
        type="l" mode="2.0" var= "0.1" absolute="false" [skew="0" ]
        /&gt;
 
-       FIXME: need support for "infinity"
+       <p>
+       The string "Infinity" can be used to denote the infinite value
+       of variance (i.e., a diffuse prior)
 
 	@param e An XML Element of the type  "prior" 
 
@@ -161,14 +163,15 @@ abstract public class Prior //implements Measurable
     }
     
 
-
    /** Applies the prior-based "truncation" to a particular element 
 
        @param val The value (a PLRM matrix element) to which the prior is to
        be applied
 
-       @param trunc Encodes the cur-off threshold theta (directly,
-       and via trunc.mode)
+       @param trunc A Truncation object that encapsulates the cut-off
+       threshold theta (directly, and via trunc.mode). It is OK to
+       pass null here; the meaning would be, apply truncation
+       to all values, i.e. the same as if trunc.theta=infinity
 
        @param mult "Multiplier", i.e. how many times (1 or more) then
        prior is to be applied. The value may be greater than 1 in
