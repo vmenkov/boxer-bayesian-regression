@@ -109,7 +109,7 @@
 
 <target name="javadoc" depends="compile">
   <exec executable="grep" outputproperty="boxer.ver">
-    <arg line="version ${src}/edu/dimacs/mms/boxer/Version.java"/>
+    <arg line="String.version ${src}/edu/dimacs/mms/boxer/Version.java"/>
     <redirector >
       <outputfilterchain >
 	<replaceregex pattern="[^0-9\.]" replace="" flags="g"/>

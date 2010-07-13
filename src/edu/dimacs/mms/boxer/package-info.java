@@ -24,19 +24,25 @@ focuses on how BOXER is implemented.  It is largely relevant to those
 maintaining or modifying BOXER.
 </ul>
 
-<h2>Scientific Perspective:</h2>
-<p>
-The algorithms implemented in BOXER include versions of the {@link
-edu.dimacs.mms.boxer.ExponentiatedGradient Exponentiated Gradient} (EG), stochastic
-gradient (SG), and {@link edu.dimacs.mms.boxer.TruncatedGradient Truncated Gradient} (TG)
+<h2>Scientific Perspective:</h2> 
+
+<p> The algorithms implemented in
+BOXER include versions of the {@link
+edu.dimacs.mms.boxer.ExponentiatedGradient Exponentiated Gradient}
+(EG), stochastic gradient (SG), and {@link
+edu.dimacs.mms.boxer.TruncatedGradient Truncated Gradient} (TG)
 algorithms.  All are conventionally viewed as algorithms for "online
 learning".  BOXER has its origins in our work on teasing apart and
 rationalizing the multiple and unclear goals that have been pursued
 under the heading of online learning.
 
+<p>BOXER's TruncatedGradient may also be enhanced with individual
+priors, which will allow the user to affect the behavior of PLRM
+matrix coefficients during learning.
 
 <h2>Functional Perspective:</h2>
 
+<p>
 BOXER supports machine learning of polytomous logistic regression
 models (PLRMs) from labeled training data, as well as applying such
 models to new data to solve binary or multiclass classification
@@ -104,6 +110,10 @@ discriminations, one each of the news categories Politics, Sports,
 Financial, and Weather), unrelated ones (e.g. one multiclass
 discrimination for geographic region, and another multiclass
 discrimination for news topic), or both.
+
+<li>{@link edu.dimacs.mms.boxer.Priors Priors}: A set of priors can be
+optionally associated with a Suite. It will affect the behavior of all
+{@link  edu.dimacs.mms.boxer.TruncatedGradient TruncatedGradient} learners on that suite.
 
 <li>{@link edu.dimacs.mms.boxer.Learner Learner}: Each concrete
 class extending the abstract Learner class implements a

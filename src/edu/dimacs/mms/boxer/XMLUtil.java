@@ -76,7 +76,8 @@ public class XMLUtil {
 	int type= n.getNodeType();
 	String val= n.getNodeValue();
 
-	return (type == Node.TEXT_NODE && val.trim().length()==0);
+	return (type == Node.TEXT_NODE && val.trim().length()==0) ||
+	    (type== Node.COMMENT_NODE);
     }
 
 
@@ -108,17 +109,24 @@ public class XMLUtil {
 	return  (XMLUtil.nonempty(a)) ?  Integer.parseInt(a) : defValue;
     }
 
-    /** Gets an attribute, and converts it to a double value. If absent,
-      throws an exception */
+    /** Gets an attribute, and converts it to a double value. 
+	The value "Infinity" or "INF" is converted to Double.POSITIVE_INFINITY (the former, by Double.valueOf(), the latter by our own rule). 
+	@throws BoxerXMLException If no attribute with the expected name is found.
+    */
     static double getAttributeDouble(Element e, String aname) throws BoxerXMLException {
-	return  Double.parseDouble( getAttributeOrException(e,aname));
+	String a = getAttributeOrException(e,aname);
+	return  a.equalsIgnoreCase(Param.INF)  ?
+	    Double.POSITIVE_INFINITY :	    Double.parseDouble(a);
     }
 
-    /** Gets an attribute, and converts it to a double value. If absent,
-      returns the specified default value. */
+    /** Gets an attribute, and converts it to a double value. 
+	The value "Infinity" or "INF" is converted to Double.POSITIVE_INFINITY (the former, by Double.valueOf(), the latter by our own rule). 
+	If absent,  returns the specified default value. */
     static double getAttributeDouble(Element e, String aname, double defValue) throws BoxerXMLException {
 	String a = e.getAttribute(aname);
-	return  (XMLUtil.nonempty(a)) ?  Double.parseDouble(a) : defValue;
+	return  !XMLUtil.nonempty(a) ?   defValue :
+	    a.equals(Param.INF) ?	 Double.POSITIVE_INFINITY :
+	    Double.parseDouble(a);
     }
 
   /** Gets an attribute, and converts it to a boolean value. (The

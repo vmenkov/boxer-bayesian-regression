@@ -65,10 +65,20 @@ public class Suite {
 	before any learners are created; it will affect all TG learners
 	associated with this suite. */
     private Priors priors=null;
-    /** Associates a set of priors with the suite. This should be done
-	before any learners are created. The priors will affect all TG learners
-	associated with this suite. */
+
+    /** Associates a set of priors with the suite. This method should
+	be called before any learners are created on this suite. The priors will
+	affect all {@link TruncatedGradient} learners that will be
+	later created in this suite. 
+
+	@param p A Priors object; typically, it has been created with
+	a Priors constructor using this suite.
+    */
     public void setPriors(Priors p) { priors = p; }
+
+    /** Returns the Priors object associated with this suite, or null
+	if none is.
+     */
     public Priors getPriors() { return priors; }
 
     /** All discriminations we've got in this suite, accessible by their name.

@@ -7,8 +7,9 @@ import org.w3c.dom.Document;
 //import org.w3c.dom.Node;
 
 /** An individual "prior", which may be applicable only to a single
-    (discrimination.class, feature) pair, or for a whole class of them.
-    A single prior may be represented as a (mode,variance) pair.
+    (discrimination.class, feature) pair, or for a whole class of
+    them.  A single prior may be represented as a (type,
+    mode,variance,absolute,skew) tuple.
 
     <p>This class is abstract; concrete classes implement particular
     types of priors (e.g., LaplacePrior), and have appropriate
@@ -33,8 +34,9 @@ abstract public class Prior //implements Measurable
     
     /** The mode of the distribution */
     double mode=0;
-    /** The variance, as supplied in the input. This can be a relative
-     * value. */
+    /** The variance, as supplied in the input. This is a finite real
+     * number, or Double.POSITIVE_INFINITY. This can be a relative
+     * value, if absolute==false.  */
     private double var=1.0;
 
     /** If false, the value of the variance should be multiplied by the
@@ -44,14 +46,18 @@ abstract public class Prior //implements Measurable
     int skew=0;
 
     public static enum Type {
-	 l, g;
+	/** Laplacian */
+	 l, 
+	     /** Gaussian (not yet supported as of ver 0.8.001) */
+	     g;
     } 
 
     //Type type;
 
     /** The <em>absolute</em> variance. (If this is an absolute prior,
       this is the same as the stated variance; otherwise, multiplied
-      by the base prior's variance) */
+      by the base prior's variance). A Double.POSITIVE_INFINITY may be
+      stored here on occasions. */
     double avar;
 
     /** This is set once all data bits are computed */
@@ -67,7 +73,9 @@ abstract public class Prior //implements Measurable
 	} else if (base==null) {
 	    throw new BoxerXMLException("The top-level prior must be absolute; it cannot be specified as 'relative' to any other prior");
 	} else {
+	    // FIMXE: 0*Infinity or Infinity*0 will give NaN here...
 	    avar = var * base.avar;
+	    if (Double.isNaN(avar)) throw new  BoxerXMLException("Base variance=" + base.avar + " cannot be combined with the relative variance=" + var +", because the product=" + avar);
 	}
 	completed = true;
     }
@@ -78,7 +86,9 @@ abstract public class Prior //implements Measurable
     }
     */
 
-    abstract Type getType();
+    /** This method is overridden by derived types (such as
+     * LaplacePrior) to return the Type of this prior. */
+    abstract public Type getType();
 
     /**
        Parses one "prior" XML element into a Prior object (of an
@@ -102,7 +112,7 @@ abstract public class Prior //implements Measurable
 
 
      */
-    static Prior parsePrior(Element e, Prior base) throws BoxerXMLException {
+    public static Prior parsePrior(Element e, Prior base) throws BoxerXMLException {
 	XMLUtil.assertName(e, Priors.NODE.PRIOR);
 
 	Type type = Type.valueOf( XMLUtil.getAttributeOrException(e, ATTR.TYPE));
@@ -123,11 +133,11 @@ abstract public class Prior //implements Measurable
     }
 
     /** Constructs the built-in default prior */
-    static Prior makeL0() {
+    public static Prior makeL0() {
 	return new LaplacePrior();
     }
 
-
+    /** Constructs an XML "prior" element, describing this prior */
     public Element saveAsXML(Document xmldoc) {
 	Element e = xmldoc.createElement(Priors.NODE.PRIOR);
 	e.setAttribute(ATTR.TYPE, getType().toString());
@@ -141,6 +151,7 @@ abstract public class Prior //implements Measurable
 	return e;
     }
 
+    /** Produces a human-readable description of the prior */
     public String toString() {
 	return "("+getType().toString() +
 	    ", " + ATTR.MODE+"="+mode +
@@ -151,11 +162,19 @@ abstract public class Prior //implements Measurable
     
 
 
-   /** Applies the prior to a particular element 
-	@param trunc Encodes the cur-off threshold theta (directly,
-	and via trunc.mode)
+   /** Applies the prior-based "truncation" to a particular element 
+
+       @param val The value (a PLRM matrix element) to which the prior is to
+       be applied
+
+       @param trunc Encodes the cur-off threshold theta (directly,
+       and via trunc.mode)
+
+       @param mult "Multiplier", i.e. how many times (1 or more) then
+       prior is to be applied. The value may be greater than 1 in
+       "lazy truncation" situations.
      */
-    abstract double apply(double val, Truncation trunc, int mult);
+    abstract public double apply(double val, Truncation trunc, int mult);
 
 
 }

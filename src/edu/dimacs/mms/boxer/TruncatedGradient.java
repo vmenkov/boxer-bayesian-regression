@@ -9,7 +9,11 @@ import org.w3c.dom.Element;
 
 
 /** Using Truncated Gradient for training of Polytomous Logistic
- * Regression Models (PLRM)
+    Regression Models (PLRM).<p>
+
+    If the suite for which this learner is created has a {@link
+    Priors} object associated with it, then the priors-based "truncation" 
+    will be used instead of the regular toward-zero truncation.
  */
 public class TruncatedGradient extends PLRMLearner {
 
@@ -19,9 +23,18 @@ public class TruncatedGradient extends PLRMLearner {
     /** The learning rate eta. Default (as per paper) is 0.1. It was
 	0.01 in the code used in January-Feb 2009 */
     double  eta=0.1;  
-    /**  in Jan-Feb 2009 we had g=0.001 and K=1, i.e. truncation was
-     *  applied at each step, but was very small. */
+    /** The gravity factor for truncation. in Jan-Feb 2009 we had
+       g=0.001 and K=1, i.e. truncation was applied at each step, but
+       was very small.
+
+       <p>If indiviudal priors are used, this parameter is completely
+       ignored, as the prior-based truncation is carried out
+       instead. E.g., if the priors are {@link LaplacePrior}s, then
+       the priors' lambdas are used exactly like g would be used if there
+       were no priors.     
+    */
     double g=0.1;
+    /** How often truncation is carried out */
     private int K = 10;
     
     class TruncatedGradientLearnerBlock extends PLRMLearner.PLRMLearnerBlock {

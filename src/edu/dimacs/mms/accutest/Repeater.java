@@ -12,8 +12,14 @@ import edu.dimacs.mms.borj.*;
      after repeatingly feeding the same examples, in random order,
      to the learner.
 
-     Usage:
+     <p>
+     Usage:<br>
      java  Repeater [-Dr=1000] [-DM=10] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
+
+     <p>
+     Sample usage:<br>
+     java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dverbosity=0 $driver     read-suite: SimpleTestSuite.xml    read-learner: $learner    train: Simpl
+eTestData-part-1.xml  test: SimpleTestData-part-2.xml 
 
  */
 public class Repeater {
@@ -115,6 +121,16 @@ public class Repeater {
 	    q = cm.next();
 	}
 
+	Suite suite = (suiteXML!=null)? new Suite(suiteXML): new Suite("Test_suite");
+	// Any "read-priors" command?
+	if (q!=null && q.is(CMD.READ_PRIORS)) {
+	    System.out.println("Reading priors from file: "+q.f);
+	    Priors p = new Priors(new File(q.f), suite);
+	    suite.setPriors(p);
+	    q = cm.next();
+	}
+
+
 	// Any "read-learner" commmands?
 	if (q!=null && q.is(CMD.READ_LEARNER)) {
 	    System.out.println("Getting a learner from file: "+q.f);
@@ -136,18 +152,17 @@ public class Repeater {
 	String testFile = q.f;
 	q = cm.next();
 
+	String dumpLearnerFile = null;
+	if  (q.is(CMD.WRITE)) {
+	    dumpLearnerFile = q.f;
+	     q=cm.next(); 
+	}
+
 	if (q!=null)  throw new AssertionError("There is an unused command left: " + q);
-
-
-	Suite suite = (suiteXML!=null)? new Suite(suiteXML): new Suite("Test_suite");
 
 	System.out.println("Reading data set ("+trainFile+")");
 	Vector<DataPoint> train = ParseXML.readDataFileXML(trainFile, suite, true);
-
-
 	Vector<DataPoint> test = ParseXML.readDataFileXML(testFile, suite, false);
-
-
 
 	for(long seed=start; seed< nRandom; seed++) {
 
@@ -155,6 +170,13 @@ public class Repeater {
 			   trainFile, 		       train, 
 			   testFile, 		       test,
 			   scoreFileBase,		       M, r, seed);
+
+
+	    if (seed == start && dumpLearnerFile != null) {
+		System.out.println("Saving the learner(s) from the 1st run to file: "+dumpLearnerFile );
+		suite.serializeLearnerComplex(dumpLearnerFile ); // save the entire model
+	    }
+
 	    suite.deleteAllLearners();
 	}
 

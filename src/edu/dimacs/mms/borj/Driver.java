@@ -41,19 +41,28 @@ import edu.dimacs.mms.boxer.*;
     (which you can create by hand, or with some program analyzing your
     data), describing a {@link edu.dimacs.mms.boxer.Suite suite} (list of {@link
     edu.dimacs.mms.boxer.Discrimination discriminations}, each one consisting of
-    classes into which examples may be categorized).
+    classes into which examples may be categorized).<br>
+    
+    The <tt>read-suite:</tt> command can be followed by an optional
+    <tt>read-priors:</tt> command, which will cause BOXER read an XML
+    file containing descriptions of individual priors (see a sample
+    file in <a
+    href="doc-files/sample-priors.xml">sample-priors.xml</a>); they
+    will be used for all TG learners created later.
+    <br>
 
     Once a suite has been created, a learner (or several learners)
-    using it can be created later on.
+    using it can be created later on (see Group 2, below).
 
-    <li>You can read an entire "learner complex" (a ready-made
-    classifier), using the <tt>read:</tt> command. The learner complex
-    file contains the description of a suite, list of features (e.g.,
-    words from which document examples consist), and one or several
-    learners using this suite. 
+    <li>Instead of just reading a suite, you can read an entire
+    "learner complex" (a ready-made classifier), using the
+    <tt>read:</tt> command. The learner complex file contains the
+    description of a suite, list of features (e.g., words from which
+    document examples consist), any existing individual priors, and
+    one or several learners using this suite.<br>
 
     Typically, a learner complex file may be created by serializing BOXER's
-    data from an earlier BORJ run, but you can create one by hand as well.
+    data from an earlier BORJ run, but you can create one by hand as well.<br>
 
     If you have read a "learner complex", you can add more learners later
     on, and you can continue training learners on more training data.
