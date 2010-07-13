@@ -115,7 +115,7 @@ public class XMLUtil {
     */
     static double getAttributeDouble(Element e, String aname) throws BoxerXMLException {
 	String a = getAttributeOrException(e,aname);
-	return  a.equalsIgnoreCase(Param.INF)  ?
+	return  a.equalsIgnoreCase(Param.INF.toString())  ?
 	    Double.POSITIVE_INFINITY :	    Double.parseDouble(a);
     }
 
@@ -125,7 +125,7 @@ public class XMLUtil {
     static double getAttributeDouble(Element e, String aname, double defValue) throws BoxerXMLException {
 	String a = e.getAttribute(aname);
 	return  !XMLUtil.nonempty(a) ?   defValue :
-	    a.equals(Param.INF) ?	 Double.POSITIVE_INFINITY :
+	    a.equals(Param.INF.toString()) ?	 Double.POSITIVE_INFINITY :
 	    Double.parseDouble(a);
     }
 
