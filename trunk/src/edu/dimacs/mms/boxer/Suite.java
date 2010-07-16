@@ -665,7 +665,21 @@ public class Suite {
 	    throw new AssertionError("Unknown type supportsSimpleLabels=" +supportsSimpleLabels);
 	}
     }
-    
+
+    /** If we're in the Simple Labels Polytomous mode, returns the
+     * suite's only non-fallback discrimination.
+     */
+    Discrimination getSimplePolytomousDisc() {
+	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode");
+
+	int did = 0;
+	while(did<disCnt()  && isFallback(getDisc(did))) did ++;
+
+	if (did >= disCnt()) throw  new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode, but it has no non-fallback discrimination");
+	else if (did < disCnt()-1) throw  new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode, but it has more than one non-fallback discrimination");
+	else return getDisc(did);
+    }
+
     /** Only reports recognized classes; so a Discrimination that has
      * only provisional classes will be shown as empty */
     public String describe() {

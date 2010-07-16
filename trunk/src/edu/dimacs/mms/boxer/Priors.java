@@ -222,11 +222,21 @@ public class Priors {
 </discrimination>
 
      */
-    public Priors(Element e, Suite _suite) throws BoxerXMLException {
+
+    /** Constructs an (almost empty set of priors, with just L0 and L1
+     * that points to L0
+     */
+    Priors(Suite _suite, String _name) throws BoxerXMLException {
 	suite = _suite;
-	//dic = suite.getDic();
+	name = _name;
+	setL1( L0prior);
+    }
+
+    public Priors(Element e, Suite _suite) throws BoxerXMLException {
+	this(_suite, e.getAttribute(ParseXML.ATTR.NAME_ATTR));
+
 	XMLUtil.assertName(e, NODE.PRIORS);
-	name =  e.getAttribute(ParseXML.ATTR.NAME_ATTR);
+	 
 	if (!XMLUtil.nonempty(name)) throw new BoxerXMLException("No name found in the XML '"+NODE.PRIORS+"' element");
 
 	boolean foundCD=false, foundDS=false;
@@ -241,7 +251,6 @@ public class Priors {
 		// <features> </features>
 		// <classes> </classes>
 
-		setL1( L0prior);
 		for(Node x=n.getFirstChild(); x!=null; x=x.getNextSibling()) {
 		    if (XMLUtil.isIgnorable(x)) continue;
 		    if ( XMLUtil.isNamedElement(x,NODE.OVERALL)) {
@@ -304,6 +313,18 @@ public class Priors {
     public Priors(File f, Suite suite) 
 	throws IOException, SAXException, BoxerXMLException {
 	this(ParseXML.readFileToElement(f), suite);
+    }
+
+    /** Figures the file format (from the extension), and tries to read it
+	as an XML or BMR-format priors file.
+     */
+    static public Priors readPriorsFileMultiformat(File f, Suite suite) 
+	throws IOException, SAXException, BoxerXMLException {
+	if (f.getName().toLowerCase().endsWith(".xml")) {
+	    return new Priors(f, suite);
+	} else {
+	    return  readPriorsFileBMR(f, suite);
+	}
     }
 
 
@@ -502,6 +523,91 @@ public class Priors {
 	}
 	return s;
     }
+
+    /** Parses a priors file in BMR format. Since the BMR-format files
+      don't contain discrimination names (BMR wasn't meant to be used
+      in multi-discrimination context), this method can only be
+      used if we have exactly one discrimination, or exactly one
+      non-fallback discrimination, in our suite.
+     */
+    public static Priors readPriorsFileBMR(File f,     Suite suite) 
+	throws IOException, BoxerXMLException {
+
+	Discrimination dis = suite.getSimplePolytomousDisc();
+
+	LineNumberReader r = new LineNumberReader( new FileReader(f));
+
+	// FIXME: more readable name?
+	Priors p = new Priors(suite, f.getName());
+
+	String s=null;
+	int cnt=0;
+	while( (s=r.readLine()) != null) {
+	    s=s.trim();
+	    if (s.equals("")) continue;
+	    if (s.startsWith("#")) continue;
+	    cnt++;
+	    p.parseLineBMR(s, dis, p.getL1());
+	}
+	r.close();
+	return p;
+    }
+
+
+
+    /*
+    private String zInt  = "\\s+([0-9]+)";
+    private String zF  = "\\s+([0-9\\.eE]\\-)";
+    
+
+
+    private static Pattern classPat = Pattern.compile("class" + zInt + zInt +
+						      zF + zF);
+
+    */
+
+    /** Parses something like this:
+       <pre>
+       class 3 0 0.0 0.0 0 # class: RETURN_BOTH feature: INTERCEPT published_beta  0.0
+    */
+    void parseLineBMR(String s, Discrimination dis, Prior base)  throws  BoxerXMLException {
+	int pos = s.indexOf('#');
+	if (pos >= 0) s = s.substring(0, pos);
+	s = s.trim();
+	if (s.length()==0) return;
+
+	String prefix  = "class";
+	if (s.startsWith(prefix)) {
+	    
+	    Scanner scan = new Scanner( s.substring(prefix.length()).trim() );
+	    if (!scan.hasNextInt()) throw new BoxerXMLException("wrong token 2 in line " + s);
+	    int classNo = scan.nextInt();
+	    if (!scan.hasNextInt()) throw new BoxerXMLException("wrong token 3 in line " + s);
+	    int featureNo = scan.nextInt();
+	    if (!scan.hasNextDouble()) throw new BoxerXMLException("wrong token 4 in line " + s);
+	    double mode = scan.nextDouble();
+	    double var;
+	    if (scan.hasNextDouble()) var = scan.nextDouble();
+	    else if (scan.hasNext() && scan.next().equalsIgnoreCase("inf")) var = Double.POSITIVE_INFINITY;
+	    else throw new BoxerXMLException("wrong token 5 in line " + s);
+
+	    int skew = 0;
+	    if (scan.hasNextInt()) {
+		skew = scan.nextInt();
+	    }
+	    // FIXME: l is the only type supported now
+	    Prior p = Prior.mkPrior(Prior.Type.l, mode, var, true, skew, base);
+
+	    Discrimination.Cla c = dis.getCla("" + classNo);
+	    if (c==null) throw new BoxerXMLException("Discrimination " + dis + " does not have a class named " + classNo + ", mentioned in the priors file");
+	    int fid = suite.getDic().getIdAlways("" + featureNo);
+	    CFKey key = new CFKey(c, fid);		
+	    storePrior(dis, key, p);
+	} else {
+	    throw new  BoxerXMLException("Don't know how to pass a BMR prior line, because it does not start with '"+prefix+"'. Line=" + s);
+	}
+    }
+
 
 
 }

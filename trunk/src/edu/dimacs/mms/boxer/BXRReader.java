@@ -65,7 +65,7 @@ public class BXRReader {
 	// Pattern for feature names and values 
 	Pattern fpat = Pattern.compile("\\s*([^\\s:]+)\\s*"+
 				       ps_regex +
-				       "\\s*([0-9\\.eE]+)");
+				       "\\s*([0-9\\.eE\\-]+)");
     
 	int pos=0;
 	Vector<DataPoint.FVPair> v = new Vector<DataPoint.FVPair>();	    

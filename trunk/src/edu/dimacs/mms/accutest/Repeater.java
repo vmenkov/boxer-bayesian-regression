@@ -125,7 +125,9 @@ public class Repeater {
 	// Any "read-priors" command?
 	if (q!=null && q.is(CMD.READ_PRIORS)) {
 	    System.out.println("Reading priors from file: "+q.f);
-	    Priors p = new Priors(new File(q.f), suite);
+	    //Priors p = new Priors(new File(q.f), suite);
+	    Priors p = Priors.readPriorsFileMultiformat(new File(q.f), suite);
+
 	    suite.setPriors(p);
 	    q = cm.next();
 	}
@@ -153,7 +155,7 @@ public class Repeater {
 	q = cm.next();
 
 	String dumpLearnerFile = null;
-	if  (q.is(CMD.WRITE)) {
+	if  (q!=null && q.is(CMD.WRITE)) {
 	    dumpLearnerFile = q.f;
 	     q=cm.next(); 
 	}
@@ -161,8 +163,8 @@ public class Repeater {
 	if (q!=null)  throw new AssertionError("There is an unused command left: " + q);
 
 	System.out.println("Reading data set ("+trainFile+")");
-	Vector<DataPoint> train = ParseXML.readDataFileXML(trainFile, suite, true);
-	Vector<DataPoint> test = ParseXML.readDataFileXML(testFile, suite, false);
+	Vector<DataPoint> train = ParseXML.readDataFileMultiformat(trainFile, suite, true);
+	Vector<DataPoint> test = ParseXML.readDataFileMultiformat(testFile, suite, false);
 
 	for(long seed=start; seed< nRandom; seed++) {
 

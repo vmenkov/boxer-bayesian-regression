@@ -355,7 +355,8 @@ public class Driver {
 	// Any "read-priors" command?
 	if (q!=null && q.is(CMD.READ_PRIORS)) {
 	    System.out.println("Reading priors from file: "+q.f);
-	    Priors p = new Priors(new File(q.f), suite);
+	    Priors p = Priors.readPriorsFileMultiformat(new File(q.f), suite);
+	    //  new Priors(new File(q.f), suite);
 	    suite.setPriors(p);
 	    q = cm.next();
 	}
