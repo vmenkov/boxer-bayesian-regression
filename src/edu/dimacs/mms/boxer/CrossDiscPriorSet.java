@@ -31,7 +31,7 @@ class CrossDiscPriorSet extends DiscPriorSet {
 	if (p!=null) return p;
 	// L2
 	p = L567.get(new CFKey(null, fid));
-	System.out.println("CDPS.get(key=" + new CFKey(null, fid) + ", gives p=" + p);
+	//System.out.println("CDPS.get(key=" + new CFKey(null, fid) + ", gives p=" + p);
 
 	if (p!=null) return p;
 	return L_overall;

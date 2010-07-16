@@ -65,7 +65,16 @@ abstract public class Prior //implements Measurable
 
     /** This is called at the end of the constructor, to initialize
 	all derived members of the instance. Child methods override
-	this method as needed, but keep calling super.complete()
+	this method as needed, but keep calling super.complete().
+
+	<p>One operation carried out here, if this prior is relative,
+	is the computing its absolute variance from its relative variance 
+	and the base prior's absolute variance. An exception is thrown 
+	if one of these two value is 0 and the other is infinite,
+	to avoid any possible confusion. (As per David Lewis' message from 
+	2010-07-13)
+     
+
     */
     void complete(Prior base) throws BoxerXMLException {
 	if (absolute) {
@@ -73,8 +82,9 @@ abstract public class Prior //implements Measurable
 	} else if (base==null) {
 	    throw new BoxerXMLException("The top-level prior must be absolute; it cannot be specified as 'relative' to any other prior");
 	} else {
-	    // FIMXE: 0*Infinity or Infinity*0 will give NaN here...
 	    avar = var * base.avar;
+	    // 0*Infinity or Infinity*0 will give NaN here (as per the IEEE
+	    // standard), and we throw an exception
 	    if (Double.isNaN(avar)) throw new  BoxerXMLException("Base variance=" + base.avar + " cannot be combined with the relative variance=" + var +", because the product=" + avar);
 	}
 	completed = true;
@@ -117,22 +127,33 @@ abstract public class Prior //implements Measurable
     public static Prior parsePrior(Element e, Prior base) throws BoxerXMLException {
 	XMLUtil.assertName(e, Priors.NODE.PRIOR);
 
-	Type type = Type.valueOf( XMLUtil.getAttributeOrException(e, ATTR.TYPE));
+	return mkPrior(
+		       Type.valueOf( XMLUtil.getAttributeOrException(e, ATTR.TYPE)),
+		       XMLUtil.getAttributeDouble( e, ATTR.MODE),
+		       XMLUtil.getAttributeDouble( e, ATTR.VAR),
+		       XMLUtil.getAttributeBoolean( e, ATTR.ABSOLUTE),
+		       XMLUtil.getAttributeInt( e, ATTR.SKEW, 0),
+		       base);
+
+    }
+
+    public static Prior mkPrior( Type _type, double _mode, double _var, boolean _absolute, int _skew, Prior base) throws BoxerXMLException {
 	Prior p;
-	if (type == Type.l) {
+	if (_type == Type.l) {
 	    p = new LaplacePrior();
 	} else {
-	    throw new BoxerXMLException("Prior type " + type + " is not currently supported");
+	    throw new BoxerXMLException("Prior type " + _type + " is not currently supported");
 	}
 
-	p.mode = XMLUtil.getAttributeDouble( e, ATTR.MODE);
-	p.var = XMLUtil.getAttributeDouble( e, ATTR.VAR);
-	p.absolute = XMLUtil.getAttributeBoolean( e, ATTR.ABSOLUTE);
-	p.skew = XMLUtil.getAttributeInt( e, ATTR.SKEW, 0);
-	if (p.skew<-1 || p.skew>1) throw new  BoxerXMLException("Invalid value of skew: " + p.skew);
+	p.mode = _mode;
+	p.var = _var;
+	p.absolute = _absolute;
+	p.skew = _skew;
+	if (p.skew<-1 || p.skew>1) throw new BoxerXMLException("Invalid value of skew: " + p.skew);
 	p.complete(base);
 	return p;
     }
+
 
     /** Constructs the built-in default prior */
     public static Prior makeL0() {

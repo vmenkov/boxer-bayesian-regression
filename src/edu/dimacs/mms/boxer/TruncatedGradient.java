@@ -9,8 +9,13 @@ import org.w3c.dom.Element;
 
 
 /** Using Truncated Gradient for training of Polytomous Logistic
-    Regression Models (PLRM).<p>
+    Regression Models (PLRM).
 
+    <p>
+    If the truncation is turned off (trunc.theta=0), the TruncatedGradient
+    becomes plain old Stochastic Gradient Descent (CGD).
+
+    <p>
     If the suite for which this learner is created has a {@link
     Priors} object associated with it, then the priors-based "truncation" 
     will be used instead of the regular toward-zero truncation.
@@ -39,6 +44,10 @@ public class TruncatedGradient extends PLRMLearner {
     
     class TruncatedGradientLearnerBlock extends PLRMLearner.PLRMLearnerBlock {
 
+	/** The truncation object controls the truncation
+	    modalities. In particular, if trunc.theta=0, there
+	    is no truncation at all.
+	 */
 	Truncation trunc; 
 
 	/** Creates a new learner block, possibly patterned on an old one
@@ -233,6 +242,8 @@ public class TruncatedGradient extends PLRMLearner {
 	h = parseParamsElement(e,h);
 
 	theta = ((Double)(h.get("theta"))).doubleValue();
+	System.out.println("Read in: common theta=" + theta);
+
 	eta =  ((Double)(h.get("eta"))).doubleValue();
 	g =  ((Double)(h.get("g"))).doubleValue();
 	K = ((Number)(h.get(PARAM.K))).intValue();

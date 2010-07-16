@@ -188,7 +188,7 @@ public class Driver {
 	Suite suite = (suiteXML!=null)? new Suite(suiteXML): new Suite("Test_suite");
 
 	System.out.println("Reading data set ("+trainFile+")");
-	Vector<DataPoint> train = ParseXML.readDataFileXML(trainFile, suite, true);
+	Vector<DataPoint> train = ParseXML.readDataFileMultiformat(trainFile, suite, true);
 
 	//------------------------
 

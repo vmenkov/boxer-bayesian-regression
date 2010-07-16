@@ -101,15 +101,18 @@ public class Truncation /*implements Cloneable*/ {
        @param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
      */
     public Truncation(double _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
+
+	theta= _theta;
+	basicTo = to;
+	K = _K;
+
 	lazy = _lazy;
 	priors = _priors;
 	dis = _dis;
 
-	basicTo = to;
-
 	//System.out.println("Truncation(), new basicTo=" + basicTo);
 
-	K = _K;
+
 	matrices = _matrices;
 	for(Matrix w: matrices) {
 	    if (!(w instanceof BetaMatrix || w instanceof DenseMatrix )) {
