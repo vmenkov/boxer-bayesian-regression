@@ -74,8 +74,8 @@ public class TruncatedGradient extends PLRMLearner {
 		trunc = b.trunc.liveCopy( new Matrix[]{w}, dis ); // ZZ
 	    }
 
-	    System.out.println("TG Block created for dis=" + dis.getName());
-	    System.out.println("trunc=" + trunc.describe());
+	     if (Suite.verbosity>1) System.out.println("TG Block created for dis=" + dis.getName());
+	     if (Suite.verbosity>1) System.out.println("trunc=" + trunc.describe());
 
 	}
 
@@ -242,7 +242,6 @@ public class TruncatedGradient extends PLRMLearner {
 	h = parseParamsElement(e,h);
 
 	theta = ((Double)(h.get("theta"))).doubleValue();
-	System.out.println("Read in: common theta=" + theta);
 
 	eta =  ((Double)(h.get("eta"))).doubleValue();
 	g =  ((Double)(h.get("g"))).doubleValue();

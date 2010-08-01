@@ -78,7 +78,7 @@ public class DenseMatrix extends Matrix  {
     }
 
 
-    double [][] toArray() { return data; }
+    public double [][] toArray() { return data; }
 
     public long  memoryEstimate() {
 	return Sizeof.OBJ +   Sizeof.sizeof(data);

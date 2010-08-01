@@ -13,11 +13,13 @@ import org.w3c.dom.Node;
  */
 public abstract class PLRMLearner extends Learner {
 
-    abstract class PLRMLearnerBlock extends Learner.LearnerBlock {
+    public abstract class PLRMLearnerBlock extends Learner.LearnerBlock {
 
 	/** The matrix of current Beta vectors. They are updated
 	  through learning */
 	protected BetaMatrix w = new BetaMatrix();
+
+	public Matrix getW() { return w; }
 
 	/** Returns true if this learning block contains no
 	non-trivial information obtained from learning.
@@ -158,46 +160,6 @@ public abstract class PLRMLearner extends Learner {
 	    }
 	}
 
-	/** Parses a matrix element that has been written by {@link
-	    #createMatrixElement() createMatrixElement()}. The values read
-	    are inserted into an existing matrix.
-
-	    All class labels occurring in describing matrix value must
-	    be already existing classes (declared in the suite
-	    description earlier). This is not the time to declare new
-	    classes.
-
-	    @param me Element (<matrix ...>) to read
-	    @param w Matrix whose elements are to be modifed
-	*/
-	void readMatrix(Element me, Matrix w) {
-	    String matName = me.getAttribute(ParseXML.ATTR.NAME_ATTR);
-	    int rowCnt=0, elCnt=0;
-	    for(Node x=me.getFirstChild(); x!=null; x=x.getNextSibling()) {
-		if ( x.getNodeType() == Node.ELEMENT_NODE &&
-		     x.getNodeName().equals(XMLUtil.ROW)) {
-		    rowCnt++;
-		    Element re = (Element)x;
-		    String feature = re.getAttribute(XMLUtil.FEATURE);
-		    if (!XMLUtil.nonempty(feature)) throw new IllegalArgumentException("Missing feature attribute in a matrix row element!");
-		    String[] pairs = re.getFirstChild().getNodeValue().split("\\s+");
-		    Vector<BetaMatrix.Coef> v = new Vector<BetaMatrix.Coef>(pairs.length);
-		    for(String p: pairs) {
-			if (p.length()==0) continue;
-			String q[] = p.split(BXRReader.PAIR_SEPARATOR_REGEX);
-			if (q.length!=2) throw new IllegalArgumentException("While reading matrix row element for feature '"+feature+"', could not parse element '"+p+"' as class"+BXRReader.PAIR_SEPARATOR_STRING+"value!");
-			Discrimination.Cla c = dis.getCla(q[0]);
-			if (c==null)  throw new IllegalArgumentException("While reading matrix row element for feature '"+feature+"', found previously undeclared class name: " + q[0]);
-			elCnt++;
-			v.add(new BetaMatrix.Coef(c.getPos(),
-						  Double.parseDouble(q[1])));
-		    }
-		    w.setElements( suite.getDic().getId(feature), v);
-		}
-	    }
-	    System.out.println("Read " + rowCnt + " rows, "+elCnt + " elements for matrix "+ matName + " for discrimination " + dis);
-	}
-
 	/** Parses the element for discrimination-specific parameters,
 	    that may be supplied in the learner's description. The
 	    method in PLRMLearner does nothing, but may be overridden
@@ -207,7 +169,8 @@ public abstract class PLRMLearner extends Learner {
 	*/
 	void parseDSP(Element e)  throws BoxerXMLException{};
 
-	/** Returns a list of matrix that we should look for in the input XML
+	/** Returns a list of matrix objects and their names that we
+	    should look for in the input XML
 	 */
 	abstract HashMap<String, Matrix> listMatrices();
 
@@ -227,7 +190,7 @@ public abstract class PLRMLearner extends Learner {
 			if (mat==null) {
 			    throw new IllegalArgumentException("Matrix name is " + matName + " is not expected in the XML file");
 			} else {
-			    readMatrix(me, mat);
+			    mat.readMatrix(me, suite, dis);
 			}
 		    } else  if ( n.getNodeName().equals(PARAMETERS)) {
 			parseDSP((Element)n);// subclass-defined

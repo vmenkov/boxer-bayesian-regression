@@ -44,7 +44,7 @@ public abstract class Learner implements Model {
     /** Contains all data and methods pertaining to a classifier for a
      * single discrimination
      */
-    abstract class LearnerBlock implements Measurable {
+    public abstract class LearnerBlock implements Measurable {
 	/** Discrimination associated with this learner block */
 	Discrimination dis;
 
@@ -682,7 +682,7 @@ public abstract class Learner implements Model {
 		    suite = new Suite((Element)n);
 		    if (dic !=null)  suite.setDic(dic);
 		} else if (name.equals( FeatureDictionary.XML.FEATURES)) {
-		    if (suite!=null && suite.getDic().getDimension()>0) {
+		    if (suite!=null && !suite.getDic().isPracticallyEmpty()) {
 			    throw new BoxerXMLException("The 'features' element appeared too late in the learner complex. "+ suite.getDic().getDimension()+" features had already been initialized in the suite (via a 'priors' element, perhaps");
 		    }
 
@@ -794,6 +794,12 @@ public abstract class Learner implements Model {
 	return true;
     }
 
+    public LearnerBlock findBlockForDis(Discrimination dis) {
+	for(LearnerBlock b: blocks) {
+	    if (b.dis == dis) return b;
+	}
+	return null;
+    }
 
 }
 
