@@ -13,7 +13,7 @@ package edu.dimacs.mms.boxer;
  
  */
 public class BoxerXMLException extends BoxerException {
-    BoxerXMLException(String msg) {
+    public BoxerXMLException(String msg) {
 	super(msg);
     }
 } 

@@ -120,7 +120,7 @@ public class BXRReader {
 
     /** Builds a vector of DataPoints out of the content of an BBR/BMR
 	file. We support it so that one can easily run BOXER on
-	BBR/BMR/BXR data files.<p>
+	BBR/<a href="http://www.bayesianregression.com/bmr.html">BMR</a>/BXR data files.<p>
 
 	<p> The Data file format for training or testing is similar to
 	that used by Joachims' <a

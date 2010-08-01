@@ -12,11 +12,17 @@ import edu.dimacs.mms.borj.*;
      on increasing training-set size, as per discussion 
      with Paul Kantor in October 2009.
 
+     <p>This application conducts a series of experiment according to the
+     following plan. Given a data set with N examples, the program
+     will train the classifier on an increasing large subset of this set,
+     every time testing it on all the remaining examples.
+
+
     <pre>
 java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN_ID]  edu.dimacs.mms.accutest.Driver command:file [command:file ...]
     </pre>
 
-    The command line can contain any number of preliminary commands,
+    The command line can contain a number of preliminary commands,
     and one "train" command. They are executed sequentially, in the
     order they appear in the command line. Each command is followed by
     the file name (or sometimes file names) it applies to <p>
@@ -47,14 +53,15 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
     the learner.
 
 
-    <li> train: The specified data file is used for a series of experiments. 
-    In the k-th experiment, the first k*M examples from the file will be 
-    used as the training set, and all the remaining examples, as the test set.
-    The value of k will vary from 1 to N/(2*M), where N is the total number of
+    <li> train: This command specifies the data file which will be
+    used for a series of experiments.  In the k-th experiment, the
+    first k*M examples from the file will be used as the training set,
+    and all the remaining examples, as the test set.  The value of k
+    will vary from 1 to N/(2*M), where N is the total number of
     examples in the file.
 
     <br> This command can take the second argument, which is the
-    output files for scores.
+    output files for example scores.
 
 </ul>    
 

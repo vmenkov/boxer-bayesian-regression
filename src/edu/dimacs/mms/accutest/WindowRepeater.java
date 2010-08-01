@@ -12,6 +12,16 @@ import edu.dimacs.mms.borj.*;
      after repeatingly feeding the same examples, in random order,
      to the learner.
 
+     <p> This is somewhat similar to {@link Repeater}, with an
+     important difference that the application does not need to store
+     all training examples ever seen, but only a certain fixed number
+     of them. The WindowRepeater this models an application that
+     operates in online mode under space constraints. 
+
+     <p> The pool of currently stored examples consists of either most
+     recent ones, or some that have been choosen to be kept at random.
+     
+     <p>
      Usage:
      java  WindowRepeater.java [-Dwindow=100] [-Dr=1000] [-DM=10] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
 

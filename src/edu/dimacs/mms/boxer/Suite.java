@@ -266,11 +266,20 @@ public class Suite {
     /** Sets the suite's FeatureDictionary. This method should not be
       called if the suite already has a nonempty dictionary.
 
+      <P>A BOXER application would normally have little need to use
+      this method, since a dictionary is typically created by BOXER as
+      it reads data points. However, one can use it if you have a
+      dictionary prepared in advance, and want to ensure a particular order
+      in which features are arranged, e.g. for display purposes.
+
       @throws IllegalArgumentException If the suite already has a non-empty dictionary
      */
-    void setDic( FeatureDictionary _dic) { 
-	if (dic != null &&  getDic().getDimension()>0) {
-	    throw new IllegalArgumentException("One ought not call Suite.setDic() once the suite already has a non-empty dictionary! Current size=" +  getDic().getDimension());
+    public void setDic( FeatureDictionary _dic) { 
+	if (dic != null &&  !getDic().isPracticallyEmpty()) {
+	    throw new IllegalArgumentException("One ought not call Suite.setDic() once the suite already has a non-empty dictionary! Current dictionary size=" +  getDic().getDimension());
+	}
+	if (!_dic.hasDummyIfRequired()) {
+	    throw new IllegalArgumentException("Can't set the suite's dictionary, because the new dictionary does not contain the required dummy variable in no. 0 position");
 	}
 	dic = _dic;
     }
@@ -341,7 +350,7 @@ public class Suite {
     /** Is there a polytomous discrimination designated for
      * accommodating simple labels?
      */
-    private Discrimination lookupSimplePolytomousDiscr() {
+    private Discrimination obsolete_lookupSimplePolytomousDiscr() {
 
 	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) return null;
 
@@ -354,6 +363,38 @@ public class Suite {
 	    throw new AssertionError("Where's my simple polytomous discrimination? I need a non-fallback discrimination with a default class!");
 	}
     }	
+
+    /** If we're in the Simple Labels Polytomous mode, returns the
+     * suite's only non-fallback discrimination.
+     */
+    Discrimination lookupSimplePolytomousDisc() {
+	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode");
+
+	Discrimination d = lookupSimpleDisc();
+
+	if (d.claCount() > 0 && d.getDefaultCla() != null)  {
+	    return d;
+	} else {
+	    throw new AssertionError("Where's my simple polytomous discrimination? I need a non-fallback discrimination with a default class!");
+	}
+
+    }
+
+    public Discrimination lookupSimpleDisc() {
+	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode");
+
+	int did = 0;
+	while(did<disCnt()  && isFallback(getDisc(did))) did ++;
+
+	if (did >= disCnt()) throw  new IllegalArgumentException("This suite  has no non-fallback discrimination");
+	else if (did < disCnt()-1) throw  new IllegalArgumentException("This suite  has more than one non-fallback discrimination");
+
+	return getDisc(did);
+    }
+
+
+    /** Only reports recognized classes; so a Discrimination that has
+
 
 
     /** Gets the class by name, only if it already exists.
@@ -405,7 +446,7 @@ public class Suite {
 	if (disName==null) {
 	    if (supportsSimpleLabels==SupportsSimpleLabels.Polytomous) {
 		// "simple label" special situation 2	    
-		d = lookupSimplePolytomousDiscr();
+		d = lookupSimplePolytomousDisc();
 		if (d == null) {
 		    throw new AssertionError("Even though supportsSimpleLabels="+supportsSimpleLabels+", the unique polytomous discrimination appears not to have been created!");
 		}
@@ -666,19 +707,6 @@ public class Suite {
 	}
     }
 
-    /** If we're in the Simple Labels Polytomous mode, returns the
-     * suite's only non-fallback discrimination.
-     */
-    Discrimination getSimplePolytomousDisc() {
-	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode");
-
-	int did = 0;
-	while(did<disCnt()  && isFallback(getDisc(did))) did ++;
-
-	if (did >= disCnt()) throw  new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode, but it has no non-fallback discrimination");
-	else if (did < disCnt()-1) throw  new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode, but it has more than one non-fallback discrimination");
-	else return getDisc(did);
-    }
 
     /** Only reports recognized classes; so a Discrimination that has
      * only provisional classes will be shown as empty */

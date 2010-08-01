@@ -14,12 +14,37 @@ import edu.dimacs.mms.borj.*;
 
      <p>
      Usage:<br>
-     java  Repeater [-Dr=1000] [-DM=10] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
+     java  Repeater [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
 
      <p>
-     Sample usage:<br>
-     java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dverbosity=0 $driver     read-suite: SimpleTestSuite.xml    read-learner: $learner    train: Simpl
-eTestData-part-1.xml  test: SimpleTestData-part-2.xml 
+     Sample usage:
+
+     <pre>
+     java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dverbosity=0 $driver \
+       read-suite: SimpleTestSuite.xml    read-learner: $learner  \
+       train: SimpleTestData-part-1.xml  test: SimpleTestData-part-2.xml 
+     </pre>
+
+     <p>Options: 
+
+     <ul> 
+
+     <li>r: The length of the training sequence that will be presented
+	to the learner. This value may be (and typically will be) greater
+	than the size of the training set, as examples may be
+	presented repeatedly.
+
+
+     <li>random: Number of random sequences (1 or
+     more) with which to run experiments. If 0 is given, it means that
+     there will be only one sequence, and it will be
+     <strong>non-random</strong>, cyclic one.
+
+     <li>M: frequency of checkpoints. (I.e., how often to pause
+     training and test the classifier against the training and test set)
+
+     </ul>
+
 
  */
 public class Repeater {
@@ -92,7 +117,8 @@ public class Repeater {
 	int M =ht.getOption("M", 1);	
 	int r =ht.getOption("r", 1000);
 	int nRandom= ht.getOption("random", 0);
-	if (nRandom <= 1) nRandom = 1;
+	boolean cyclic = (nRandom <= 0);  // non-random mode
+	if (cyclic) nRandom = 1;
 	
 	long start= (long)ht.getOption("start", 0);
 
@@ -122,6 +148,14 @@ public class Repeater {
 	}
 
 	Suite suite = (suiteXML!=null)? new Suite(suiteXML): new Suite("Test_suite");
+
+	String dicFileName =ht.getOption("dic", null);	
+	
+	if ( dicFileName != null) {
+	    suite.setDic(new  FeatureDictionary(new File(dicFileName)));
+	}
+
+
 	// Any "read-priors" command?
 	if (q!=null && q.is(CMD.READ_PRIORS)) {
 	    System.out.println("Reading priors from file: "+q.f);
@@ -157,7 +191,7 @@ public class Repeater {
 	String dumpLearnerFile = null;
 	if  (q!=null && q.is(CMD.WRITE)) {
 	    dumpLearnerFile = q.f;
-	     q=cm.next(); 
+	    q=cm.next(); 
 	}
 
 	if (q!=null)  throw new AssertionError("There is an unused command left: " + q);
@@ -168,11 +202,9 @@ public class Repeater {
 
 	for(long seed=start; seed< nRandom; seed++) {
 
-	    runOneOrdering(suite, learnerXML, 		       defaultModel,
-			   trainFile, 		       train, 
-			   testFile, 		       test,
-			   scoreFileBase,		       M, r, seed);
-
+	    runOneOrdering(suite, learnerXML, 	defaultModel,
+			   trainFile,   train,    testFile, 	test,
+			   scoreFileBase,    M, r,  (cyclic? -1: seed));
 
 	    if (seed == start && dumpLearnerFile != null) {
 		System.out.println("Saving the learner(s) from the 1st run to file: "+dumpLearnerFile );
@@ -192,14 +224,34 @@ public class Repeater {
     }
 
 
-    /**
-       @param seed The seed for random number generator. If negative,
-       don't randomize; use the original sequence.
-       
-       @param trainFile the name of the train file. It is only used
-       for labels, not for actual reading.
+    /** Creates a learner as per the specified description, and trains
+	it on increasingly long sequences of examples from the
+	training set. At regular intervals ("checkpoints") during the
+	training, scores the entrie training set (including
+	never-presented-yet examples) and the test set by the learner
+	as it stands at the moment.
 
-       @param origTrain Pre-read training+test set
+	<p> During the training, examples are presented to the learner
+	either in random order, or in cyclic deterministic order.
+
+	@param r The length of the training examples sequence to be
+	presented to the learner. This value may be (and typically is)
+	greater than the size of the training set, as examples may be
+	presented repeatedly.
+
+	@param seed The seed for random number generator, determining
+	the order in which training examples are presented to the
+	learner. If negative, don't randomize; use the original
+	sequence, cycling repeatedly over the training set.
+       
+	@param learnerXML The description of the learner to be created.
+	
+	@param defaultModel Controls the learner type if learnerXML==null.
+	
+	@param trainFile the name of the train file. It is only used
+	for labels, not for actual reading.
+	
+	@param origTrain Pre-read training+test set
     */
     static private void runOneOrdering(Suite suite, Element learnerXML, 
 				       String defaultModel,
@@ -242,7 +294,6 @@ public class Repeater {
 	    System.out.println("-----------------------------------");
 	}
 
-	
 	int trainCnt = 0, testCnt=0;
 
 	if (Suite.verbosity>0) System.out.println(suite.describe());
@@ -254,8 +305,7 @@ public class Repeater {
 
 	int[] trainSizes =  new int[ r / M ];
 
-	Random gen = new Random(seed); 
-
+	Random gen = (seed<0) ? null : new Random(seed); 
 
 	for(int k=0; k< trainSizes.length; k++)  trainSizes[k] = (k+1)*M;
 
@@ -264,6 +314,15 @@ public class Repeater {
 
 	NumberFormat fmt = new DecimalFormat("0000");
 
+	// Matrix is only saved when it is the only run of a cyclic
+	// repeater (seed<0), or the first run of the random repeater (seed=0)	
+	boolean saveMatrix = (Suite.verbosity>=0 && seed<=0);
+
+	PrintWriter matWriter = null;
+	if (saveMatrix) {
+	    matWriter = new PrintWriter(new FileWriter(new File( out + "/matrix.dat")));
+	}
+
 	for(int k=0; k< trainSizes.length; k++)  {
 
 	    // absorb examples i1 thru i2-1
@@ -271,7 +330,7 @@ public class Repeater {
 	    int i2= trainSizes[k];
 
 	    for(int i=i1; i<i2; i++) {
-		int j = gen.nextInt(train.size());
+		int j = (gen==null)? i%train.size(): gen.nextInt(train.size());
 		algo.absorbExample(train, j, j+1);
 	    }
 
@@ -282,7 +341,7 @@ public class Repeater {
 	    } else if (Suite.verbosity>0){
 		System.out.println("[NET] Leaner after " + (i2)+ " examples: net memory use=" + algo.memoryEstimate());
 	    }
-	    // In verbose mode, write out the model after every training file
+	    // In verbose mode, write out the model at each checkpoint
 	    if (verbose) algo.saveAsXML(algo.algoName() + "-out" + trainCnt + ".xml");
 
 	    if (Suite.verbosity>0) memory("Absorbed "+(i2-i1)+" examples from "+trainFile);
@@ -366,11 +425,38 @@ public class Repeater {
 
 	    if (Suite.verbosity > 0) memory("Scored "+i2+" randomly selected examples from "+trainFile);
 
-	    if (Suite.verbosity>=0 && seed<0) {
-		suite.serializeLearnerComplex(out + "/out-suite."+ fmt.format(i2) +".xml"); // save the entire model
+	    if (saveMatrix) {
+		// save the entire model
+		//suite.serializeLearnerComplex(out + "/out-suite."+ fmt.format(i2) +".xml"); 
+		// Save just the W matrix of the learner
+		String g = out +  "/out-matrix."+ fmt.format(i2) +".xml"; 
+		saveMatrix( (PLRMLearner)algo, g, i2, matWriter);
 	    }
-
 	}
+	if (saveMatrix) matWriter.close();
+    }
+
+    /** Gets a pointer to the PLRM learner's coeff matrix (W), and
+	saves the matrix into an XML file
+     */
+    private static void saveMatrix(PLRMLearner algo, String fname, int t, PrintWriter matWriter) {
+	Suite suite = algo.getSuite();
+	Discrimination dis = suite.lookupSimpleDisc();
+	Learner.LearnerBlock block = algo.findBlockForDis(dis);
+	Matrix w = ((PLRMLearner.PLRMLearnerBlock)block).getW();
+	w.saveAsXML( fname, dis, suite.getDic(), "W");
+	double[][] v = w.toArray();
+	
+	matWriter.print(t);
+	double [] empty = new double[0];
+	for(int fid = 0; fid <  suite.getDic().getDimension(); fid++) {
+	    double [] q = (fid<v.length && v[fid]!=null)? v[fid] : empty;
+	    for(int cid=0; cid<dis.claCount(); cid++) {
+		double z =  (cid<q.length)? q[cid]: 0.0;
+		matWriter.print("\t" + z);
+	    }
+	}
+	matWriter.println();
 
     }
 

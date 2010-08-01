@@ -183,7 +183,7 @@ public class BetaMatrix extends Matrix  {
      * all non-zero elements of this row to fit; thus rows may be of
      * different length.
      */
-    double [][] toArray() {
+    public double [][] toArray() {
 	double w[][] = new double[matrix.size()][];
 	for(int j=0; j< matrix.size(); j++){
 	    w[j] = coefVector2denseArray( matrix.elementAt(j));

@@ -524,16 +524,18 @@ public class Priors {
 	return s;
     }
 
-    /** Parses a priors file in BMR format. Since the BMR-format files
-      don't contain discrimination names (BMR wasn't meant to be used
-      in multi-discrimination context), this method can only be
-      used if we have exactly one discrimination, or exactly one
-      non-fallback discrimination, in our suite.
+    /** Parses a priors file in the <a
+      href="http://www.bayesianregression.com/bmr.html">BMR</a>
+      format. Since the BMR-format files don't contain discrimination
+      names (BMR wasn't meant to be used in multi-discrimination
+      context), this method can only be used if we have exactly one
+      discrimination, or exactly one non-fallback discrimination, in
+      our suite.
      */
     public static Priors readPriorsFileBMR(File f,     Suite suite) 
 	throws IOException, BoxerXMLException {
 
-	Discrimination dis = suite.getSimplePolytomousDisc();
+	Discrimination dis = suite.lookupSimplePolytomousDisc();
 
 	LineNumberReader r = new LineNumberReader( new FileReader(f));
 
@@ -566,9 +568,31 @@ public class Priors {
 
     */
 
-    /** Parses something like this:
+    /** Reads in and parses a priors file in the BMR format.
+
+	<p> As per the <a
+	href="http://www.bayesianregression.com/bmr.html">BMR
+	page</a>, feature level (our L5) lines have this format: 
+
+	<pre><em>
+	feature_id mode variance
+	</em> </pre> 
+
+	<p>
+	Detailed  specification lines (our L7) start with the keyword “class”: 
+
+	<pre>
+	class <em>class_id feature_id mode variance 
+	</em> </pre>
+	
+	<P>Beyond what's said in that web page, we also assume that a
+	skew value (0/-1/1) can follow the variance.
+
+	<p>Parses something like this:
        <pre>
        class 3 0 0.0 0.0 0 # class: RETURN_BOTH feature: INTERCEPT published_beta  0.0
+       </pre>
+
     */
     void parseLineBMR(String s, Discrimination dis, Prior base)  throws  BoxerXMLException {
 	int pos = s.indexOf('#');
@@ -577,8 +601,7 @@ public class Priors {
 	if (s.length()==0) return;
 
 	String prefix  = "class";
-	if (s.startsWith(prefix)) {
-	    
+	if (s.startsWith(prefix)) {	    // L7
 	    Scanner scan = new Scanner( s.substring(prefix.length()).trim() );
 	    if (!scan.hasNextInt()) throw new BoxerXMLException("wrong token 2 in line " + s);
 	    int classNo = scan.nextInt();
@@ -603,9 +626,33 @@ public class Priors {
 	    int fid = suite.getDic().getIdAlways("" + featureNo);
 	    CFKey key = new CFKey(c, fid);		
 	    storePrior(dis, key, p);
-	} else {
-	    throw new  BoxerXMLException("Don't know how to pass a BMR prior line, because it does not start with '"+prefix+"'. Line=" + s);
-	}
+	} else { 	    // L5
+	    Scanner scan = new Scanner( s);
+
+	    if (!scan.hasNextInt()) throw new BoxerXMLException("wrong token 1 in line " + s);
+	    int featureNo = scan.nextInt();
+	    if (!scan.hasNextDouble()) throw new BoxerXMLException("wrong token 2 in line " + s);
+	    double mode = scan.nextDouble();
+	    double var;
+	    if (scan.hasNextDouble()) var = scan.nextDouble();
+	    else if (scan.hasNext() && scan.next().equalsIgnoreCase("inf")) var = Double.POSITIVE_INFINITY;
+	    else throw new BoxerXMLException("wrong token 3 in line " + s);
+
+	    int skew = 0;
+	    if (scan.hasNextInt()) {
+		skew = scan.nextInt();
+	    }
+
+	    // FIXME: l is the only type supported now
+	    Prior p = Prior.mkPrior(Prior.Type.l, mode, var, true, skew, base);
+
+
+	    int fid = suite.getDic().getIdAlways("" + featureNo);
+	    CFKey key = new CFKey(null, fid);		
+	    storePrior(dis, key, p);
+ 	}
+	//    throw new  BoxerXMLException("Don't know how to pass a BMR prior line, because it does not start with '"+prefix+"'. Line=" + s);
+	
     }
 
 

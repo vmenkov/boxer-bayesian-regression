@@ -1,9 +1,12 @@
 package edu.dimacs.mms.boxer;
 
+import java.io.*;
 import java.util.*;
 import java.text.*;
 // for XML generation
 import org.w3c.dom.*;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 /** A FeatureDictionary provides a two-way mapping between feature
     labels (strings found in input and output files) and internal
@@ -41,12 +44,30 @@ public class FeatureDictionary {
     /** Reverse: feature label to feature id */
     private HashMap<String, Integer> label2id = new  HashMap<String, Integer>();
 
+    /** Creates an empty (or near-empty) dictionary. The only value
+	that may be put in by this constructor is  DUMMY_LABEL, and only 
+	if the ADD_DUMMY_COMPONENT flag is on.
+     */
     public FeatureDictionary() {
 	if (ADD_DUMMY_COMPONENT) {
 	    id2label.add( DUMMY_LABEL );
 	    label2id.put(  DUMMY_LABEL, new Integer(0));
 	}
     }
+
+    /** Returns true if the dictionary is either completely empty, or only 
+	contains the DUMMY_LABEL
+     */
+    public boolean isPracticallyEmpty() {
+	return getDimension()==0 ||
+	    getDimension()==1 && id2label.elementAt(0).equals(DUMMY_LABEL);
+    }
+
+    boolean hasDummyIfRequired() {
+	return !ADD_DUMMY_COMPONENT ||  
+	    getDimension()>0 && id2label.elementAt(0).equals(DUMMY_LABEL);
+    }
+
 
     /** Retrieves the (0-based integer) ID for the given feature label
       - provided it's in the dictionary already */
@@ -119,6 +140,13 @@ public class FeatureDictionary {
 	return e;
     }
 
+    /** Reads in a   FeatureDictionary from an XML file.
+     */
+    public FeatureDictionary(File f) 
+		throws IOException, SAXException, BoxerXMLException {
+	this(ParseXML.readFileToElement(f));
+    }
+
     /** Creates a new Feature Dictionary and loads it with the feature
 	list from an XML element that may have been produced by
 	createFeaturesElement().   
@@ -149,7 +177,7 @@ public class FeatureDictionary {
 		    String[] tokens = val.split("\\s+");
 		    if (ADD_DUMMY_COMPONENT && 
 			(tokens.length==0 || !tokens[0].equals(DUMMY_LABEL))) {
-			throw new BoxerXMLException("FeatureDictionary deserializer:  ADD_DUMMY_COMPONENT flag is on, but the feature list in the XML lement does not start with " + DUMMY_LABEL);
+			throw new BoxerXMLException("FeatureDictionary deserializer:  ADD_DUMMY_COMPONENT flag is on, but the feature list in the XML element does not start with " + DUMMY_LABEL);
 		    }
 		    id2label.setSize(tokens.length);
 
