@@ -143,6 +143,20 @@ public class BetaMatrix extends Matrix  {
     }
 
 
+    public double squareOfNorm() {
+	double sum = 0;
+	for(Vector<Coef> v: matrix) {
+	    if (v != null) {
+		for(Coef q: v) { 
+		    sum+= q.value * q.value;
+		}
+	    }
+	}
+	return sum;
+    }
+
+
+
     /** Converts an array of doubles - representing a dense vector - to
 	an array of Coef instances, representing a sparse vector */ 
     private Vector<Coef> denseArray2coefVector(double a[]) {

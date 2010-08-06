@@ -20,7 +20,7 @@ import edu.dimacs.mms.borj.*;
      Sample usage:
 
      <pre>
-     java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dverbosity=0 $driver \
+     java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dsd=false -Dverbosity=0 $driver \
        read-suite: SimpleTestSuite.xml    read-learner: $learner  \
        train: SimpleTestData-part-1.xml  test: SimpleTestData-part-2.xml 
      </pre>
@@ -43,11 +43,16 @@ import edu.dimacs.mms.borj.*;
      <li>M: frequency of checkpoints. (I.e., how often to pause
      training and test the classifier against the training and test set)
 
+     <li>sd: if true, we emulate the Steepest Descent (SD), a batch method
+
      </ul>
 
 
  */
 public class Repeater {
+
+    
+    static boolean emulateSD = false;
 
     static void usage() {
 	usage(null);
@@ -62,7 +67,7 @@ public class Repeater {
 	System.out.println("  java [options] borj.Driver [read-suite:suite-in.xml] train:train1.xml train:train2.xml test:test_a.xml train:train3.xml test:test_b.xml [write:model-out.xml]");
 	System.out.println(" ... etc.");
 	System.out.println("Optons:");
-	System.out.println(" [-Dmodel=eg|tg|trivial] [-Drunid=RUN_ID] [-Dverbose=true|false | -Dverbosity=0|1|2|3] [-DM=1] [-Drandom=100]");
+	System.out.println(" [-Dmodel=eg|tg|trivial] [-Drunid=RUN_ID] [-Dverbose=true|false | -Dverbosity=0|1|2|3] [-DM=1] [-Drandom=100] [-Dsd=false]");
 	System.out.println("See Javadoc for borj.Driver for the full list of commands.");
 	*/
 	if (m!=null) {
@@ -114,6 +119,10 @@ public class Repeater {
 	if (argv.length==0) usage();
 	ParseConfig ht = new ParseConfig();
 
+
+	emulateSD = ht.getOption("sd", false);
+
+
 	int M =ht.getOption("M", 1);	
 	int r =ht.getOption("r", 1000);
 	int nRandom= ht.getOption("random", 0);
@@ -126,7 +135,7 @@ public class Repeater {
 	out =ht.getOption("out", ".");	
 	if (out.equals("")) out=".";
 
-	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). M="+M +", out="+out);
+	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). M="+M +", sd="+emulateSD+", out="+out);
 	System.out.println("[VERSION] " + Version.version);
 
 	Suite.verbosity = ht.getOption("verbosity", 1);
@@ -263,6 +272,10 @@ public class Repeater {
 				       int M, int r, long seed )
 	throws java.io.IOException,  org.xml.sax.SAXException, BoxerXMLException {
 
+	if (emulateSD && M%train.size() != 0) {
+		throw new IllegalArgumentException("In the 'emulate SD' mode the checkpoint distance M must be a multiple of the data set size ("+train.size()+")");
+	}
+
 	// Any "read-learner" commmands?
 	if (learnerXML != null) {
 	    suite.addLearner(learnerXML);
@@ -307,6 +320,11 @@ public class Repeater {
 
 	Random gen = (seed<0) ? null : new Random(seed); 
 
+	if (emulateSD && gen != null) {
+	    throw new IllegalArgumentException("In the 'emulate SD' mode we CANNOT randomize!");
+	}
+
+
 	for(int k=0; k< trainSizes.length; k++)  trainSizes[k] = (k+1)*M;
 
 	// train
@@ -329,9 +347,22 @@ public class Repeater {
 	    int i1= (k==0) ? 0 :  trainSizes[k-1];
 	    int i2= trainSizes[k];
 
-	    for(int i=i1; i<i2; i++) {
-		int j = (gen==null)? i%train.size(): gen.nextInt(train.size());
-		algo.absorbExample(train, j, j+1);
+	    if (emulateSD) {
+		// This is essentially a batch method, which must swallow the
+		// entire training set at once.
+
+		if (!(algo instanceof TruncatedGradient)) throw new  IllegalArgumentException("In the 'emulate SD' mode only TG is supported");
+
+		if (i1 % train.size() != 0 ||i2 % train.size() != 0) throw new AssertionError("emulateSD: i1, i2 not multiple of the train set size");
+		int repeat = (i2-i1) / train.size();
+		for(int j=0; j<repeat; j++) {
+		    algo.absorbExamplesSD(train, 0, train.size());
+		}
+	    } else {
+		for(int i=i1; i<i2; i++) {
+		    int j = (gen==null)? i%train.size(): gen.nextInt(train.size());
+		    algo.absorbExample(train, j, j+1);
+		}
 	    }
 
 	    if (Suite.verbosity>1) {

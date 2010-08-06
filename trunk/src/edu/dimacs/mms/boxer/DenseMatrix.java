@@ -35,6 +35,14 @@ public class DenseMatrix extends Matrix  {
 	return sum;
     }
 
+    public double squareOfNorm() {
+	double sum = 0;
+	for(int i=0; i<data.length; i++) {
+	    for(double x: data[i])  sum+= x*x;
+	}	
+	return sum;
+    }
+
 
     /** Ensure that the matrix has at least d rows */
     void resize( int d) {
