@@ -179,6 +179,12 @@ public abstract class Matrix implements Measurable {
 	return w;
     }
 
+    /** Computes the square of the vector 2-norm of this matrix, i.e.
+	the sum of squares of all matrix elements
+     */
+    abstract public double squareOfNorm();
+
+
     /** The square of the 2-norm (Euclidean) distance between the two matrices.
      */
     public double squareEuclideanDistance(Matrix other) {

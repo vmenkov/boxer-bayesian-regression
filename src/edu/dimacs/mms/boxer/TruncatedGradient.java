@@ -87,7 +87,7 @@ public class TruncatedGradient extends PLRMLearner {
 	public void absorbExample(Vector<DataPoint> xvec, int i1, int i2) {
 	    int d =  suite.getDic().getDimension(); // feature count
 	    
-	    if (Suite.verbosity>1) System.out.println("TruncatedGradient.absorbExample (dis="+dis.name+"):\n" +
+	    if (Suite.verbosity>1) System.out.println("TruncatedGradient.absorbExample (dis="+dis.name+"), "+(i2-i1)+" examples:\n" +
 			       "d="+d+"; eta=" + eta +"; "+ commonTrunc.describe());
        
 	    for(int i=i1; i<i2; i++) {
@@ -132,6 +132,85 @@ public class TruncatedGradient extends PLRMLearner {
 	    }
 	    trunc.applyTruncationToAllRows(); 
 	}
+
+	/** Like absorbExample(), but emulating SD (steepest
+	    descent). That is, all gradients computed first,
+	    and then applied at once. This method was added
+	    for experiments that compare SGD with SD.
+	 */
+	public void absorbExamplesSD(Vector<DataPoint> xvec, int i1, int i2) {
+	    int d =  suite.getDic().getDimension(); // feature count
+	    
+	    if (Suite.verbosity>1) System.out.println("TruncatedGradient.absorbExamplesSD (dis="+dis.name+"), "+(i2-i1)+" examples:\n" +
+			       "d="+d+"; eta=" + eta +"; "+ commonTrunc.describe());
+
+	    double [][] zz = new double[i2-i1][];
+
+       
+	    // 2. truncate (or, actually, request lazy truncation).
+	    // We do it multiple times, since there is no requestTruncation()
+	    // call with a multiplier
+	    for(int i=i1; i<i2; i++) {
+		trunc.requestTruncation(d);	    
+	    }
+
+
+	    // Actuate all truncations. No need to be "lazy" here, as this
+	    // is essentially a batch method
+	    trunc.applyTruncationToAllRows();
+
+
+	    for(int i=i1; i<i2; i++) {
+
+		// 1. Acquire an example
+		DataPoint x = xvec.elementAt(i);
+
+		// 3. compute predictions
+		double [] z = zz[i-i1] = adjWeights(x);
+		if (z==null) {
+		    if (Suite.verbosity>1) System.out.println("Skip example " + x.name + " not labeled for " + dis.getName());
+		    continue; // example not labeled for this discr
+		}
+	    }
+
+	    for(int i=i1; i<i2; i++) {
+		double [] z = zz[i-i1];
+		if (z==null) continue;
+		DataPoint x = xvec.elementAt(i);
+		if (Suite.verbosity>1) {
+		    // 4. output probability
+		    System.out.print("z vector=[");
+		    for(double q: z) System.out.print(" " + q);
+		    System.out.println("]");
+		    System.out.println("  mult by eta=" + eta);
+		}
+
+		// 6. update weights
+		for(int h=0; h<x.features.length; h++) {
+		    int j = x.features[h];	
+		    w.addDenseRow(j, z, eta * x.values[h]);
+		}
+	    }
+
+	    trunc.applyTruncationToAllRows(); 
+
+	    if (Suite.verbosity>1) {
+		// Measure the update (without the eta factor), just for reporting
+		BetaMatrix b = new BetaMatrix( w.getNRows());
+		for(int i=i1; i<i2; i++) {
+		    double [] z = zz[i-i1];
+		    if (z==null) continue;
+		    DataPoint x = xvec.elementAt(i);
+		    for(int h=0; h<x.features.length; h++) {
+			int j = x.features[h];	
+			b.addDenseRow(j, z, x.values[h]);
+		    }
+		}
+		double grad2 = b.squareOfNorm();
+		System.out.println("|grad L|=" + Math.sqrt(grad2));
+	    }
+	}
+
 
 	public void describe(PrintWriter out, boolean verbose) {
 	    
