@@ -1,9 +1,12 @@
-<!-- A "project" describes a set of targets that may be requested
-     when Ant is executed.  The "default" attribute defines the
-     target which is executed if no specific target is requested,
-     and the "basedir" attribute defines the current working directory
-     from which Ant executes the requested task.  This is normally
-     set to the current working directory.
+<!-- This is the main build file for use with Apache Ant. It tells Ant how to
+    compile BOXER from the source code, how to build Javadoc documentation,
+    etc. 
+
+    To carry out a particular operation with Ant, you provide the name of the
+    appropriate target. E.g., to compile the code, you type 
+
+      and compile
+
 -->
 
 <project name="boxer" default="compile" basedir=".">
@@ -17,36 +20,19 @@
      and TOMCAT_HOME environment variables into the "ant.home" and
      "tomcat.home" properties, which are normally not defined explicitly.
 
-     app.name          Base name of this application, used to
-                       construct filenames and directories.
+     src               The directory where Ant will find the source code of BOXER+BORJ
 
-     deploy.home       The name of the directory into which the
-                       deployment hierarchy will be created.
-                       Normally, this will be the name of a
-                       subdirectory under $TOMCAT_HOME/webapps.
+     lib               The directory where Ant will find the third-party libraries 
+                       needed by BOXER and BORJ
 
-     dist.home         The name of the base directory in which
-                       distribution files are created.
+     build             The directory to which Ant will put class files
 
-                     distribution files are created.
+     
 
-     dist.src          The name of the distribution JAR file
-                       containing the application source code,
-                       to be stored in the "dist.home" directory.
-                       This filename should end with ".jar".
-
-     dist.war          The name of the Web ARchive (WAR) file
-                       containing our deployable application.
-                       This filename should end with ".war".
-
-     javadoc.home      The name of the base directory in which
+     javadoc           The name of the base directory in which
                        the JavaDoc documentation for this application
-                       is generated.
+                       will be generated.
 
-     tomcat.home       The name of the base directory in which
-                       Tomcat has been installed.  This value is
-                       normally set automatically from the value
-                       of the TOMCAT_HOME environment variable.
 
 -->
 
@@ -54,17 +40,16 @@
  <property name="build" location="../classes"/>
  <property name="lib" location="../lib"/>
  <property name="javadoc" location="../javadoc"/>
- <!-- property name="classpath" location="${lib}/xercesImpl.jar:${lib}/jena.jar"/ -->
- 
 
  <path id="classpath"
-       description="The classpath to use for compiling and running">
+       description="The classpath to use for compiling and running BOXER">
    <fileset dir="${lib}">
      <include name="*.jar"/>
    </fileset>
  </path>
 
 
+<!-- An auxiliary target; you aren't likely to use it directly.  It just creates necessary directories -->
 <target name="init">
     <!-- Create the time stamp -->
     <tstamp/>
@@ -75,7 +60,7 @@
     <mkdir dir=""/>
 </target>
 
-
+<!-- This target tells Ant how to compile BOXER+BORJ -->
 <target name="compile" depends="init"
         description="Compile the source (without the BB adapter)" >
   <!-- Compile the java code from ${src} into ${build} -->
@@ -86,6 +71,7 @@
   </javac>
 </target>
 
+<!-- This target was used to compile BOXER+BORJ with BLACKBOOK. Obsolete -->
 <target name="compile-blackbook" depends="init"
         description="Compile the source (including the BB adapter)" >
   <!-- Compile the java code from ${src} into ${build} -->
@@ -96,6 +82,8 @@
 	 />
 </target>
 
+<!-- This compiles BOXER+BORJ, and packages the class files into a JAR file
+-->
 <target name="jar" depends="compile"
         description="Builds a Jar file that will include all Boxer and BORJ class files (but not the Blackbook-adapter stuff). It will include all of our own class files, and can be used as a binary distribution. The manifest file will specify the BORJ Driver class as the main class">
   <jar destfile="${lib}/boxer.jar"   basedir="${build}">
@@ -107,6 +95,7 @@
 </target>
 
 
+<!-- Build the documentation directory by running Javadoc -->
 <target name="javadoc" depends="compile">
   <exec executable="grep" outputproperty="boxer.ver">
     <arg line="String.version ${src}/edu/dimacs/mms/boxer/Version.java"/>
@@ -129,6 +118,14 @@
 	   overview="overview.html">
     <classpath refid="classpath"/>
     </javadoc>
+
+
+<!--
+foreach x (sample.xml sample-suite-out.xml eg-learner-param-1.xml ) 
+   cp sample-data/${x} boxer/doc-files
+end
+-->
+
 
 </target>
 
