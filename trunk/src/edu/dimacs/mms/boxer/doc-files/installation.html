@@ -3,7 +3,7 @@
 <body>
 <h1>Boxer and BORJ installation notes</h1>
 
-<em>Updated 2010-06-18</em>
+<em>Updated 2010-10-29</em>
 
 <h2>Prerequisites</h2>
 
@@ -59,22 +59,26 @@ If you also plan to compile and use the Boxer's Blackbook adapter, you need the 
 
 <h2>Downloading and using Boxer binaries</h2>
 
-<p>A Jar file containing compiled Boxer and BORJ code can be downloaded from the
+<p>If you plan to use Boxer, but not to modify it, you only need to download the "Boxer binaries", i.e. a 
+a Jar file containing compiled Boxer and BORJ code.
+
+<p>This jar file can be downloaded from the
 <a href="http://code.google.com/p/boxer-bayesian-regression/downloads/list">download
-section</a> on our Google Code project. As of 2010-02-18, the most
-recent version there is  <tt>boxer-0.7.005.jar</tt>
+section</a> on our Google Code project. As of the summer 2010, the most
+recent version there is  <tt>boxer-0.8.001.jar</tt>
 
 <p>Once downloaded, you can just add the Boxer jar, as well as the
-necessary thrid-party libraries to your classpath, e.g.
+necessary thrid-party libraries to your classpath. For example, if you run BORJ
+(a BOXER application included into the BOXER distribution), the Linux/UNIX command line
+may look like this:
 <pre>
- java -cp boxer-0.7.005.jar:xercesImpl.jar MyMainClass
+ java -cp boxer-0.8.001.jar:xercesImpl.jar edu.dimacs.mms.borj.Driver ...
 </pre>
-(to run your own application MyMainClass that makes use of the Boxer API),
-or
+If you have written your own application that uses the BOXER API, and your application's
+main class is called  MyMainClass, then your command line may look like this:
 <pre>
- java -cp boxer-0.7.005.jar:xercesImpl.jar edu.dimacs.mms.borj.Driver ...
+ java -cp   boxer-0.8.001.jar:xercesImpl.jar MyMainClass
 </pre>
-(to run our small Boxer application, BORJ).
 </p>
 
 <p><strong>Note</strong>: If you're using MS Windows rather than Linux/UNIX, you should use semicolon (;) rather than colon (:) between the components of the classpath in the examples above.
@@ -83,7 +87,7 @@ or
 <h2>Downloading and compiling from source</h2>
 
 <p>If you consider modifying Boxer code for your needs, or building
-your own Boxer application using BORJ as a sample, you'll need to
+your own Boxer application using BORJ as a sample, then you'll need to
 download Boxer source code, and to build from source. This is easy,
 thanks to Apache Ant.
 

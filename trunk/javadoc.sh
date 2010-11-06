@@ -1,5 +1,10 @@
 #!/bin/csh
 
+#-- This shell script is used to build the documentation that comes with BOXER and BORJ. Most of the process is done by 
+#-- a Javadoc command, which generates HTML doc files from Java files and copies appropriately positioned HTML files to 
+#-- the same destination directory. Besides, this script also copies a few additional XML files to the doc directory.
+
+
 set ver=`grep version boxer/Version.java | perl -pe 's/[^0-9\.]//g'`
 echo "As per Version.java, the current version is ${ver}"
 
