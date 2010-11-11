@@ -1,5 +1,11 @@
 #!/usr/bin/perl
+
+#-- This is an auxiliary file used to parse the log file with the
+#-- results of a Repeater run, and to produce input files for gnuplot
+
+
 use strict;
+
 
 sub usage($) {
     my ($msg) = @_;
@@ -42,8 +48,9 @@ my @sections = ();
 
 my $s=undef;
 while(defined ($s=<F>)) {    
-    if ($s=~/\[(TRAIN|TEST) (LOG LIN|WARECALL)\]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]/ ) {
+    if ($s=~/\[(TRAIN|TEST) (LOG LIN|WARECALL)\]\[.*.xml: *(\-?\d+) *: *(\d+)\+\d+\]\[PK\]/ ) {
 	my $j = $3;
+	if ($j==-1) { $j=0; } #-- special case, only one run here
 	if (!defined $sections[$j]) { $sections[$j] = [$s]; }
 	push @{$sections[$j]}, $s; 
     }
@@ -53,6 +60,7 @@ close(F);
 my @sums = ();
 
 for(my $j=0; $j <= $#sections; $j++) {
+   # print "XX: section $j\n";
     my $jout = "$dir/run." . sprintf("%03d", $j) . ".dat";
     open(G, ">$jout") or die "Can't write to file $jout";
 
@@ -67,13 +75,13 @@ for(my $j=0; $j <= $#sections; $j++) {
     my $ff= "[\d\.\+\-E]+";
 
     foreach my $s (@{$sections[$j]}) {
-	if ($s=~/\[TRAIN LOG LIN\]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)\s+($ff)/ ) {
+	if ($s=~/\[TRAIN LOG LIN\]\[.*.xml: *(\-?\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)\s+($ff)/ ) {
 	    @{$data[$2]}[0..1] = ($3, $4);
-	}elsif ($s=~ /\[TEST LOG LIN\]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)\s+($ff)/ ) {
+	}elsif ($s=~ /\[TEST LOG LIN\]\[.*.xml: *(\-?\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)\s+($ff)/ ) {
 	    @{$data[$2]}[2..3] = ($3, $4);
-	}elsif ($s=~ /\[TRAIN WARECALL]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)/) {
+	}elsif ($s=~ /\[TRAIN WARECALL]\[.*.xml: *(\-?\d+) *: *(\d+)\+\d+\]\[PK\]\s+($ff)/) {
 	    ${$data[$2]}[4] = $3;
-	}elsif ($s=~ /\[TEST WARECALL]\[.*.xml: *(\d+) *: *(\d+)\+\d+\]\[PK\]\s*($ff)/) {
+	}elsif ($s=~ /\[TEST WARECALL]\[.*.xml: *(\-?\d+) *: *(\d+)\+\d+\]\[PK\]\s*($ff)/) {
 	    ${$data[$2]}[5] = $3;
 	}
     }
