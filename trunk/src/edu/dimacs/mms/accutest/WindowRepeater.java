@@ -23,8 +23,11 @@ import edu.dimacs.mms.borj.*;
      
      <p>
      Usage:
-     java  WindowRepeater.java [-Dwindow=100] [-Dr=1000] [-DM=10] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
-
+     <pre>
+     set driver edu.dimacs.mms.accutest.WindowRepeater
+     java [-Dwindow=100] [-Dr=1000] [-DM=10] $driver \
+       [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
+       </pre>
  */
 public class WindowRepeater {
 

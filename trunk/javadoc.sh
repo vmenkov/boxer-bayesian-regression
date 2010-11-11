@@ -1,26 +1,36 @@
 #!/bin/csh
 
-#-- This shell script is used to build the documentation that comes with BOXER and BORJ. Most of the process is done by 
-#-- a Javadoc command, which generates HTML doc files from Java files and copies appropriately positioned HTML files to 
-#-- the same destination directory. Besides, this script also copies a few additional XML files to the doc directory.
+#-- This shell script is used to build the documentation that comes
+#-- with BOXER and BORJ. Most of the process is done by a Javadoc
+#-- command, which generates HTML doc files from Java files and copies
+#-- appropriately positioned (i.e., placed in the appropriate
+#-- package_name/doc-files directory) HTML files to the same
+#-- destination directory.
 
+#-- This is preceded by copying a few additional XML
+#-- files to the doc directory.
+
+#-- Usage:
+#  javadoc.sh  [destination-dir]
 
 set ver=`grep version boxer/Version.java | perl -pe 's/[^0-9\.]//g'`
 echo "As per Version.java, the current version is ${ver}"
 
 set cp=../classes:../lib/xercesImpl.jar 
 
+#-- The destination directory
 set d=$1
 
 
+#-- default value for the destination directory
 if ("$d" == "") then 
     set d=../javadoc
 endif
 
 if (-e $d) then
-   echo Reusing directory $d
+   echo Reusing destination directory $d
 else
-   echo Creating directory $d
+   echo Creating destination directory $d
    mkdir $d
 endif
 

@@ -1,0 +1,6 @@
+<suite name="SimpleTestSuite"
+SupportsSimpleLabels="Polytomous">
+<discrimination name="PK">
+<classes>1 2 3</classes>
+</discrimination>
+</suite>

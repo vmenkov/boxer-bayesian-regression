@@ -3,7 +3,7 @@
 <body>
 <h1>Boxer and BORJ installation notes</h1>
 
-<em>Updated 2010-10-29</em>
+<em>Updated 2010-11-05</em>
 
 <h2>Prerequisites</h2>
 
@@ -17,11 +17,24 @@ your own Java code, then you must have the JDK already, of course.</p>
 
 <p>A suitable version of JDK would be e.g. the one
 called <a href="http://java.sun.com/javase/">Java SE 6</a> by
-Sun.com. It can be downloaded
+Sun.com. It as available for download, for several platforms, 
 from <a href="http://java.sun.com/javase/downloads/index.jsp">Java SE
-download site</a>, where it's called "java Platform (JDK)". Naturally,
+download site</a>, where it's called "java Platform (JDK)".
+</p>
+
+<p>As an alternative to downloading JRE/JDK from Sun.com, users of some 
+some operating systems may obtain an implementation of JRE or JDK from the provider of their OS. For example, Ubuntu users can install JDK with 
+<pre>
+  sudo apt-get install  openjdk-6-jdk
+</pre>
+</p>
+
+<p>
+Naturally,
 if you already have full Java EE (which is JDK + some additional
 libraries and tools) it would do as well.</p>
+
+
 
 <p>If you want to use Boxer with an earlier version of Java, you can
 also download the Boxer source code and try to re-compile it with your
@@ -34,16 +47,21 @@ you want to build Boxer and BORJ from source.</p>
 
 <h3>Third-party libraries</h3>
 <p>
-To compile and use Boxer and Borj, you  need an external JAR file:
+To compile and use Boxer and Borj, you  need an external JAR file (or files):
 <ul>
 <li>xercesImpl.jar: There are multiple sources on the internet (including the official site, <a href="http://xerces.apache.org/">Apache Xerces</a>), and if you've downloaded some of popular Java-based applications (e.g., Apache Ant), you probably already haver this file on. This library is essential for Boxer's parsing of XML files.
 </ul>
 
-<P>(This is how to find xercesImpl.jar on the official Apache Xerces site: go to the binary download section of that site, 
-<a href="http://xerces.apache.org/mirrors.cgi#binary">http://xerces.apache.org/mirrors.cgi#binary</a>, find the "Xerces2 Java" subsection, and download e.g. the zip file from that subsection. (As of June 2010,  it is labeled "Xerces2 Java 2.9.1 - zip".) Once the zip file has been downloaded, unpack it (or, in MS Windows, "open" it using whatever program you use to "open" ZIP files), and extract from it xercesImpl.jar).
+<P>This is how to find xercesImpl.jar on the official Apache Xerces site: go to the binary download section of that site, 
+<a href="http://xerces.apache.org/mirrors.cgi#binary">http://xerces.apache.org/mirrors.cgi#binary</a>, find the "Xerces2 Java" subsection, and download e.g. the zip file from that subsection. (As of June 2010,  it is labeled "Xerces2 Java 2.9.1 - zip".) Once the zip file has been downloaded, unpack it (or, in MS Windows, "open" it using whatever program you use to "open" ZIP files), and extract from it xercesImpl.jar.
 </P> 
 
-<p>Once downloaded, you should locate the Jar file somewhere where it
+<p>In more recent version of Xerces (e.g. 2.10.0), another JAR file,
+named <tt>xml-apis.jar</tt>, is also included into the Xerces' ZIP
+file. If this is the case, it is avisable that use that JAR file as well.
+</P>
+
+<p>Once downloaded, you should place the Jar file(s) somewhere where it (or they)
 would be included in your classpath. This will be explained in more
 details below.
 
@@ -72,12 +90,12 @@ necessary thrid-party libraries to your classpath. For example, if you run BORJ
 (a BOXER application included into the BOXER distribution), the Linux/UNIX command line
 may look like this:
 <pre>
- java -cp boxer-0.8.001.jar:xercesImpl.jar edu.dimacs.mms.borj.Driver ...
+ java -cp boxer-0.8.001.jar:xercesImpl.jar:xml-apis.jar edu.dimacs.mms.borj.Driver ...
 </pre>
 If you have written your own application that uses the BOXER API, and your application's
 main class is called  MyMainClass, then your command line may look like this:
 <pre>
- java -cp   boxer-0.8.001.jar:xercesImpl.jar MyMainClass
+ java -cp   boxer-0.8.001.jar:xercesImpl.jar:xml-apis.jar MyMainClass
 </pre>
 </p>
 

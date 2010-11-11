@@ -131,9 +131,10 @@ public class Suite {
 	Uncommitted, Fixed, Bounded, Unbounded;
     }
 
-    /** A flag of this type controls whether "simple labels" (without
-     * explicitly given discrimination names are acepted in XML datasets,
-     * and if so, how they are interpreted
+    /** A flag of this type (which may occur in Suite definition)
+     * controls whether "simple labels" (without explicitly given
+     * discrimination names) are acepted in XML datasets, and if so,
+     * how they are interpreted
      */
     public static enum SupportsSimpleLabels {
 	No,
@@ -368,7 +369,7 @@ public class Suite {
      * suite's only non-fallback discrimination.
      */
     Discrimination lookupSimplePolytomousDisc() {
-	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode");
+	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not set up with the SupportsSimpleLabels.Polytomous mode");
 
 	Discrimination d = lookupSimpleDisc();
 
@@ -380,8 +381,11 @@ public class Suite {
 
     }
 
+    /** In a suite with only  one non-trivial discrimination, this
+	method returns that discrimination.
+     */
     public Discrimination lookupSimpleDisc() {
-	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not setup with the SupportsSimpleLabels.Polytomous mode");
+	//	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not set up with the SupportsSimpleLabels.Polytomous mode");
 
 	int did = 0;
 	while(did<disCnt()  && isFallback(getDisc(did))) did ++;
@@ -1250,7 +1254,8 @@ public class Suite {
       and will add the new learner to the list of the learners using
       this suite.
 
-      @param e The "learner" element to parse. 
+      @param e The "learner" element to parse. It should have an
+      "algorithm" property, with a value such as "boxer.TruncatedGradient" etc.
      */
     public Learner deserializeLearner( Element e) throws  org.xml.sax.SAXException, BoxerXMLException {
 	XMLUtil.assertName(e, XMLUtil.LEARNER);	

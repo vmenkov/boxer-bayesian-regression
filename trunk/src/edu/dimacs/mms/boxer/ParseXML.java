@@ -45,7 +45,7 @@ public class ParseXML {
 
     }
 
-    /** XML atributes */
+    /** XML atributes for various XML elements */
     public static class ATTR {
 	public final static String LABEL_ATTR[] = {"dis", "class"};
 	final static String FEATURE_ATTR[] = {"name", "value"};
@@ -55,6 +55,7 @@ public class ParseXML {
 	final static String
 	    VERSION_ATTR = "version";
 	//SUITE_NAME_ATTR = "suitename",
+	/** For the "suite" element */
 	static class SUITE {
 	    final static String 
 		NC_TRAIN = "nctrain",
