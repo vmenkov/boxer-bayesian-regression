@@ -63,7 +63,7 @@ my $nr = 1;
 
 `java $opt -Dout=${out} -DM=1 -Dr=5000 -Dverbosity=0 $driver     read-suite: SimpleTestSuite.xml    read-learner: $learner    train: orthogonal.xml  test: orthogonal.xml > ${out}/run.log`;
 
-`select.pl $out`;
+`./select.pl $out`;
 
 my $title=$base;
 $title =~ s/-/ /g; 
