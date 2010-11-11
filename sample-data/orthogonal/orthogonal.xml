@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset name="Very_simple_orthogonal_data_set" boxerversion="0.8.001">
+<datapoint name="1">
+   <labels>PK^1</labels>
+   <features>1^1</features>
+</datapoint>
+<datapoint name="2">
+   <labels>PK^2</labels>
+   <features>2^1</features>
+</datapoint>
+<datapoint name="3">
+   <labels>PK^3</labels>
+   <features>3^1</features>
+</datapoint>
+</dataset>
+

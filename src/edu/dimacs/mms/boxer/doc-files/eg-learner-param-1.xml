@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A sample EG learner description file. This file only sets learner
+parameters, and does not define any learner matrices, so the matrices will
+be initialized with all zeros. -->
 <learner name="boxer.ExponentiatedGradient" version="0.4.001">
 <parameters>
                 <parameter name="theta" value="0.0"/>

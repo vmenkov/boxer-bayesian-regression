@@ -20,6 +20,7 @@ import edu.dimacs.mms.borj.*;
      Sample usage:
 
      <pre>
+     set driver=edu.dimacs.mms.accutest.Repeater
      java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dsd=false -Dverbosity=0 $driver \
        read-suite: SimpleTestSuite.xml    read-learner: $learner  \
        train: SimpleTestData-part-1.xml  test: SimpleTestData-part-2.xml 
@@ -472,7 +473,13 @@ public class Repeater {
      */
     private static void saveMatrix(PLRMLearner algo, String fname, int t, PrintWriter matWriter) {
 	Suite suite = algo.getSuite();
-	Discrimination dis = suite.lookupSimpleDisc();
+	Discrimination dis = null;
+	try {
+	    dis = suite.lookupSimpleDisc();
+	} catch(Exception ex) {
+	    System.out.println("Can't identify the 'only' discrimination");
+	    return;
+	}
 	Learner.LearnerBlock block = algo.findBlockForDis(dis);
 	Matrix w = ((PLRMLearner.PLRMLearnerBlock)block).getW();
 	w.saveAsXML( fname, dis, suite.getDic(), "W");
