@@ -14,7 +14,7 @@ import edu.dimacs.mms.borj.*;
 
      <p>
      Usage:<br>
-     java  Repeater [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
+     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
 
      <p>
      Sample usage:
@@ -44,7 +44,7 @@ import edu.dimacs.mms.borj.*;
      <li>M: frequency of checkpoints. (I.e., how often to pause
      training and test the classifier against the training and test set)
 
-     <li>sd: if true, we emulate the Steepest Descent (SD), a batch method
+     <li>sd: if true, we emulate the Steepest Descent (SD), a batch method. The default is false.
 
      </ul>
 

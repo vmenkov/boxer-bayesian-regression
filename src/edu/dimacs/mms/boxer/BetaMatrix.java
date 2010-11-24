@@ -20,14 +20,14 @@ public class BetaMatrix extends Matrix  {
 	coeffcient, and the label of the destination class. This is
 	how we represent elements of the Beta matrix stored feature-first.
     */
-    static class Coef implements Comparable<Coef>  {
+    public static class Coef implements Comparable<Coef>  {
 	/** This is the index of the corresponding Discrimination.Cla
 	    instance in the discrimination's list of classes (dis.classes)
 	*/
 	int icla;
 	double value;
-	Coef(int i, double v) { icla =i; value=v;}
-	void setValue(Coef c) {
+	public Coef(int i, double v) { icla =i; value=v;}
+	public void setValue(Coef c) {
 	    value = c.value;
 	}
 
@@ -43,7 +43,7 @@ public class BetaMatrix extends Matrix  {
 
     BetaMatrix() {	this(0);    }
 
-    /** Zero matrix 
+    /** Creates a zero matrix. 
      @param d number of features */
     BetaMatrix(int d) {
 	matrix = new Vector<  Vector<Coef>>(d); // len=0, capacity=d
@@ -249,6 +249,8 @@ public class BetaMatrix extends Matrix  {
 	matrix. As a result, that row of the matrix will in fact become
 	dense itself (alhough will still be represented as a Vector<Coef>)
 	@param j feature id 
+	@param a Values to be multiplied by q and stored in the j-th row 
+	@param q The multiplier
      */
     void addDenseRow(int j, final double a[], double q) {
 	if ( matrix.size() <=j ) matrix.setSize(j+1);

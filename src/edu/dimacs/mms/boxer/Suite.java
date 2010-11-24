@@ -385,7 +385,6 @@ public class Suite {
 	method returns that discrimination.
      */
     public Discrimination lookupSimpleDisc() {
-	//	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not set up with the SupportsSimpleLabels.Polytomous mode");
 
 	int did = 0;
 	while(did<disCnt()  && isFallback(getDisc(did))) did ++;

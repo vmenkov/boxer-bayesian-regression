@@ -7,9 +7,12 @@
 
       and compile
 
+     Apache Ant is available for most modern operating systems.
+     You can read more about Apache Ant at http://ant.apache.org/manual/index.html
+
 -->
 
-<project name="boxer" default="compile" basedir=".">
+<project name="boxer" default="jar" basedir=".">
 
 <!-- Property Definitions
 
@@ -86,18 +89,17 @@
 <!-- This compiles BOXER+BORJ, and packages the class files into a JAR file
 -->
 <target name="jar" depends="compile"
-        description="Builds a Jar file that will include all Boxer and BORJ class files (but not the Blackbook-adapter stuff). It will include all of our own class files, and can be used as a binary distribution. The manifest file will specify the BORJ Driver class as the main class">
+        description="Builds a Jar file that will include all Boxer and BORJ class files (but not the Blackbook-adapter stuff). It will include all of our own class files, and can be used as a binary distribution. The manifest file will specify the BORJ Driver class as the main class; it will also mention two other Jar files (from the Xerces distribution) that should be found in the same directory with this jar file">
   <jar destfile="${lib}/boxer.jar"   basedir="${build}">
     <manifest> <!-- file="manifest-data.dat" mode="replace" -->
       <attribute name="Main-Class" value="edu.dimacs.mms.borj.Driver"/>
-      <attribute name="Class-Path" value="xercesImpl.jar"/>	
+      <attribute name="Class-Path" value=". xercesImpl.jar xml-apis.jar"/>	
     </manifest>
   </jar>
 </target>
 
-
-<!-- Build the documentation directory by running Javadoc -->
-<target name="javadoc" depends="compile">
+<!-- Reports the current version of the source code (as per Version.java) -->
+<target name="boxerversion">
   <exec executable="grep" outputproperty="boxer.ver">
     <arg line="String.version ${src}/edu/dimacs/mms/boxer/Version.java"/>
     <redirector >
@@ -107,11 +109,15 @@
     </redirector>
   </exec>
   <echo message="Assuming the Boxer version is ${boxer.ver}"/>
+</target>
+
+<!-- Build the HTML documentation directory by running Javadoc -->
+<target name="javadoc" depends="compile,boxerversion">
+  <echo message="Javadoc: Assuming the Boxer version is ${boxer.ver}"/>
 
   <copy todir="${src}/edu/dimacs/mms/boxer/doc-files/">
     <fileset dir="sample-data/" includes="sample.xml,sample-suite-out.xml,eg-learner-param-1.xml"/>
   </copy>
-
 
   <javadoc packagenames="edu.dimacs.mms.*"
 	   sourcepath="${src}"
@@ -126,15 +132,20 @@
     <classpath refid="classpath"/>
     </javadoc>
 
-
-<!--
-foreach x (sample.xml sample-suite-out.xml eg-learner-param-1.xml ) 
-   cp sample-data/${x} boxer/doc-files
-end
--->
-
-
 </target>
+
+<!-- Produces a zip file that contains everything from this directory (i.e.,
+     all human-created files). This is primarily used to create backup files
+     etc. for the developers' own needs
+-->
+<target name="zipall" depends="boxerversion">
+  <property name="dest" location="../boxer.zip"/>
+  <zip destfile="${dest}" basedir=".."
+       includes="boxer-bayesian-regression/**" excludes="**/*~, **/*.bak, **/*.orig, **/*.tmp">
+  </zip>
+  <echo message="You may want to rename ${dest} boxer-${boxer.ver}.zip"/>
+</target>
+
 
 <!-- deletes the class directory -->
 <target name="clean">

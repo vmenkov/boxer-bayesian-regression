@@ -243,6 +243,10 @@ public class ParseXML {
 						 ATTR.FEATURE_ATTR);
 		    fv = new Vector<DataPoint.FVPair>();
 		    // FIXME: is there a better place to set the dummy coeff?
+		    // Besides, one should not set this feature (or should
+		    // modify it later) if the input DOES contain the dummy
+		    // feature already (which is not normally done now, but 
+		    // could be imagined in some application)
 		    suite.getDic().addDummyCompoIfRequired(fv);
 
 		    for(int i=0; i<v.size(); i++) {

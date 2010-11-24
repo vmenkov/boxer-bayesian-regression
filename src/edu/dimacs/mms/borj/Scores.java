@@ -8,6 +8,7 @@ import edu.dimacs.mms.boxer.*;
  */
 public class Scores extends Vector<ScoreEntry[]> {
 
+    /** Log-likelihood and lin-likelyhood values for each discrimination */
     public double[] logLik, linLik;
     public int likCnt[];
   
