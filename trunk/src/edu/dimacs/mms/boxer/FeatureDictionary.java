@@ -79,6 +79,13 @@ public class FeatureDictionary {
 	return id2label.elementAt(id);
     }
 
+    /** Is this the dummy component? (We just test by position, which
+     * is no. 0 for the dummy. A more reliable way would be to compare
+     * the label to {@link #DUMMY_LABEL} */
+    public boolean isDummy(int id) {
+	return  ADD_DUMMY_COMPONENT && id==0;
+    }
+
     /** Always returns a valid ID for the given feature label: an
      already recorded one, if there is one, or a new one,
      otherwise. In the latter case, the feature label is validated

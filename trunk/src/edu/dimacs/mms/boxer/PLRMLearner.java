@@ -19,6 +19,8 @@ public abstract class PLRMLearner extends Learner {
 	  through learning */
 	protected BetaMatrix w = new BetaMatrix();
 
+	/** The matrix of current Beta vectors. They are updated
+	  through learning */
 	public Matrix getW() { return w; }
 
 	/** Returns true if this learning block contains no

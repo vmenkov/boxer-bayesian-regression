@@ -95,7 +95,8 @@ public class DataPoint implements Measurable  {
       different for the training and test vectors. */
     private Vector<Discrimination.Cla> classList = new Vector<Discrimination.Cla>();
 
-    double dotProduct( DataPoint p) {
+    /** Computes the dot product of this vector and another vector */
+    public double dotProduct( DataPoint p) {
 	if (p.dic != dic) throw new IllegalArgumentException("Two vectors are in different feature spaces!");
 	int i=0, pi=0;
 	double sum=0;
@@ -110,6 +111,54 @@ public class DataPoint implements Measurable  {
 	}
 	return sum;
     }
+
+    /** Computes the vector sum of this vector and another vector. Does <em>not</em> modify this vector. 
+
+	The labels are <strong>lost</strong>, i.e. the result comes out without labels. If needed, they can be copied later separately (see  {@link #linkLabels(DataPoint)}).
+     */
+    public DataPoint plus( DataPoint p) {
+	if (p.dic != dic) throw new IllegalArgumentException("Two vectors are in different feature spaces!");
+	int i=0, pi=0;
+	Vector <FVPair> w = new 	Vector <FVPair>();
+	while(i < features.length && pi< p.features.length) {
+	    int f;
+	    double q;
+	    if (features[i] ==  p.features[pi]) {
+		f= features[i];
+		q = values[i++] + p.values[pi++];
+	    } else if (features[i] <=  p.features[pi]) { 
+		f= features[i];
+		q = values[i++];
+	    } else {
+		f= p.features[pi];
+		q = p.values[pi++];
+	    }
+	    w.add(new FVPair( f,q));
+	}
+	try {
+	    return new DataPoint( w, dic);
+	} catch( BoxerXMLException ex) {
+	    // the exception should not happen
+	    return null;
+	}
+    }
+
+
+    /** Modifies this vector, multiplying every feature's value by a constant */
+    public void multiplyBy(double c) {
+	for(int i=0; i<values.length; i++) {
+	    values[i] *= c;
+	}
+    }
+
+    /** Makes this DataPoint object contain the same labels list as
+     * the other object. The list is not copied, just referenced. One may want to use this  method after {@link #plus(DataPoint)} 
+     */
+    public void linkLabels(DataPoint other) {
+	classList = other.classList;
+    }
+
+
 
     /** Compute the dot products with all vectors from Beta, add the values to
 	the result table.
@@ -153,11 +202,22 @@ public class DataPoint implements Measurable  {
 
     /** The dot product of this vector to itself, i.e. the square of
      * the 2-norm of this vector */
-    double normSquare() {
+    public double normSquare() {
 	double sum=0;
 	for(double v: values)   sum += v * v;
 	return sum;
     }
+
+    /** The square of the norm of the vector without the dummy component
+     */
+    public double normSquareWithoutDummy() {
+	double sum=0;
+	for(int i=0; i < features.length;i++) {
+	    if (!dic.isDummy(features[i])) sum += values[i]*values[i];
+	}
+	return sum;
+    }
+
 
     /** The infinity norm of this vector, i.e. the abs max value of a
      * component */
@@ -474,11 +534,21 @@ public class DataPoint implements Measurable  {
     }
 
 
-    /** Describes the data point as an element of an XML document.  As
-	far as class labels go, only explicitly stored labels (not
+    /** Describes the data point as an element of an XML document. The
+	dummy feature is ignored. As far as class labels go, only
+	explicitly stored labels (not discirmination defaults) are
+	written into the XML.
+     */
+    public org.w3c.dom.Element toXML(Document xmldoc) {
+	return toXML(xmldoc, false);
+    }
+    
+   /** Describes the data point as an element of an XML document. The
+	dummy feature is ignored, unless keepDummy==true. As far as
+	class labels go, only explicitly stored labels (not
 	discirmination defaults) are written into the XML.
      */
-     public org.w3c.dom.Element toXML(Document xmldoc) {
+    public org.w3c.dom.Element toXML(Document xmldoc, boolean keepDummy) {
 	 final boolean skipEmpty = true;
 
 	 Element e = xmldoc.createElement( ParseXML.NODE.DATAPOINT);
@@ -501,6 +571,7 @@ public class DataPoint implements Measurable  {
 	     Element ef = xmldoc.createElement( ParseXML.NODE.FEATURES);
 	     StringBuffer b=new StringBuffer();
 	     for(int i=0; i < features.length;i++) {
+		 if (!keepDummy && dic.isDummy(features[i])) continue; // skip the dummy feature
 		 if (b.length()>0) b.append(" ");
 		 b.append(dic.getLabel(features[i]));
 		 b.append(BXRReader.PAIR_SEPARATOR);
