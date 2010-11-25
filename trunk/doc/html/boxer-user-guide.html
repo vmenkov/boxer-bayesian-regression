@@ -11,22 +11,19 @@ for describing input data, but it is possible for the user to use API
 in other ways as well.
 <p>
 
-Please refer to the <a href="../package-summary.html">BOXER package summary</a> for the overall high-level description of BOXER.
-<p>
-
 To provide an example of using the BOXER API, as well as a convenient
 way of using BOXER without writing your own code, the distribution
 also includes a simple Java application named BORJ. BORJ has a simple
 command-line interface that can be used to perform most BOXER
 operations (such as creating, training, and applying a learner), which
 makes it possible to use it from a shell script.  Please refer to
-the <a href="../../borj/Driver.html">description of borj.Driver</a>
+the <a href="api/edu/rutgers/dimacs/mms/borj/Driver.html">description of borj.Driver</a>
 for the overview of BORJ and its command interface.
 <p>
 
 The rest of this document provides general information about using
 BOXER in a Java application. One should refer to the
-appropriate <a href="../package-summary.html">API pages</a> for
+appropriate <a href="api/index.html">API pages</a> for
 individual classes for the details on using each BOXER class.  You can
 also look at the use of various BOXER classes and methods in the BORJ
 source code.
@@ -41,7 +38,7 @@ when using the BOXER API.
 
 <ul>
 
-<li>A <a href="../DataPoint.html">DataPoint</a> is a description of an
+<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/DataPoint.html">DataPoint</a> is a description of an
 object (example). As far as BOXER is concerned, a DataPoint is simply
 a sparse vector, with a number of "present" features, and a numerical
 value associated with each feature. For example, if your application
@@ -51,7 +48,7 @@ document, and the value corresponding to each feature (term) is the
 frequency (numbers of occurrences) of that term in the document,
 possibly normalized in some way.
 
-<li>A <a href="../Discrimination.html">Discrimination</a> describes a
+<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/Discrimination.html">Discrimination</a> describes a
 way to partition the universe of objects (data points) into a number of
 non-intersecting classes. A classification may be binary (having just
 two classes) or polytmous (more than two classes). For example, one
@@ -66,7 +63,7 @@ contain some additional information helpful in interpreting input data
 effectvely and efficiently, namely, the names of the discrimination's
 "default class" and/or the "leftovers class".
 
-<li>A <a href="../Suite.html">Suite</a> is a collection of several
+<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/Suite.html">Suite</a> is a collection of several
 independent discriminations, each of which is meant to partition the
 same universe of objects in different ways. For example, if you are
 classifying a set of news reports each of which may be associated with
@@ -82,7 +79,7 @@ discrimination with 100 classes, {"USA", "Canada", "Mexico", ....}.
 In BOXER, several properties may be associated with each suite, to
 help BOXER interpret input data in more efficient ways.
 
-<li>A <a href="../Learner.html">Learner</a> is a class that implements
+<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/Learner.html">Learner</a> is a class that implements
 a learning algorithm. The Learner class itself is abstract (i.e., you
 can't have an instance of simply "a learner", rather than of one of
 its concerete subclasses), while its concerete subclasses implement
@@ -134,7 +131,7 @@ Suite suite = Suite(f);
 argument, instead of the file name).
 
 <p>
-See <a href="./sample-suite-out.xml">sample-suite-out.xml</a> for a
+See <a href="sample-suite-out.xml">sample-suite-out.xml</a> for a
 sample suite description.
 
 <p>
@@ -210,7 +207,7 @@ Learner learner =  suite.addLearner(e);
 </pre>
 The learner definition file should contain a <tt>learner</tt> element
 describing the learner's type and properties.
-See <a href="./eg-learner-param-1.xml">eg-learner-param-1.xml</a>
+See <a href="eg-learner-param-1.xml">eg-learner-param-1.xml</a>
 and other XML files in the directory <tt>sample-data</tt> for examples
 of learner definition files.
 <p>
@@ -285,7 +282,7 @@ SupportsSimpleLabels.Polytomous mode. For this, the appropriate flag
 should be set on the suite, and the suite should contain a suitable
 discrimination (a non-fallback non-empty discrimination with a default
 class). A suitable suite can be created with a definition file similar
-to <a href="doc-files/WalletSuite.xml">WalletSuite.xml</a>.
+to <a href="WalletSuite.xml">WalletSuite.xml</a>.
 
 <p>A sample BORJ command line for this:
 <pre>
@@ -302,7 +299,7 @@ your program may create DataPoint objects directly as well. E.g.
 <pre>
 // get the FeatureDictionary associated with the current suite
 FeatureDictionary fd = suite.getDic(); 
-Vector<<DataPoint.FVPair> v = new Vector<DataPoint.FVPair>;
+Vector&lt;DataPoint.FVPair&gt; v = new Vector&lt;DataPoint.FVPair&gt;;
 for(....) {
   String featureName = ...;
   double featureValeu = ...;
@@ -417,6 +414,11 @@ and then configure the logger as desired. For more on logging, see <a href="http
 <li><a href="nd.html">Treating new classes and new discirminations (proposal)</a>
 <li><a href="standard-scenarios.html">Standard Discrimination Handling Scenarios</a> - more usage examples
 </ul>
+
+<hr>
+<p align="center">
+Back to the  <a href="index.html" target="_top">BOXER and BORJ main documentation page</a>
+</p>
 
 </body>
 </html>
