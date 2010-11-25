@@ -71,7 +71,7 @@ if ($::dry && -d $out) {
 }
 
 
-my $driver="edu.dimacs.mms.accutest.WindowRepeater";
+my $driver="edu.dimacs.mms.applications.learning.WindowRepeater";
 my $cp="${main}/classes:${main}/lib/xercesImpl.jar";
 my $opt="-Xmx256m -cp ${cp}";
 

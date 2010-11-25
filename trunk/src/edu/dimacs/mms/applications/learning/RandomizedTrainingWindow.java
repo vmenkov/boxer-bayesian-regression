@@ -1,4 +1,4 @@
-package edu.dimacs.mms.accutest;
+package edu.dimacs.mms.applications.learning;
 
 import java.util.*;
 //import java.io.*;
