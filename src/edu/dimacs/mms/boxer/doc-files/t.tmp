@@ -1,3 +1,0 @@
-  // Obtain all "datapoint" elements from somewhere
-  org.w3c.dom.Element[] elements = ....
-  for(Element pe: elements) {

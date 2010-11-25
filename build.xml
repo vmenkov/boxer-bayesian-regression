@@ -138,7 +138,7 @@
 	   link="http://java.sun.com/j2se/1.5.0/docs/api/"
 	   header="&lt;em&gt;BOXER ${boxer.ver}&lt;/em&gt;"   
 	   windowtitle="BOXER ${boxer.ver} API" 
-	   overview="overview.html">
+	   overview="doc/html/api/overview.html">
     <classpath refid="classpath"/>
   </javadoc>
 
