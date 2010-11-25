@@ -32,7 +32,11 @@
 
      
 
-     javadoc           The name of the base directory in which
+     boxer.doc         The name of the base directory into  which documentation
+                       will be copied. It will include a subdirectory for
+                       auto-generated API files
+
+     boxer.javadoc           The name of the base directory in which
                        the JavaDoc documentation for this application
                        will be generated.
 
@@ -42,7 +46,8 @@
  <property name="src" location="src"/>
  <property name="build" location="../classes"/>
  <property name="lib" location="../lib"/>
- <property name="javadoc" location="../javadoc"/>
+ <property name="boxer.doc" location="../doc"/>
+ <property name="boxer.api" location="${boxer.doc}/html/api"/>
 
  <path id="classpath"
        description="The classpath to use for compiling and running BOXER">
@@ -59,7 +64,8 @@
     <!-- Create the build directory structure used by compile -->
     <mkdir dir="${lib}"/>
     <mkdir dir="${build}"/>
-    <mkdir dir="${javadoc}"/>
+    <mkdir dir="${boxer.doc}"/>
+    <mkdir dir="${boxer.api}"/>
     <mkdir dir=""/>
 </target>
 
@@ -115,13 +121,17 @@
 <target name="javadoc" depends="compile,boxerversion">
   <echo message="Javadoc: Assuming the Boxer version is ${boxer.ver}"/>
 
+  <copy todir="${boxer.doc}">
+    <fileset dir="doc/"/>
+  </copy>
+
   <copy todir="${src}/edu/dimacs/mms/boxer/doc-files/">
     <fileset dir="sample-data/" includes="sample.xml,sample-suite-out.xml,eg-learner-param-1.xml"/>
   </copy>
 
   <javadoc packagenames="edu.dimacs.mms.*"
 	   sourcepath="${src}"
-           destdir="${javadoc}"
+           destdir="${boxer.api}"
 	   author="true"
            version="true"
            use="true"
@@ -130,7 +140,9 @@
 	   windowtitle="BOXER ${boxer.ver} API" 
 	   overview="overview.html">
     <classpath refid="classpath"/>
-    </javadoc>
+  </javadoc>
+
+  <echo message="Documentation has been assembled in ${boxer.doc}"/>
 
 </target>
 
