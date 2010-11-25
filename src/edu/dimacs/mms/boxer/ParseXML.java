@@ -13,10 +13,10 @@ import org.xml.sax.SAXException;
   <p>
   A comprehensive example of the XML format for describing data points
   can be found in the file <a
-  href="doc-files/sample.xml">src/sample-data/sample.xml</a>
+  href="../../../../../sample.xml">src/sample-data/sample.xml</a>
 
   <p>
-  See also: <a href="doc-files/nd.html">Treatment of new discrimination/class labels when parsing a data set</a>
+  See also: <a href="../../../../../nd.html">Treatment of new discrimination/class labels when parsing a data set</a>
 
  */
 public class ParseXML {

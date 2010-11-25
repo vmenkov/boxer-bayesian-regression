@@ -125,7 +125,7 @@
     <fileset dir="doc/"/>
   </copy>
 
-  <copy todir="${src}/edu/dimacs/mms/boxer/doc-files/">
+  <copy todir="${boxer.doc}/html">
     <fileset dir="sample-data/" includes="sample.xml,sample-suite-out.xml,eg-learner-param-1.xml"/>
   </copy>
 
