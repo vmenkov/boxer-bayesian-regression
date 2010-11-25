@@ -1,4 +1,4 @@
-package edu.dimacs.mms.accutest;
+package edu.dimacs.mms.applications.learning;
 
 import java.util.*;
 import java.io.*;
@@ -19,7 +19,7 @@ import edu.dimacs.mms.borj.*;
 
 
     <pre>
-java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN_ID]  edu.dimacs.mms.accutest.Driver command:file [command:file ...]
+java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN_ID]  edu.dimacs.mms.applications.learning.Driver command:file [command:file ...]
     </pre>
 
     The command line can contain a number of preliminary commands,
@@ -70,7 +70,7 @@ java [-Dmodel=tg|eg|trivial] [-Dverbose=true | -Dverbosity={0...3}] [-Drunid=RUN
 <p>
 set out=/home/vmenkov/out<br>
 set learner=tg-learner.xml<br>
-java -Drandom=100 -Dout=${out} -DM=1 -Dverbosity=0  edu.dimacs.mms.accutest.Driver read-suite: SimpleTestSuite.xml read-learner:$learner   train: SimpleTestData.xml : ${out}/myscores.txt
+java -Drandom=100 -Dout=${out} -DM=1 -Dverbosity=0  edu.dimacs.mms.applications.learning.Driver read-suite: SimpleTestSuite.xml read-learner:$learner   train: SimpleTestData.xml : ${out}/myscores.txt
 
 <h3>See also</h3>
 

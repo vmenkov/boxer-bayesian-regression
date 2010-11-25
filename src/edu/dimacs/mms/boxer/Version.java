@@ -16,7 +16,7 @@ package edu.dimacs.mms.boxer;
     0.7.001 - 2009-09-24. New ID validation process. Using caret instead of
        colon for compact XML format. New package tree structure.
     0.7.002 - 2009-09-28. Lazy truncation made correct in TruncatedGradient, and disabled in ExponentiatedGradient
-    0.7.003 - 2009-12-08. Test BOXER applications added in edu.dimacs.mms.accutest
+    0.7.003 - 2009-12-08. Test BOXER applications added in edu.dimacs.mms.applications.learning
     0.7.004 - 2009-12-18. Enabled "physical" truncation 
     0.7.005 - 2010-02-18. New installation instructions; moving away RDF converters (to avoid using Jena)
     0.7.006 - 2010-04-19. The semantics of the "name" attribute of the "learner" element is now shifted to the "algorithm" attribute, while "name" has now a new independent meaning. The new (4th) column in the score files.

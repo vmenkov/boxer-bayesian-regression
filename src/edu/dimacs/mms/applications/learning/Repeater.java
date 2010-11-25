@@ -1,4 +1,4 @@
-package edu.dimacs.mms.accutest;
+package edu.dimacs.mms.applications.learning;
 
 import java.util.*;
 import java.io.*;
@@ -9,8 +9,8 @@ import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.borj.*;
 
 /**  This is a sample application for measuring classifier quality
-     after repeatingly feeding the same examples, in random order,
-     to the learner.
+     after repeatingly feeding the same examples to the learner, in
+     a fixed or random order.
 
      <p>
      Usage:<br>
@@ -20,7 +20,7 @@ import edu.dimacs.mms.borj.*;
      Sample usage:
 
      <pre>
-     set driver=edu.dimacs.mms.accutest.Repeater
+     set driver=edu.dimacs.mms.applications.learning.Repeater
      java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dsd=false -Dverbosity=0 $driver \
        read-suite: SimpleTestSuite.xml    read-learner: $learner  \
        train: SimpleTestData-part-1.xml  test: SimpleTestData-part-2.xml 

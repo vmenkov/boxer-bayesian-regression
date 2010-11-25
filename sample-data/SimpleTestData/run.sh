@@ -39,7 +39,7 @@ endif
 
 
 # source ./set.sh
-set driver=edu.dimacs.mms.accutest.Driver
+set driver=edu.dimacs.mms.applications.learning.Driver
 set main=${home}/boxer
 set cp=${main}/classes:${main}/lib/xercesImpl.jar
 set opt="-Xmx256m -cp ${cp}"

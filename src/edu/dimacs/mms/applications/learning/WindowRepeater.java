@@ -1,4 +1,4 @@
-package edu.dimacs.mms.accutest;
+package edu.dimacs.mms.applications.learning;
 
 import java.util.*;
 import java.io.*;
@@ -9,13 +9,14 @@ import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.borj.*;
 
 /**  This is a sample application for measuring classifier quality
-     after repeatingly feeding the same examples, in random order,
-     to the learner.
+     after repeatingly feeding a certain number of recently-seen (or
+     randomly selected) examples to the learner, in a fixed or random
+     order.
 
      <p> This is somewhat similar to {@link Repeater}, with an
      important difference that the application does not need to store
      all training examples ever seen, but only a certain fixed number
-     of them. The WindowRepeater this models an application that
+     of them. WindowRepeater thus models an application that
      operates in online mode under space constraints. 
 
      <p> The pool of currently stored examples consists of either most
@@ -24,7 +25,7 @@ import edu.dimacs.mms.borj.*;
      <p>
      Usage:
      <pre>
-     set driver edu.dimacs.mms.accutest.WindowRepeater
+     set driver edu.dimacs.mms.applications.learning.WindowRepeater
      java [-Dwindow=100] [-Dr=1000] [-DM=10] $driver \
        [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
        </pre>

@@ -3,7 +3,7 @@
 use strict;
 
 # This script runs the "Repeater" application
-# (edu.dimacs.mms.accutest.Repeater), which is a small BOXER
+# (edu.dimacs.mms.applications.learning.Repeater), which is a small BOXER
 # application that offers examples from a given training set, in a
 # random order, to a BOXER learner.
 
@@ -68,7 +68,7 @@ if (!(-d $out)) {
 }
 
 
-my $driver="edu.dimacs.mms.accutest.Repeater";
+my $driver="edu.dimacs.mms.applications.learning.Repeater";
 my $cp="${main}/classes:${main}/lib/xercesImpl.jar";
 my $opt="-Xmx256m -cp ${cp}";
 

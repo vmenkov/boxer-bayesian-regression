@@ -11,7 +11,7 @@ http://comminfo.rutgers.edu/~vmenkov/data/</a>
 This package uses both BOXER and BORJ; the latter is used for such things as command-line parsing.
 
 */
-package edu.dimacs.mms.accutest;
+package edu.dimacs.mms.applications.learning;
 
 /*
 Copyright 2009, Rutgers University, New Brunswick, NJ.

@@ -51,7 +51,7 @@ if (!(-d $out)) {
 }
 
 
-my $driver="edu.dimacs.mms.accutest.Driver";
+my $driver="edu.dimacs.mms.applications.learning.Driver";
 my $cp="${main}/classes:${main}/lib/xercesImpl.jar";
 my $opt="-Xmx256m -cp ${cp}";
 
