@@ -1317,7 +1317,7 @@ public class Suite {
       that the element contains all relevante labels (so that no
       separate "label store") is required.
 
-      @param e A "dataset" XML element. See also the <a href="doc-files/tags.html">Overview of the XML elements used by BOXER</a>
+      @param e A "dataset" XML element. See also the <a href="../../../../../tags.html">Overview of the XML elements used by BOXER</a>
      */
     final public void absorbExample(Element e) 
 	throws BoxerXMLException, SAXException{

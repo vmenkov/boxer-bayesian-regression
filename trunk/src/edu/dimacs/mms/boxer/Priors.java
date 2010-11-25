@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 
     <p>
     <img src="doc-files/priors-hierarchy1.jpg">
-    <br>(The JPEG file above is generated from an SVG file, which you can find <a href="doc-files/priors-hierarchy1.svg">here</a>)
+    <br>(The JPEG file above is generated from an SVG file, which you can find <a href="../../../../../priors-hierarchy1.svg">here</a>)
 
     <p>In the 8-level system of priors, more specific priors override
     less specific (solid lines in the chart above), and those with
@@ -50,7 +50,7 @@ import org.xml.sax.SAXException;
     although an application can, of course, assemble such an XML
     element itself as well.  A sample priors definition file can be
     found in <a
-    href="doc-files/sample-priors.xml">sample-priors.xml</a>
+    href="../../../../../sample-priors.xml">sample-priors.xml</a>
 
     <p>As of ver. 0.8.001, the only type of priors we have are
     Laplacian ones, and the only learning algorithm that uses priors

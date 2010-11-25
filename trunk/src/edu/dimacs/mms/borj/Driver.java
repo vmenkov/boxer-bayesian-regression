@@ -47,7 +47,7 @@ import edu.dimacs.mms.boxer.*;
     <tt>read-priors:</tt> command, which will cause BOXER read an XML
     file containing descriptions of individual priors (see a sample
     file in <a
-    href="doc-files/sample-priors.xml">sample-priors.xml</a>); they
+    href="../../../../../sample-priors.xml">sample-priors.xml</a>); they
     will be used for all TG learners created later.
     <br>
 
@@ -248,7 +248,7 @@ read-learner:tg-param.xml  train:train-set.xml test:test-set.xml:save-scores.txt
 
 <ul>
 <li>
- <a href="../boxer/doc-files/tags.html">Overview of the XML elements used by BOXER</a>
+ <a href="../../../../../tags.html">Overview of the XML elements used by BOXER</a>
 </ul>
 
  */

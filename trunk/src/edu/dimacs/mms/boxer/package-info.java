@@ -131,10 +131,10 @@ parameters.
 
 <h2>See also</h2>
 <ul>
-<li><a href="doc-files/boxer-user-guide.html">BOXER User Guide</a>
-<li><a href="doc-files/standard-scenarios.html">Standard Discrimination Handling Scenarios</a> - more usage examples
-<li><a href="doc-files/tags.html">Overview of the XML elements used by BOXER</a>
-<li><a href="doc-files/nd.html">Treatment of new discrimination/class labels when parsing a data set</a>
+<li><a href="../../../../../boxer-user-guide.html">BOXER User Guide</a>
+<li><a href="../../../../../standard-scenarios.html">Standard Discrimination Handling Scenarios</a> - more usage examples
+<li><a href="../../../../../tags.html">Overview of the XML elements used by BOXER</a>
+<li><a href="../../../../../nd.html">Treatment of new discrimination/class labels when parsing a data set</a>
 </ul>
 
 */
