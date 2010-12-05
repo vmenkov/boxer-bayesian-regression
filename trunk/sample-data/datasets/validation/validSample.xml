@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- An XML file contains a data set. The dataset tag may have some optional
+ attributes -->
+<dataset name="A_sample.valid.dataset" boxerversion="0.1">
+<!-- A data set contains a number of data points (vectors). The "name" 
+  attribute is optional, and can be used for better human readability,
+  debugging etc. -->
+<datapoint name="Chicago,Ill.">
+  <!-- List of class labels, from various discriminations, associated with the
+  data point. It will normally be present in the training set data points, but
+  may be absent in real-life test data points. Each label states what
+  discrimination it pertains to, and to what class within that discrimination
+  it assigns this data point. -->
+  <labels>
+    <label dis="Countries" class="USA"/>
+    <label dis="Prov." class="Illinois,USA"/>
+    <label dis="Climate" class="temperate"/>
+    <label dis="f&lt;A&gt;ncy_one" class="none"/>
+  </labels>
+  <!-- list of features, with their names and values -->
+  <features>
+      <feature name="lat." value="41.9"/> 
+      <feature name="lon." value="-87.6"/> 
+      <feature name="elevation,above_sea_level" value="179"/>
+      <feature name="&lt;&quot;&apos;" value="0"/>
+  </features>
+</datapoint>
+
+<datapoint name="Indianapolis.Ind.">
+  <!-- List of class labels, from various discriminations, associated with the
+  data point. It will normally be present in the training set data points, but
+  may be absent in real-life test data points. Each label states what
+  discrimination it pertains to, and to what class within that discrimination
+  it assigns this data point. -->
+  <labels>
+    Countries^USA Prov.^Indiana,USA Climate^temperate
+  </labels>
+  <!-- list of features, with their names and values -->
+  <features>
+    lat.^40 lon.^-86.5 elevation,above_sea_level^300     &lt;&quot;&apos;^0
+  </features>
+</datapoint>
+
+
+<datapoint name="Alma-Ata,Kaz.">
+  <!-- List of class labels, from various discriminations, associated with the
+  data point. It will normally be present in the training set data points, but
+  may be absent in real-life test data points. Each label states what
+  discrimination it pertains to, and to what class within that discrimination
+  it assigns this data point. -->
+  <labels>
+    Countries^Kazakhstan Prov.^Alma-Ata_Oblasy Climate^temperate
+  </labels>
+  <!-- list of features, with their names and values -->
+  <features>
+    lat.^40 lon.^90 elevation,above_sea_level^800     &lt;&quot;&apos;^0
+  </features>
+</datapoint>
+
+</dataset>
