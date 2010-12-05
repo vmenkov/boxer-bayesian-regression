@@ -25,8 +25,9 @@
 
      src               The directory where Ant will find the source code of BOXER+BORJ
 
-     lib               The directory where Ant will find the third-party libraries 
-                       needed by BOXER and BORJ
+     boxer.lib         The directory where Ant will find the third-party 
+                       libraries needed by BOXER and BORJ, and into which 
+                       Boxer's own JAR file will be written
 
      build             The directory to which Ant will put class files
 
@@ -40,18 +41,23 @@
                        the JavaDoc documentation for this application
                        will be generated.
 
+     build.tmp         A temporary directory within which temporary
+                       subdirectories can be created and deleted as needed
 
 -->
 
  <property name="src" location="src"/>
  <property name="build" location="../classes"/>
- <property name="lib" location="../lib"/>
+ <property name="boxer.lib" location="../lib"/>
  <property name="boxer.doc" location="../doc"/>
  <property name="boxer.api" location="${boxer.doc}/html/api"/>
 
+ <property name="build.tmp" location="/tmp"/>
+
+
  <path id="classpath"
        description="The classpath to use for compiling and running BOXER">
-   <fileset dir="${lib}">
+   <fileset dir="${boxer.lib}">
      <include name="*.jar"/>
    </fileset>
  </path>
@@ -62,20 +68,23 @@
     <!-- Create the time stamp -->
     <tstamp/>
     <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${lib}"/>
+    <mkdir dir="${boxer.lib}"/>
     <mkdir dir="${build}"/>
     <mkdir dir="${boxer.doc}"/>
     <mkdir dir="${boxer.api}"/>
     <mkdir dir=""/>
 </target>
 
-<!-- This target tells Ant how to compile BOXER+BORJ -->
+<!-- This target tells Ant how to compile BOXER+BORJ. We set
+target="1.5", to make it easier for people elsewhere to use our
+code. -->
 <target name="compile" depends="init"
         description="Compile the source (without the BB adapter)" >
   <!-- Compile the java code from ${src} into ${build} -->
   <javac srcdir="${src}" destdir="${build}"
 	 includes="edu/dimacs/**"  optimize="on"
 	 debug="on" debuglevel="lines,vars,source"
+	 target="1.5"
 	 includeantruntime="false" >
     <classpath refid="classpath"/>
   </javac>
@@ -96,7 +105,7 @@
 -->
 <target name="jar" depends="compile"
         description="Builds a Jar file that will include all Boxer and BORJ class files (but not the Blackbook-adapter stuff). It will include all of our own class files, and can be used as a binary distribution. The manifest file will specify the BORJ Driver class as the main class; it will also mention two other Jar files (from the Xerces distribution) that should be found in the same directory with this jar file">
-  <jar destfile="${lib}/boxer.jar"   basedir="${build}">
+  <jar destfile="${boxer.lib}/boxer.jar"   basedir="${build}">
     <manifest> <!-- file="manifest-data.dat" mode="replace" -->
       <attribute name="Main-Class" value="edu.dimacs.mms.borj.Driver"/>
       <attribute name="Class-Path" value=". xercesImpl.jar xml-apis.jar"/>	
@@ -151,12 +160,68 @@
      etc. for the developers' own needs
 -->
 <target name="zipall" depends="boxerversion">
-  <property name="dest" location="../boxer.zip"/>
+  <property name="dest" location="../boxer-${boxer.ver}.zip"/>
   <zip destfile="${dest}" basedir=".."
        includes="boxer-bayesian-regression/**" excludes="**/*~, **/*.bak, **/*.orig, **/*.tmp">
   </zip>
-  <echo message="You may want to rename ${dest} boxer-${boxer.ver}.zip"/>
 </target>
+
+<!-- Produces "Code for experimentalists" distribution.
+  Format: ZIP file
+  Name: use-boxer-and-borj-*.*.*.zip
+  Content: our binaries, third-party binaries, and docs
+-->
+<target name="zip-disbin" depends="jar,javadoc,boxerversion">
+  <tempfile property="temp.dir" destDir="${build.tmp}" suffix=".boxer"/>
+  <mkdir dir="${temp.dir}"/> 
+  <property name="temp.base" value="use-boxer-and-borj-${boxer.ver}"/>   
+  <property name="temp.assemble" location="${temp.dir}/${temp.base}"/>
+  <mkdir dir="${temp.assemble}"/>
+
+  <copy todir="${temp.assemble}">  
+    <fileset dir="." includes="tiny-sample/**"/>
+    <fileset dir="readme/bin"/>
+  </copy>
+
+  <copy todir="${temp.assemble}/doc">  
+    <fileset dir="${boxer.doc}"/>
+  </copy>
+
+  <copy todir="${temp.assemble}/lib">  
+    <fileset dir="${boxer.lib}"/>
+  </copy>
+
+  <zip destfile="../${temp.base}.zip" basedir="${temp.dir}"
+       includes="${temp.base}/**"/>
+  <delete dir="${temp.dir}"/>
+</target>
+
+<!-- Produces "Source code distribution".
+  Format: ZIP file
+  Name: boxer-and-borj-source-*.*.*.zip
+  Content: source code and docs.
+-->
+<target name="zip-dissrc" depends="jar,javadoc,boxerversion">
+  <tempfile property="temp.dir" destDir="${build.tmp}" suffix=".boxer"/>
+  <mkdir dir="${temp.dir}"/> 
+  <property name="temp.base" value="boxer-and-borj-source-${boxer.ver}"/>   
+  <property name="temp.assemble" location="${temp.dir}/${temp.base}"/>
+  <mkdir dir="${temp.assemble}"/>
+
+  <copy todir="${temp.assemble}">  
+    <fileset dir="." includes="build.xml"/>
+    <fileset dir="readme/src"/>
+  </copy>
+
+  <copy todir="${temp.assemble}/doc">  
+    <fileset dir="${boxer.doc}"/>
+  </copy>
+
+  <zip destfile="../${temp.base}.zip" basedir="${temp.dir}"
+       includes="${temp.base}/**"/>
+  <delete dir="${temp.dir}"/>
+</target>
+
 
 
 <!-- deletes the class directory -->

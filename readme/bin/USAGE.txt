@@ -1,0 +1,15 @@
+	BORJ usage notes
+
+
+To try using a BOXER application named BORJ, please go to the
+directory tiny-sample and run the script named test.sh (on UNIX/Linux)
+or test.bat on MS Windows. If it works, you know that all components
+are in place.
+
+You must have a Java Runtime Environment (JRE), or a similar Java
+bytecode interpreter installed on your computer to run  BOXER application.
+If you don't know what it is, please view  the documentation in
+the file doc/html/installation.html  with your web browser.
+
+For more information on BOXER and BORJ, please view the documentation in
+the directory doc/html with your web browser.

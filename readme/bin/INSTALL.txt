@@ -1,0 +1,27 @@
+These instructions are included in the BOXER binary distribution
+distributed under the name with the pattern
+use-boxer-and-borj-*.*.*.zip (with the appropriate version number
+instead of stars).
+
+Unpacking this zip file has created a directory named
+use-boxer-and-borj-*.*.* (with the appropriate version number instead
+of stars), in which you would be reading this file. The compiled BOXER
+and BORJ code is located in the file lib/boxer.jar; certain
+third-party JAR files are also in the same subdirectory. The file
+boxer.jar contains a manifest file that instructs the Java Virtual
+Machine to add these thrid-party JAR files into the class path;
+therefore, for the JVM to find them, all these JAR files must stay in
+this directory.
+
+To try using a BOXER application named BORJ, please go to the
+directory tiny-sample and run the script named test.sh (on UNIX/Linux)
+or test.bat on MS Windows. If it works, you know that all components
+are in place.
+
+You must have a Java Runtime Environment (JRE), or a similar Java
+bytecode interpreter installed on your computer to run  BOXER application.
+If you don't know what it is, please view  the documentation in
+the file doc/html/installation.html  with your web browser.
+
+For more information on BOXER and BORJ, please view the documentation in
+the directory doc/html with your web browser.
