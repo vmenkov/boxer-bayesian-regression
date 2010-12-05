@@ -1,0 +1,52 @@
+<html>
+<head><title>About Xerces JAR files</title></head>
+<body>
+<h1>Information about Xerces JAR files for BOXER and BORJ users</h1>
+
+<em>Updated 2010-12-03</em>
+
+<p>
+To compile and use BOXER and BORJ, you need external JAR
+files from the Apache Xerces project: <tt>xercesImpl.jar</tt>
+and <tt>xml-apis.jar</tt>.  These libraries are essential for BOXER's
+parsing of XML files. </p>
+
+<p> For the users' convenience, we now (from version 0.9 on) include
+these files into the BOXER+BORJ binary distribution; they are in the
+same <tt>lib</tt> directory as <tt>boxer.jar</tt>, and should stay
+there. You don't need to do anything special to use these files, as
+the manifest information in  <tt>boxer.jar</tt> automatically instructs 
+Java to add these files to the class path.
+</p>
+
+<p>The Xerces JAR files are <em>not</em> included into the BOXER and
+BORJ source distribution. To obtain these Jar files for use with the
+BOXER+BORJ source distribution, you may choose either to also  download the
+binary distribution, or to obtain the Xerces files directly from
+elsewhere on the internet, such as the official
+site, <a href="http://xerces.apache.org/">Apache Xerces</a>.
+</P>
+
+<p>
+If you've downloaded some of popular Java-based applications (e.g.,
+Apache Ant), you probably already have these JAR files. E.g., on an Ubuntu Linux machine, they may often be found in /usr/share/java.
+</p>
+
+<P>This is how to find xercesImpl.jar and xml-apis.jar on the official Apache Xerces site: go to the binary download section of that site, 
+<a href="http://xerces.apache.org/mirrors.cgi#binary">http://xerces.apache.org/mirrors.cgi#binary</a>, find the "Xerces2 Java" subsection, and download e.g. the zip file from that subsection. (As of June 2010,  it is labeled "Xerces2 Java 2.9.1 - zip".) Once the zip file has been downloaded, unpack it (or, in MS Windows, "open" it using whatever program you use to "open" ZIP files), and extract from it xercesImpl.jar and xml-apis.jar.
+</P> 
+
+
+<p>Once downloaded, you should place the Jar files into the same
+directory where boxer.jar will be created (e.g., boxer/lib).
+</p>
+
+<hr>
+<div align=center>
+Back to the <a href="index.html">main page</a>
+</div>
+
+
+</body>
+</html>
+

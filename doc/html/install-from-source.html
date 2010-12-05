@@ -1,0 +1,184 @@
+<html>
+<head><title>BOXER and BORJ: installation from source</title></head>
+<body>
+<h1>BOXER and BORJ: installation from source</h1>
+
+<em>Updated 2010-12-03</em>
+
+<p>This document is intended for those users who have downloaded BOXER
+source distribution (either the distribution file
+boxer-and-borj-source-*.*.*.zip, or the complete source tree via SVN)
+and want to compile it themselves - perhaps in preparation to
+customizing BOXER code for their own needs.
+</p>
+
+<p>If you merely want to use BOXER and pre-packaged BOXER
+applications, you don't need to work with the source code; you can
+simply download the binary distribution and use it right away. If this
+is what you're doing, please refer to
+the <a href="installation.html">installation instructions for the
+binary distribution</a>
+
+<h2>Prerequisites</h2>
+
+<h3>JDK</h3>
+
+<p>You need a Java compiler to compile BOXER and BORJ. Presently, the
+build file (build.xml) has the <tt>target="1.5"</tt> attribute in
+the <tt>javac</tt> command, which means that you should be able to
+compile the BOXER and BORJ code with Java 1.5, or any later version of
+Java.  If you want to compile and use BOXER with an earlier version of
+Java than 1.5, you may try to remove the <tt>target="1.5"</tt>
+attribute in the <tt>javac</tt> command in build.xml, and try to
+compile this way with whatever version of Java you have.</p>
+
+<p>If you don't know whether JDK is already installed on your
+computer, you can type on the Linux/UNIX command line,
+<pre>
+  javac -version
+</pre>
+If the the Java compiler  (the program called "javax") is already
+installed and is in your path, you'll get a message from it, including
+its version number.
+</p>
+
+<p>A suitable version of JDK would be e.g. the one
+called <a href="http://java.sun.com/javase/">Java SE 6</a> by
+Sun.com. It as available for download, for several platforms, 
+from <a href="http://java.sun.com/javase/downloads/index.jsp">Java SE
+download site</a>, where it's called "java Platform (JDK)".
+</p>
+
+<p>As an alternative to downloading JRE/JDK from Sun.com, users of some 
+some operating systems may obtain an implementation of JRE or JDK from the provider of their OS. For example, Ubuntu users can install JDK with 
+<pre>
+  sudo apt-get install  openjdk-6-jdk
+</pre>
+</p>
+
+<p>
+Naturally, if you already have full Java EE (which is JDK + some additional
+libraries and tools) it would do as well.</p>
+
+<h3>Third-party Jar files</h3>
+
+<p>
+To compile and use BOXER and BORJ, you need external JAR files from the
+Apache Xerces project: <tt>xercesImpl.jar</tt>
+and <tt>xml-apis.jar</tt>. For details about obtaining these files, see <a href="xerces.html">xerces.html</a>
+
+<p>
+If you also plan to compile and use the BOXER's Blackbook adapter, you need the Blackbook jar files, and a number of third-party jar files, such those for Jena and Commons Logging; however, discussing this is outside of the scope of this document.
+<!--
+<ul>
+<li>jena.jar: You can download jena-2.6.0.zip from <a href="http://sourceforge.net/projects/jena/files/Jena/Jena-2.6.0/jena-2.6.0.zip/download">here</a> and extract jena.jar from the archive. This library is only needed if you plan to integrate BOXER with Blackbook; you can easily do without it otherwise.
+<li>http://commons.apache.org/logging/
+ commons-logging-1.1.1.jar
+</ul>
+-->
+</p>
+
+
+<h3>Apache Ant</h3>
+
+<p><a href="http://ant.apache.org">Apache Ant</a> is needed to build
+Boxer and BORJ from source. At the moment (late 2010) we happen to use
+version 1.8.0, but earlier versions will probably work just as well.</p>
+
+
+<h2>Obtaining BOXER and BORJ source code from Google Code with SVN</h2>
+
+<p>You can get the most current BOXER+BORJ source code snapshot from
+the <a href="http://code.google.com/p/boxer-bayesian-regression/">Google
+Code site for our project, boxer-bayesian-regression</a>. To do this,
+you need to have a Subversion client installed; on most Linux
+machines, it comes as the pre-installed "svn" command; elsewhere, you
+may want to look on the web for the SVN application you like.
+</P>
+
+<p>This is how to download the entire boxer-bayesian-regression source tree:
+<pre>
+  mkdir boxer
+  cd boxer
+  svn checkout https://boxer-bayesian-regression.googlecode.com/svn/trunk/ boxer-bayesian-regression 
+</pre>
+You may want to add your Google Code username to the above command, e.g. <tt> --username vmenkov </tt>
+</P>
+
+<p>This will create on your host (under your current directory,
+i.e. <tt>boxer</tt>) a directory named <tt>boxer-bayesian-regression</tt>, with
+subidrectories named <tt>src</tt>, <tt>sample-data</tt>, etc.
+</P>
+
+<h2>Downloading a ZIP file</h2>
+<p>Alternatively, you can obtain BOXER source code in a single zip
+file. If you're a member of the MMS.DEVELOP project at Rutgers, you
+can download a BOXER zip file from
+the <a href="https://sakai.rutgers.edu/portal/site/c456b935-7e01-4a2b-8859-56ef0a1d4795">project
+page</a> in the Sakai system there. You should also find a version
+(named on the pattern boxer-and-borj-source-*.*.*.zip) at the
+<a href="http://code.google.com/p/boxer-bayesian-regression/downloads/list">download
+section</a> on our Google Code project.  Alternatively, you may be
+reading this because someone has sent you a zip file on a CD or by
+email.
+</p>
+
+<p>After you've downloaded the zip file, create a directory
+named <tt>boxer</tt>, and unzip your zip file there:
+<pre>
+  mkdir boxer
+  cd boxer
+  unzip  boxer-and-borj-source-0.9.001.zip
+</pre>
+
+<p>This will create on your host (under your current directory,
+i.e. <tt>boxer</tt>) a directory named <tt>boxer-and-borj-source-0.9.001</tt>, with
+subidrectories named <tt>src</tt>, <tt>sample-data</tt>, etc.
+</P>
+
+<h2>Compiling</h2>
+
+<p>Place the Xerces jar files into the directory located at <tt>../lib</tt>, relative to <tt>boxer-bayesian-regression</tt> or 
+<tt>boxer-and-borj-source-0.9.001</tt>
+. That is, if you have
+<tt>boxer/boxer-bayesian-regression</tt>, then the jar files should be placed into
+<tt>boxer/lib</tt>. (If you already have these jar files living
+elsewhere, and don't want to create an extra copy, you can just create
+symbolic links; or you can modify the classpath specified in
+build.xml and in your enviornment variable CLASSPATH)</p>
+
+<p>The directory <tt>boxer-bayesian-regression</tt>
+or <tt>boxer-and-borj-source-0.9.001</tt>  contains
+file <tt>build.xml</tt> with instructions for compiling. To use it, simply type, in the directory <tt>boxer-bayesian-regression</tt> or
+<tt>boxer-and-borj-source-0.9.001</tt>,
+<pre>
+    ant compile
+</pre> 
+If no errors have been reported, you'll have your code compiled to <pre>../classes</pre>
+
+<p>The you should type
+<pre>
+    ant jar
+</pre> in order to have a jar file, containing all the compiled code, built in
+the directory <pre>../lib</pre>. The jar file will contain a manifest
+file that will effectively add the Xerces jar files to your classpath
+when boxer.jar is in your classpath. This will work only if the Xerces
+jar files are located in the same directory as <tt>boxer.jar.</tt>
+
+<h2>Using Boxer and BORJ</h2>
+<p>
+Once the BOXER and BORJ code has been compiled, you can use it in the
+same way as if you had downloaded the precompiled version (see
+<a href="installation.html">installation.html</a>). Just make sure
+that the <tt>classes</tt> new jar file is in your classpath.
+
+<p>
+You can find more specific usage examples in the documentation for <a href="api/edu/rutgers/dimacs/mms/borj/Driver.html">BORJ</a>.
+
+<hr>
+<div align=center>
+Back to the <a href="index.html">main page</a>
+</div>
+
+</body>
+</html>
