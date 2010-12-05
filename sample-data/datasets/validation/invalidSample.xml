@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- An XML file contains a data set. The dataset tag may have some optional
+ attributes -->
+<dataset name="A_sample_invalid_dataset" boxerversion="0.1">
+<!-- The following should fail, becasue spaces in names are not allowed -->
+<datapoint name="Chicago, IL">
+  <!-- List of class labels, from various discriminations, associated with the
+  data point. It will normally be present in the training set data points, but
+  may be absent in real-life test data points. Each label states what
+  discrimination it pertains to, and to what class within that discrimination
+  it assigns this data point. -->
+  <labels>
+    <label dis="Countries" class="USA"/>
+    <label dis="Climate" class="temperate"/>
+    <label dis="f&lt;A&gt;ncy_one" class="none"/>
+  </labels>
+  <!-- list of features, with their names and values -->
+  <features>
+      <feature name="lat" value="41.9"/> 
+      <feature name="lon" value="-87.6"/> 
+      <feature name="elevation" value="179"/>
+      <feature name="&lt;&quot;&apos;" value="0"/>
+  </features>
+</datapoint>
+</dataset>
