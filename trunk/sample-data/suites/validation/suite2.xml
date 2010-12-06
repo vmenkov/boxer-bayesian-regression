@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<suite SupportsSimpleLabels="No" name="Suite_that_has_no_Australia" nctest="IGNORE"
+    nctrain="ERROR" version="0.6.001">
+    <discrimination fallback="true" name="sysdefaults">
+        <classes/>
+    </discrimination>
+    <discrimination name="Countries"> <!-- Australia is missing -->
+        <classes>US Canada</classes>
+    </discrimination>
+    <discrimination name="Climate">
+        <classes>temperate subtropical</classes>
+    </discrimination>
+</suite>
