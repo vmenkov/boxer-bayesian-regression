@@ -21,16 +21,20 @@ binary distribution</a>
 
 <h2>Prerequisites</h2>
 
-<h3>JDK</h3>
+<h3>Java (JDK)</h3>
 
-<p>You need a Java compiler to compile BOXER and BORJ. Presently, the
-build file (build.xml) has the <tt>target="1.5"</tt> attribute in
-the <tt>javac</tt> command, which means that you should be able to
-compile the BOXER and BORJ code with Java 1.5, or any later version of
-Java.  If you want to compile and use BOXER with an earlier version of
+<p>You need a Java compiler to compile BOXER and BORJ. Presently, our
+build script is configured to compile the Java code for Java 1.5,
+which means that you should be able to compile the BOXER and BORJ code
+with Java 1.5, or any later version of Java. It is therefore recommended that
+you have JDK 1.5, or a later version on your computer.
+</p>
+
+<p>If you want to compile and use BOXER with an earlier version of
 Java than 1.5, you may try to remove the <tt>target="1.5"</tt>
-attribute in the <tt>javac</tt> command in build.xml, and try to
-compile this way with whatever version of Java you have.</p>
+attribute in the <tt>javac</tt> command in the build script
+(build.xml), and see if you can compile BOXER with whatever version of
+Java you have.</p>
 
 <p>If you don't know whether JDK is already installed on your
 computer, you can type on the Linux/UNIX command line,
@@ -153,13 +157,13 @@ file <tt>build.xml</tt> with instructions for compiling. To use it, simply type,
 <tt>boxer-and-borj-source-0.9.001</tt>,
 <pre>
     ant compile
-</pre> 
-If no errors have been reported, you'll have your code compiled to <pre>../classes</pre>
+</pre> If no errors have been reported, your BOXER and BORJ
+code has been successfully compiled to <pre>../classes</pre>
 
-<p>The you should type
+<p>Then you should type
 <pre>
     ant jar
-</pre> in order to have a jar file, containing all the compiled code, built in
+</pre> in order to build a jar file, containing all the compiled code, in
 the directory <pre>../lib</pre>. The jar file will contain a manifest
 file that will effectively add the Xerces jar files to your classpath
 when boxer.jar is in your classpath. This will work only if the Xerces
@@ -173,7 +177,9 @@ same way as if you had downloaded the precompiled version (see
 that the <tt>classes</tt> new jar file is in your classpath.
 
 <p>
-You can find more specific usage examples in the documentation for <a href="api/edu/rutgers/dimacs/mms/borj/Driver.html">BORJ</a>.
+You can find more specific usage examples for BORJ in the
+documentation
+for <a href="api/edu/dimacs/mms/borj/Driver.html">BORJ</a>. Other included applications are described in <a href="api/edu/dimacs/mms/applications/learning/package-summary.html">edu.dimacs.mms.applications.learning</a>.
 
 <hr>
 <div align=center>

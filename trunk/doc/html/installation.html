@@ -14,7 +14,7 @@ use-boxer-and-borj-*.*.*.zip).
 <p>If you have downloaded the source distribution (file
 boxer-and-borj-source-*.*.*.zip, or source code from the Google Code
 repository), and want to compile it yourself, please read the 
-<a href="installation-from-source.html">Installation from source code</a>
+<a href="install-from-source.html">Installation from source code</a>
 instructions instead.</p>
 
 <h2>What's included</h2>
@@ -27,17 +27,18 @@ BORJ (tiny-sample/test.sh, or test.bat)
 
 <h2>Prerequisites</h2>
 
-<h3>JRE</h3>
+<h3>Java (JRE)</h3>
 <p>
 BOXER has been compiled with Java 1.5, which means that you need this
 version, or any later version of Java to use the precompiled BOXER
 binaries. To run BORJ (or any other precompiled application that uses
-BOXER) you just need the JRE. If you write your own Java application
-to use BOXER, you need the full JDK to compile it, just as it is the
-case with any Java progream.</p>
+BOXER) you just need the JRE (Jave Runtime Environment). If you write
+your own Java application to use BOXER, you need the full JDK (Java
+Development Kit) to compile it, just as it is the case with any Java
+progream.</p>
 
-<p>If you don't know whether JRE/JDK is already installed, you can type 
-on the Linux/UNIX command line,
+<p>If you don't know whether JRE/JDK is already installed on your
+computer, you can type on the Linux/UNIX command line,
 <pre>
   java -version
 </pre>
@@ -53,8 +54,10 @@ from <a href="http://java.sun.com/javase/downloads/index.jsp">Java SE
 download site</a>, where it's called "java Platform (JDK)".
 </p>
 
-<p>As an alternative to downloading JRE/JDK from Sun.com, users of some 
-some operating systems may obtain an implementation of JRE or JDK from the provider of their OS. For example, Ubuntu users can install JDK with 
+<p>As an alternative to downloading JRE/JDK from Sun.com, users of
+some some operating systems may obtain an implementation of JRE or JDK
+from the provider of their OS. For example, Ubuntu users can install
+JDK with
 <pre>
   sudo apt-get install  openjdk-6-jdk
 </pre>
@@ -91,28 +94,52 @@ all UNIX/Linux machines have C Shell already installed.
 <p>The BOXER sample data distribution includes a number of C Shell and
 Perl scripts for running BORJ and other BOXER applications in a
 variety of ways. 
+</p>
 
 <h2>Downloading and using BOXER binaries</h2>
 
-<p>If you plan to use BOXER, but not to modify it, you only need to download the "BOXER binaries", i.e. a 
-a Jar file containing compiled BOXER and BORJ code.
+<p>If you plan to use BOXER, but not to modify it, you only need to
+download the "BOXER binaries", i.e. a a Jar file containing compiled
+BOXER and BORJ code.
 
 <p>This jar file can be downloaded from the
 <a href="http://code.google.com/p/boxer-bayesian-regression/downloads/list">download
-section</a> on our Google Code project. As of the summer 2010, the most
-recent version there is  <tt>boxer-0.8.001.jar</tt>
+section</a> on our Google Code project. Look fot the most recent file 
+with the name patterned on use-boxer-and-borj-*.*.*.zip, e.g. 
+use-boxer-and-borj-0.9.001.zip
+</p>
 
-<p>Once downloaded, you can just add the BOXER jar, as well as the
-necessary thrid-party libraries to your classpath. For example, if you run BORJ
-(a BOXER application included into the BOXER distribution), the Linux/UNIX command line
-may look like this:
+<p>Extract all files from the archive (using, e.g. the "unzip" command on Linux). This will  create a directory named
+use-boxer-and-borj-*.*.* (with the appropriate version number instead
+of stars). The compiled BOXER
+and BORJ code is located in the file lib/boxer.jar; certain
+third-party JAR files are also in the same subdirectory. The file
+boxer.jar contains a manifest file that instructs the Java Virtual
+Machine to add these thrid-party JAR files into the class path;
+therefore, for the JVM to find them, all these JAR files must stay in
+this directory.
+</P>
+
+<p>
+To try using a BOXER application named BORJ, please go to the
+directory tiny-sample and run the script named test.sh (on UNIX/Linux)
+or test.bat on MS Windows. If it works, you know that all components
+are in place.
+</p>
+
+<p>To run BORJ and other BOXER applications You can just add
+boxer.jar, to your classpath (either by modifying the CLASSPATH
+environment variable, or by using the "-cp" option to "java"). For
+example, if you run BORJ (a BOXER application included into the BOXER
+distribution), the Linux/UNIX command line may look like this:
 <pre>
- java -cp boxer-0.8.001.jar:xercesImpl.jar:xml-apis.jar edu.dimacs.mms.borj.Driver ...
+ java -cp /home/myusername/use-boxer-and-borj-0.8.001/lib/boxer.jar edu.dimacs.mms.borj.Driver ...
 </pre>
-If you have written your own application that uses the BOXER API, and your application's
-main class is called  MyMainClass, then your command line may look like this:
+If you have written your own application that uses the BOXER API, and
+your application's main class is called MyMainClass, living in
+myjar.jar, then your command line may look like this:
 <pre>
- java -cp   boxer-0.8.001.jar:xercesImpl.jar:xml-apis.jar MyMainClass
+ java -cp  /home/myusername/use-boxer-and-borj-0.8.001/lib/boxer.jar:myjar.jar MyMainClass
 </pre>
 </p>
 

@@ -4,23 +4,24 @@
 <h1>BOXER User Guide</h1>
 
 <p>
-
 BOXER is a Java library for online anytime machine learning of
 polytomous logistic regression models. It uses XML as the main format
 for describing input data, but it is possible for the user to use API
 in other ways as well.
-<p>
+</p>
 
+<p>
 To provide an example of using the BOXER API, as well as a convenient
 way of using BOXER without writing your own code, the distribution
 also includes a simple Java application named BORJ. BORJ has a simple
 command-line interface that can be used to perform most BOXER
 operations (such as creating, training, and applying a learner), which
 makes it possible to use it from a shell script.  Please refer to
-the <a href="api/edu/rutgers/dimacs/mms/borj/Driver.html">description of borj.Driver</a>
+the <a href="api/edu/dimacs/mms/borj/Driver.html">description of borj.Driver</a>
 for the overview of BORJ and its command interface.
 <p>
 
+<p>
 The rest of this document provides general information about using
 BOXER in a Java application. One should refer to the
 appropriate <a href="api/index.html">API pages</a> for
@@ -38,7 +39,7 @@ when using the BOXER API.
 
 <ul>
 
-<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/DataPoint.html">DataPoint</a> is a description of an
+<li>A <a href="api/edu/dimacs/mms/boxer/DataPoint.html">DataPoint</a> is a description of an
 object (example). As far as BOXER is concerned, a DataPoint is simply
 a sparse vector, with a number of "present" features, and a numerical
 value associated with each feature. For example, if your application
@@ -48,7 +49,7 @@ document, and the value corresponding to each feature (term) is the
 frequency (numbers of occurrences) of that term in the document,
 possibly normalized in some way.
 
-<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/Discrimination.html">Discrimination</a> describes a
+<li>A <a href="api/edu/dimacs/mms/boxer/Discrimination.html">Discrimination</a> describes a
 way to partition the universe of objects (data points) into a number of
 non-intersecting classes. A classification may be binary (having just
 two classes) or polytmous (more than two classes). For example, one
@@ -63,7 +64,7 @@ contain some additional information helpful in interpreting input data
 effectvely and efficiently, namely, the names of the discrimination's
 "default class" and/or the "leftovers class".
 
-<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/Suite.html">Suite</a> is a collection of several
+<li>A <a href="api/edu/dimacs/mms/boxer/Suite.html">Suite</a> is a collection of several
 independent discriminations, each of which is meant to partition the
 same universe of objects in different ways. For example, if you are
 classifying a set of news reports each of which may be associated with
@@ -79,7 +80,7 @@ discrimination with 100 classes, {"USA", "Canada", "Mexico", ....}.
 In BOXER, several properties may be associated with each suite, to
 help BOXER interpret input data in more efficient ways.
 
-<li>A <a href="api/edu/rutgers/dimacs/mms/boxer/Learner.html">Learner</a> is a class that implements
+<li>A <a href="api/edu/dimacs/mms/boxer/Learner.html">Learner</a> is a class that implements
 a learning algorithm. The Learner class itself is abstract (i.e., you
 can't have an instance of simply "a learner", rather than of one of
 its concerete subclasses), while its concerete subclasses implement
