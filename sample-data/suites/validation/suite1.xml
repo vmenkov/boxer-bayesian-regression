@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<suite SupportsSimpleLabels="No" name="Basic_BORJ_suite" nctest="IGNORE"
+    nctrain="IGNORE" version="0.6.001">
+    <discrimination fallback="true" name="sysdefaults">
+        <classes/>
+    </discrimination>
+    <discrimination name="Countries">
+        <classes>US Canada Australia</classes>
+    </discrimination>
+    <discrimination name="Climate">
+        <classes>temperate subtropical</classes>
+    </discrimination>
+</suite>

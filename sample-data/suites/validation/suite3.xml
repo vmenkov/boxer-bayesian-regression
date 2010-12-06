@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<suite SupportsSimpleLabels="No" name="Suite_with_Countries_Bounded" nctest="IGNORE"
+    nctrain="ERROR" version="0.6.001">
+    <discrimination fallback="true" name="sysdefaults">
+        <classes/>
+    </discrimination>
+    <discrimination name="Climate">
+        <classes>temperate subtropical</classes>
+    </discrimination>
+    <discrimination name="Countries" classstructure="Bounded"
+		    maxnumberofclasses="2">
+    </discrimination>
+</suite>
