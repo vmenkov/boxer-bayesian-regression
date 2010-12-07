@@ -1,20 +1,24 @@
 #!/bin/csh
 
 
-set out=out-1
 
-echo Output dir is $out
-mkdir $out
+source ../set.sh
 
-java -cp ../../../lib/boxer.jar edu.dimacs.mms.borj.Driver \
-read-suite: ../sample-suite.xml \
-read-priors: ../sample-priors-2.xml \
-read-learner: ../tg-learner-param-K=1.xml \
-train: ../train-set.xml \
-test: ../train-set.xml:$out/sample-train-scores-out.dat  \
-test: ../test-set.xml:$out/sample-test-scores-out.dat  \
-write-priors:$out/out-priors.xml \
-write:$out/out-learners.xml > $out/out.txt
+set o=$out/priors-1
+mkdir $o
+
+echo "Using the following JVM options: ${opt}"
+echo "Reading datasets from $dm, suites from $sm, output to $o"
+
+java $opt $driver \
+read-suite: $sm/sample-suite.xml \
+read-priors: ../../priors/sample-priors-2.xml \
+read-learner: $lm/tg-learner-param-K=1.xml \
+train: $dm/train-set.xml \
+test: $dm/train-set.xml:$o/sample-train-scores-out.dat  \
+test: $dm/test-set.xml:$o/sample-test-scores-out.dat  \
+write-priors:$o/out-priors.xml \
+write:$o/out-learners.xml > $o/out.txt
 
 
 
