@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<priors name="CountriesPriors" version="0.7.006">
+    <cross-discrimination>
+        <overall>
+            <prior absolute="true" mode="0.0" skew="0" type="l" var="10"/>
+        </overall>
+        <features>
+            <feature-prior feature="@dummy">
+                <prior absolute="true" mode="-1" skew="-1" type="l" var="1.0"/>
+            </feature-prior>
+            <feature-prior feature="lat">
+                <prior absolute="true" mode="0.0" skew="0" type="l" var="1.0"/>
+            </feature-prior>
+        </features>
+        <classes>
+        </classes>
+    </cross-discrimination>
+    <discrimination-specific>
+        <discrimination name="Countries">
+            <overall/>
+            <features>
+              <feature-prior feature="lat">
+                <prior absolute="false" mode="0.0" skew="1" type="l" var="0.1"/>
+              </feature-prior>
+            </features>
+            <classes/>
+            <coefficients>
+              <coeff-prior feature="lat" class="US">
+                <prior absolute="false" mode="0.0" skew="-1" type="l" var="0.1"/>
+              </coeff-prior>
+            </coefficients>
+        </discrimination>
+    </discrimination-specific>
+</priors>

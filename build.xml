@@ -201,7 +201,7 @@ code. -->
   Name: boxer-and-borj-source-*.*.*.zip
   Content: source code and docs.
 -->
-<target name="zip-dissrc" depends="jar,javadoc,boxerversion">
+<target name="zip-dissrc" depends="javadoc,boxerversion">
   <tempfile property="temp.dir" destDir="${build.tmp}" suffix=".boxer"/>
   <mkdir dir="${temp.dir}"/> 
   <property name="temp.base" value="boxer-and-borj-source-${boxer.ver}"/>   
@@ -222,6 +222,22 @@ code. -->
   <delete dir="${temp.dir}"/>
 </target>
 
+<target name="zip-disdata" depends="boxerversion">
+  <tempfile property="temp.dir" destDir="${build.tmp}" suffix=".boxer"/>
+  <mkdir dir="${temp.dir}"/> 
+  <property name="temp.base" value="sample-data-for-boxer-and-borj-${boxer.ver}"/>   
+  <property name="temp.assemble" location="${temp.dir}/${temp.base}"/>
+  <mkdir dir="${temp.assemble}"/>
+
+  <copy todir="${temp.assemble}/doc">  
+    <fileset dir="${boxer.doc}"/>
+  </copy>
+
+
+  <zip destfile="../${temp.base}.zip" basedir="${temp.dir}"
+       includes="${temp.base}/**"/>
+  <delete dir="${temp.dir}"/>
+</target>
 
 
 <!-- deletes the class directory -->

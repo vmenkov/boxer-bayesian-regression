@@ -1,0 +1,37 @@
+<priors name="CountriesPriors">
+ 
+  <cross-discrimination>
+    <overall> 
+      <prior absolute="true" type="l" mode="0" var="1"/>
+    </overall>    
+    <features> 
+      <feature-prior feature="lat">
+	<prior absolute="true" type="l" mode="10" var="50"/>
+      </feature-prior>
+    </features>
+    <classes> 
+      <class-prior class="@NotDiscriminationName">
+	<prior absolute="true" type="l" mode="10" var="50"/>
+      </class-prior>
+    </classes>
+  </cross-discrimination>
+  
+  <discrimination-specific>
+    
+    <discrimination name="Countries">
+      <overall> </overall>
+      <features> 
+      <feature-prior feature="lat">
+	<prior absolute="true" type="l" mode="10" var="30"/>
+      </feature-prior>
+      </features>
+      <classes> </classes>
+      <coefficients>
+	<coeff-prior class="Australia" feature="lat">
+	  <prior  absolute="true" type="l" mode="-30" var="100" skew="0"/>
+	</coeff-prior>
+      </coefficients>
+    </discrimination>
+  </discrimination-specific>
+
+</priors>
