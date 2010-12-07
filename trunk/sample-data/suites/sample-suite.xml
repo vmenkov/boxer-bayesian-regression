@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<suite HowToHandleMissingIDs="Error" SupportsSimpleLabels="No"
+    name="Basic_BORJ_suite" nctest="IGNORE" nctrain="IGNORE" version="0.7.006">
+    <discrimination fallback="true" name="sysdefaults">
+        <classes/>
+    </discrimination>
+    <discrimination name="Countries">
+        <classes>US Canada Australia China Russia</classes>
+    </discrimination>
+    <discrimination name="Climate">
+        <classes>temperate subtropical</classes>
+    </discrimination>
+    <discrimination name="Port" defaultclass="no">
+        <classes>sea river no</classes>
+    </discrimination>
+</suite>
