@@ -61,5 +61,10 @@ else
    mkdir $out
 endif
 
+#-- "main" dataset, suite, and learner directories
+set dm=../../datasets
+set sm=../../suites
+set lm=../../learners
+
 set d=../../datasets/$subdir
 set s=../../suites/$subdir
