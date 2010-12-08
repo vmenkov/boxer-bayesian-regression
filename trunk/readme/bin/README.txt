@@ -61,7 +61,28 @@ explanation of Java, JARs, etc.)]
 
 ........
 
+------------------------------------------------------------------
+
    --High level history of releases, and known bugs in current version.
+
+ 0.6.003 - late May 2009
+    0.6.004 - 2009-06-18. Borj: respect quotes in cmd line
+    0.6.005 - 2009-06-19. Boxer: introduced (and use) BoxerXMLException 
+    0.6.006 - 2009-06-24. Boxer: improved DataPoint name management; 
+       ParseXML enhancements (in connection with standard-scenarios.html)
+    0.6.007 - 2009-06-28. Only updated docs
+
+    0.7.001 - 2009-09-24. New ID validation process. Using caret instead of
+       colon for compact XML format. New package tree structure.
+    0.7.002 - 2009-09-28. Lazy truncation made correct in TruncatedGradient, and disabled in ExponentiatedGradient
+    0.7.003 - 2009-12-08. Test BOXER applications added in edu.dimacs.mms.applications.learning
+    0.7.004 - 2009-12-18. Enabled "physical" truncation 
+    0.7.005 - 2010-02-18. New installation instructions; moving away RDF converters (to avoid using Jena)
+    0.7.006 - 2010-04-19. The semantics of the "name" attribute of the "learner" element is now shifted to the "algorithm" attribute, while "name" has now a new independent meaning. The new (4th) column in the score files.
+
+    0.8.000 - 2010-07-05. Transitionary version to the new "individual priors". I/O for individual priors has been added, but not the actual arithmetic yet
+    0.8.001 - 2010-07-07. The individual priors appear to work, although more testing and documenting is still upcoming
+    0.8.002 - 2010-12-07. Rearranged location of some files and directories. More experimental tools
 
 
 =============================================================

@@ -229,8 +229,8 @@ code. -->
   <property name="temp.assemble" location="${temp.dir}/${temp.base}"/>
   <mkdir dir="${temp.assemble}"/>
 
-  <copy todir="${temp.assemble}/doc">  
-    <fileset dir="${boxer.doc}"/>
+  <copy todir="${temp.assemble}">  
+    <fileset dir="sample-data"/>
   </copy>
 
 
@@ -239,6 +239,8 @@ code. -->
   <delete dir="${temp.dir}"/>
 </target>
 
+<!-- Cannot do this, because "properties are immutable" -->
+<!-- target name="all-zip-files" depends="zipall,zip-disbin,zip-dissrc,zip-disdata"/ -->
 
 <!-- deletes the class directory -->
 <target name="clean">
