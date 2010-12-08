@@ -1,5 +1,0 @@
-<suite name="SimpleTestSuite">
-<discrimination name="PK">
-<classes>1 2 3</classes>
-</discrimination>
-</suite>
