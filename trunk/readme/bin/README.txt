@@ -4,11 +4,13 @@ use-boxer-and-borj-*.*.*.zip
  == What BOXER and BORJ are ==
 
 BOXER is a Java library for online anytime machine learning of
-polytomous logistic regression models. It uses XML as the main format
-for describing input data, but it is possible for the user to use API
-in other ways as well. You can use the BOXER API in your own Java
-applications, or you can use several BOXER applications (standalone
-Java programs) included in this distribution.
+polytomous logistic regression models. An API allows you to provide
+training and test data in XML format, as well as getting back trained
+models, their predictions on test data, and other information in XML
+format.  The API also supports some alternatives to XML as well.  You
+can use the BOXER API in your own Java applications, or you can use
+any of of the standalone Java programs we have included in this distribution
+which make use of BOXER. 
 
 One of the BOXER applications included in this distribution is BORJ.
 BORJ is standalone command-line driven Java program that runs machine
