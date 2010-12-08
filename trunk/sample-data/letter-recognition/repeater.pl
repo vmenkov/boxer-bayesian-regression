@@ -24,9 +24,8 @@ my $base=$learner;
 $base =~ s/\.xml$//;
 $base =~ s/-learner-param//;
 
-my $home = "/home/vmenkov";
+my $home = $ENV{'HOME'};
 my $main= "${home}/boxer";
-
 
 my $out;
 
@@ -67,7 +66,7 @@ my $d="${main}/$pkg";
 
 `java $opt -Dout=${out} -DM=500 -Dr=200000 -Drandom=$nr -Dverbosity=0 $driver read-suite:${d}/letter-recognition-suite.xml  read-learner:$learner train:${d}/letter-recognition-part-1.xml  test:${d}/letter-recognition-part-2.xml > ${out}/run.log`;
 
-`select.pl $out`;
+`../scripts/select.pl $out`;
 
 my $title=$base;
 $title =~ s/-/ /g; 

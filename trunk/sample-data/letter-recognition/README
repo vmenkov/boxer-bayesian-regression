@@ -1,0 +1,2 @@
+The data files can be obtained from http://archive.ics.uci.edu/ml/datasets/Letter+Recognition
+After that, run the script letter2xml.pl to convert the data to BOXER XML format
