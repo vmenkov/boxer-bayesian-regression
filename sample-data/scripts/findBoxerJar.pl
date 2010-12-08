@@ -12,14 +12,14 @@ use strict;
 if (defined $ENV{'BOXER_JAR_PATH'}) {
 	print $ENV{'BOXER_JAR_PATH'};
 } else {
-	print &lookForFile();
+	print &lookForBoxerJar();
 }
 print "\n";
 
 #-- Looks for boxer.jar at various likely locations, and returns an
 #-- absolute path to it. If can't find it, returns an empty string
 
-sub lookForFile() {
+sub lookForBoxerJar() {
     my $base='boxer.jar';
     my $maxCnt=7;
     

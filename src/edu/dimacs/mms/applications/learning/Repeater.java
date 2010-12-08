@@ -36,10 +36,10 @@ import edu.dimacs.mms.borj.*;
 	presented repeatedly.
 
 
-     <li>random: Number of random sequences (1 or
-     more) with which to run experiments. If 0 is given, it means that
-     there will be only one sequence, and it will be
-     <strong>non-random</strong>, cyclic one.
+     <li>random: Number of random sequences (1 or more) with which to
+     run experiments. If 0 is given instead, it means that there will
+     be only one sequence, and it will be <strong>non-random</strong>,
+     cyclic one.
 
      <li>M: frequency of checkpoints. (I.e., how often to pause
      training and test the classifier against the training and test set)
@@ -127,7 +127,7 @@ public class Repeater {
 	int M =ht.getOption("M", 1);	
 	int r =ht.getOption("r", 1000);
 	int nRandom= ht.getOption("random", 0);
-	boolean cyclic = (nRandom <= 0);  // non-random mode
+	boolean cyclic = (nRandom <= 0);  // cyclic (non-random) mode
 	if (cyclic) nRandom = 1;
 	
 	long start= (long)ht.getOption("start", 0);
@@ -136,7 +136,10 @@ public class Repeater {
 	out =ht.getOption("out", ".");	
 	if (out.equals("")) out=".";
 
-	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). M="+M +", sd="+emulateSD+", out="+out);
+	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). "+
+			   (cyclic? "Cyclic mode" :
+			    "Random mode with "+nRandom+"repeats")+
+			   ", M="+M +", sd="+emulateSD+", out="+out);
 	System.out.println("[VERSION] " + Version.version);
 
 	Suite.verbosity = ht.getOption("verbosity", 1);
@@ -335,7 +338,7 @@ public class Repeater {
 
 	// Matrix is only saved when it is the only run of a cyclic
 	// repeater (seed<0), or the first run of the random repeater (seed=0)	
-	boolean saveMatrix = (Suite.verbosity>=0 && seed<=0);
+	boolean saveMatrix = (Suite.verbosity>0 && seed<=0);
 
 	PrintWriter matWriter = null;
 	if (saveMatrix) {
