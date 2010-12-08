@@ -53,7 +53,7 @@ if (!(-d $out)) {
 
 
 my $driver="edu.dimacs.mms.applications.learning.Repeater";
-my $cp="${main}/classes:${main}/lib/xercesImpl.jar";
+my $cp="${main}/lib/boxer.jar";
 my $opt="-Xmx256m -cp ${cp}";
 
 # my $d="${main}/boxer-bayesian-regression/sample-data/SimpleTestData";
