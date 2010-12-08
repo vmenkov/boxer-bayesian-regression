@@ -23,7 +23,7 @@ package edu.dimacs.mms.boxer;
 
     0.8.000 - 2010-07-05. Transitionary version to the new "individual priors". I/O for individual priors has been added, but not the actual arithmetic yet
     0.8.001 - 2010-07-07. The individual priors appear to work, although more testing and documenting is still upcoming
-    0.8.002 - 2010-11-25. Rearranged location of some files. More experimental tools
+    0.8.002 - 2010-12-07. Rearranged location of some files and directories. More experimental tools
 </pre>
  */
 public class Version {
