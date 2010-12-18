@@ -122,11 +122,59 @@ public abstract class PLRMLearner extends Learner {
 	    return dot;
 	}
 
+	double logLikelihood(Vector<DataPoint> xvec, int i1, int i2) {
+	    return  logLikelihood(xvec, i1, i2,null);
+	}
+
+	/**
+	   @param zz Output parameter. If it is not null, it must be
+	   pre-allocated (as new double[i2-i1][]) before calling the
+	   method. Upon return, z[j] will contain the vector (Y-P) for
+	   xvec[i1+j] (based on applyModelLog), or null if the data
+	   point xvec[i1+j] has no class label and ought to be
+	   skipped. If it's null on input, it will be ignored.
+	   @return The avg log-likelihood for all labeled examples from
+	   xvec[i1:i2-1], or 0 if none is labeled
+	 */
+	double logLikelihood(Vector<DataPoint> xvec, int i1, int i2,
+			     double zz[][]) {
+	    if (zz!=null && zz.length != i2-i1) throw new IllegalArgumentException("The log prob array must be pre-allocated to size "+(i2-i1));
+
+	    double logLik = 0;
+	    int n=0;
+	    for(int i=i1; i<i2; i++) {
+		DataPoint x = xvec.elementAt(i);
+		double [] logProb = applyModelLog(x);
+		Discrimination.Cla trueC = x.claForDisc(dis);
+		
+		if (trueC==null) {
+		    if (zz!=null) zz[i-i1]=null;
+		    continue; // example not labeled for this discr
+		}
+
+		n++;
+		int trueCPos =  trueC.getPos();
+		if (zz!=null) {
+		    double z[] = new double[logProb.length];
+		    for(int k=0; k<logProb.length; k++) {
+			z[k] =  (k==trueCPos? 1: 0) - Math.exp(logProb[k]);
+		    }
+		    zz[i-i1] = z;
+		}
+		logLik += logProb[trueCPos];
+	    }
+	    if (n==0) {
+		// no labeled examples given!
+		return 0;
+	    }
+	    return logLik/n;
+	}
+
 
 	/** Computes weights with which this data point's vector
 	    should be added to various columns of the classifier's
-	    coefficient matrix. It is (1-p) for the classes to which
-	    the example should belong, and (-p) for others, where p is
+	    coefficient matrix. It is (1-P) for the classes to which
+	    the example should belong, and (-P) for others, where p is
 	    the probability score returned by the current classifier.
 
 	    This method also ensures that the columns for discriminations
@@ -140,7 +188,7 @@ public abstract class PLRMLearner extends Learner {
 	double[] adjWeights(DataPoint x) {
 	    
 	    double prob[] = applyModel(x);
-	    if (Suite.verbosity>0) System.out.println("Scored train vector " + x.name +" for dis="+dis.name+"; scores=" +
+	    if (Suite.verbosity>1) System.out.println("Scored train vector " + x.name +" for dis="+dis.name+"; scores=" +
 			   x.describeScores(prob, dis));
 
 	    Discrimination.Cla trueC = x.claForDisc(dis);

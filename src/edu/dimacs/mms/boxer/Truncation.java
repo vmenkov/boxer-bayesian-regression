@@ -47,7 +47,7 @@ public class Truncation /*implements Cloneable*/ {
       TruncatedGradient writeup  */
     double basicTo;
 
-    /** How often truncation is exercised? After every K training
+    /** How often is truncation exercised? After every K training
      * vectors. The TG default is 10 (truncate after each 10 vectors),
      * but until Ver 0.4 (Mar 2009) we had 1 (after each vector) */
     int K=10;
@@ -82,8 +82,8 @@ public class Truncation /*implements Cloneable*/ {
 	this(0.0, 0.0, 1, new Matrix[]{}, _lazy, null, null);
     }
 
-    /** Creates a truncation object for truncation of elements of a single 
-	marix */
+    /** Creates a truncation object for the truncation of the elements
+	of a single marix. */
     public Truncation(double  _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
 	this( _theta, to, _K, new Matrix[] {w}, _lazy, _priors, _dis);
     }
@@ -93,12 +93,13 @@ public class Truncation /*implements Cloneable*/ {
 	      orig.priors, _dis);
     }
 
-    /** Creates a truncation object for truncation of elements of one
-      or several specified matrices
+    /** Creates a truncation object for the truncation of the elements
+	of one or several specified matrices.
 
-       @param _matrices An array of matrices to which this truncation applies
-       @param _lazy If true, use lazy truncation
-       @param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
+	@param to = K*g*eta
+	@param _matrices An array of matrices to which this truncation applies
+	@param _lazy If true, use lazy truncation
+	@param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
      */
     public Truncation(double _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
 
@@ -111,7 +112,6 @@ public class Truncation /*implements Cloneable*/ {
 	dis = _dis;
 
 	//System.out.println("Truncation(), new basicTo=" + basicTo);
-
 
 	matrices = _matrices;
 	for(Matrix w: matrices) {
@@ -220,7 +220,7 @@ public class Truncation /*implements Cloneable*/ {
 	@param j The row index
 
 	@param mult The "multiplier", indicating how many times the
-	truncation needs to be done now. It may be greater than one if
+	truncation needs to be done now. It may be greater than 1 if
 	we are using lazy truncation, and there are several deferred
 	truncations that are finally going to be done now.
      */

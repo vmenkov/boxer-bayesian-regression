@@ -6,9 +6,9 @@ import java.io.*;
 import org.w3c.dom.*;
 import org.apache.xerces.dom.DocumentImpl;
 
-/** This is a common abstract parent of our matrix classes (such as DenseMatrix
- * and BetaMatrix). It declares some methods that all BOXER matrices have to support.
-*/
+/** This is a common abstract parent of our matrix classes (such as
+  DenseMatrix and BetaMatrix). It declares some methods that all BOXER
+  matrices have to support.  */
 public abstract class Matrix implements Measurable {
 
    /** Sets several elements in the same row (replacing any existing values).
@@ -180,7 +180,7 @@ public abstract class Matrix implements Measurable {
     }
 
     /** Computes the square of the vector 2-norm of this matrix, i.e.
-	the sum of squares of all matrix elements
+	the sum of squares of all matrix elements. 
      */
     abstract public double squareOfNorm();
 

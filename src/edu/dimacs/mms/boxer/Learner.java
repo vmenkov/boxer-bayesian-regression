@@ -238,7 +238,10 @@ public abstract class Learner implements Model {
     }
 
     /** The SD-emulating act. When the learning rate is very small, the
-     results should be similar to absorbExample(...) with the same arguments */
+     results should be similar to absorbExample(...) with the same arguments.
+
+     Presently, this method is only supported for TruncatedGradient.
+    */
     public void absorbExamplesSD(Vector<DataPoint> xvec, int i1, int i2) {
 	if (!(this instanceof TruncatedGradient)) throw new UnsupportedOperationException("Only TG can emulate SD");
 	createMissingBlocks();
@@ -248,6 +251,18 @@ public abstract class Learner implements Model {
 	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).absorbExamplesSD(xvec, i1, i2);
 	}
     }
+
+    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2) {
+	if (!(this instanceof TruncatedGradient)) throw new UnsupportedOperationException("Only TG can emulate SD");
+	createMissingBlocks();
+	for(LearnerBlock block: blocks) {
+	    block.dis.ensureCommitted();
+	    block.validateExamples(xvec, i1,i2);
+	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2);
+	}
+    }
+
+
 
     /**  Ensures that a "learner block" (classifier object) is provided
 	 for each discriminations in the current suite. This method is

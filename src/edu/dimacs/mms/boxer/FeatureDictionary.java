@@ -35,7 +35,7 @@ public class FeatureDictionary {
 	when we read it in, and strip it on the output. */
     final static boolean ADD_DUMMY_COMPONENT=true;
     /** The value (@dummy) used for the intercept feature */
-    final static public String DUMMY_LABEL = "@dummy";
+    final static public  String  DUMMY_LABEL = "@dummy";
 
     /** Maps an integer 0-based feature id to feature label. All
      * values stored here are supposed to be syntactically legal
@@ -43,6 +43,7 @@ public class FeatureDictionary {
     private Vector<String> id2label = new Vector<String>();
     /** Reverse: feature label to feature id */
     private HashMap<String, Integer> label2id = new  HashMap<String, Integer>();
+
 
     /** Creates an empty (or near-empty) dictionary. The only value
 	that may be put in by this constructor is  DUMMY_LABEL, and only 

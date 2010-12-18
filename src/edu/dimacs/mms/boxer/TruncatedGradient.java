@@ -154,7 +154,6 @@ public class TruncatedGradient extends PLRMLearner {
 		trunc.requestTruncation(d);	    
 	    }
 
-
 	    // Actuate all truncations. No need to be "lazy" here, as this
 	    // is essentially a batch method
 	    trunc.applyTruncationToAllRows();
@@ -208,6 +207,135 @@ public class TruncatedGradient extends PLRMLearner {
 		}
 		double grad2 = b.squareOfNorm();
 		System.out.println("|grad L|=" + Math.sqrt(grad2));
+	    }
+	}
+
+	//----
+	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2) {
+	    final double eps = 1e-8;
+	    //final double eps = 1e-3;
+
+	    System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
+
+	    if (trunc.theta != 0) throw new IllegalArgumentException("Presently, no kind of truncation or priors is supported in Adaptive SD");
+
+	    int d =  suite.getDic().getDimension(); // feature count
+	    
+	    // 0. Give the safe eta estaimate
+	    double sumX2 = 0;
+	    for(int i=i1; i<i2; i++) {
+		sumX2 += xvec.elementAt(i).normSquare();
+	    }
+
+	    double safeEta = (i2-i1)/sumX2;
+
+	    if (Suite.verbosity>0) System.out.println("SD on " + (i2-i1) + " vectors; universal safe eta=" + safeEta);
+
+	    boolean first = true;
+	    double prevLogLik = 0;
+	    int t = 0;
+	    double sumEta = 0;
+
+	    while(true) {
+
+		// 1. compute probability predictions, and log-likelyhood
+		double [][] zz = new double[i2-i1][];
+		double logLik = logLikelihood(xvec,i1,i2,zz);
+		int n=0;
+		for(double[] z:zz) { if (z!=null) n++; }
+		if (n==0) return;
+
+		// 2. Check termination criterion
+		double delta = first? 0:  logLik - prevLogLik;
+		if (Suite.verbosity>0) {
+		    System.out.print("[SD] t=" + t+", sumEta=" + sumEta + ", L=" + logLik);
+		    if (!first) {
+			System.out.print(" (delta L=" + delta + ")");
+			if (delta<0)  System.out.print(" [NEGATIVE delta L?]");
+		    }
+		    System.out.println();
+		}
+
+		if (!first) {
+		    // Converged (within eps)?
+		    if (delta < eps) return;
+		}
+
+		first = false;
+		prevLogLik = logLik;
+
+		// 2. Compute grad L - which is also our increment vector
+		BetaMatrix a = new BetaMatrix(d);
+
+		for(int i=i1; i<i2; i++) {
+		    double [] z = zz[i-i1];
+		    if (z==null) continue;
+		    DataPoint x = xvec.elementAt(i);
+		    for(int h=0; h<x.features.length; h++) {
+			int j = x.features[h];	
+			a.addDenseRow(j, z, x.values[h]/n);
+		    }
+		}
+
+		// 3. Adaptive safe Eta
+		/* eta = n ||A||^2 / sum_i { max_j { (alpha_j * x_i)^2 }}
+		 */
+		double sumA2 = a.squareOfNorm();
+		double sumQ2 = 0;
+		for(int i=i1; i<i2; i++) {
+		    DataPoint x = xvec.elementAt(i);
+		    double [] z = zz[i-i1];
+		    if (z==null) continue;
+		    double[] dot = x.dotProducts(a, dis);
+		    double mp = 0;
+		    for(double q: dot) {
+			if (Math.abs(q)>mp) mp = Math.abs(q);
+		    }
+		    sumQ2 += mp*mp;
+		}
+		double eta = n * sumA2 / sumQ2;
+
+		//double eta0=eta;
+		//eta=safeEta;
+
+		if (Suite.verbosity>0) {
+		    System.out.println("[SD] |grad L|=" + Math.sqrt(sumQ2) +", eta := " + eta);	
+		}
+		a.multiplyBy(eta);
+		w.add(a);
+		t++;
+		sumEta+=eta;
+
+
+		// "bonus" steps - try to keep going in the same direction,
+		// faster and faster, while log-lik keeps increasing
+
+		double savedLogLik = logLikelihood(xvec,i1,i2);		
+		while(true) {
+		    BetaMatrix savedW = new BetaMatrix(w);
+		    double f = 2;
+		    eta *= f ;
+		    a.multiplyBy(f);
+		    w.add(a);
+		    double newLogLik =  logLikelihood(xvec,i1,i2);
+		    double bonusDelta = newLogLik - savedLogLik;
+		    if (bonusDelta>eps) {
+			savedLogLik = newLogLik;
+			t++;
+			sumEta+=eta;
+			if (Suite.verbosity>0) {
+			    System.out.println("[SD] [BONUS OK] eta=" + eta + ", L=" + newLogLik);
+			}
+		    } else {
+			// a jump too far; undo!
+			w.setMatrixFrom(savedW);
+			if (Suite.verbosity>0) {
+			    System.out.println("[SD] [BONUS UNDONE] eta=" + eta + ", L=" + newLogLik);
+			}
+
+			break;
+		    }
+		}
 	    }
 	}
 
@@ -347,8 +475,6 @@ public class TruncatedGradient extends PLRMLearner {
 
 	return new TruncatedGradientLearnerBlock(dis, (TruncatedGradientLearnerBlock) model);
     }
-
-
 
 }
 
