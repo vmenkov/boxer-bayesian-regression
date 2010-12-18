@@ -27,6 +27,8 @@ public class BetaMatrix extends Matrix  {
 	int icla;
 	double value;
 	public Coef(int i, double v) { icla =i; value=v;}
+	/** Copy constructor */
+	public Coef(Coef c) { icla =c.icla; value=c.value;}
 	public void setValue(Coef c) {
 	    value = c.value;
 	}
@@ -61,8 +63,11 @@ public class BetaMatrix extends Matrix  {
 	for( Vector<Coef> v:  b.matrix) {
 	    Vector<Coef> w= null;
 	    if (v!=null)  {
-		if (oldDef == newDef) w=new Vector<Coef>(v);
-		else {
+		if (oldDef == newDef) {
+		    // deep copy!
+		    w = new Vector<Coef>(v.size());
+		    for(Coef c: v) w.add(new Coef(c));
+		} else {
 		    // have to reorder properly in all situations
 		    double z[] = coefVector2denseArray(v);
 		    if (z.length < m+1) z = Arrays.copyOf(z, m+1);
@@ -74,6 +79,17 @@ public class BetaMatrix extends Matrix  {
 	    }
 	    matrix.add(w);
 	}
+    }
+
+    /** Copy constructor. Performs deep copy.
+     */
+    public BetaMatrix(BetaMatrix b) {
+	this( b, 0,0);
+    }
+
+    /** Very shallow copy */
+    void setMatrixFrom(BetaMatrix b) {
+	matrix = b.matrix;
     }
 
     /** Verifying that we indeed have a fallback discrimination's
@@ -245,6 +261,51 @@ public class BetaMatrix extends Matrix  {
 	return matrix;
     }
 
+    void multiplyBy(double q) {
+	for(Vector<Coef> v: matrix) {
+	    if (v!=null) {
+		for(Coef c: v) c.value *= q;
+	    }
+	}
+    }
+
+    /** this += b. The matrix b is not affected.
+     */
+    void add(BetaMatrix b) {
+	if ( matrix.size() < b.matrix.size() ) matrix.setSize(b.matrix.size());
+	for(int j=0; j<matrix.size(); j++) {
+
+	    if (matrix.elementAt(j)==null) {
+		// simply copy the row from b
+		if (b.matrix.elementAt(j)!=null) {
+		    matrix.set(j, new Vector<Coef>( b.matrix.elementAt(j)));
+		}
+	    } else if (b.matrix.elementAt(j)!=null) {
+		// add the stuff from b
+		int ix=0;
+		Vector<Coef> sum = new Vector<Coef>();
+		Vector<Coef> x = matrix.elementAt(j);
+		
+		for(Coef ey:  b.matrix.elementAt(j)) {
+		    while(ix < x.size() && x.elementAt(ix).icla < ey.icla) {
+			sum.add(  x.elementAt( ix++));
+		    }
+		    if (ix < x.size() && x.elementAt(ix).icla == ey.icla) {
+			Coef ex = x.elementAt(ix++);
+			ex.value += ey.value;
+			sum.add(ex);
+		    } else {
+			sum.add( new Coef(ey));
+		    }
+		}
+		while(ix < x.size()) {
+		    sum.add(  x.elementAt( ix++));
+		}		 
+		matrix.set( j, sum);
+	    }
+	}
+    }
+
     /** Adds all values from a dense vector (array) to a given row of this 
 	matrix. As a result, that row of the matrix will in fact become
 	dense itself (alhough will still be represented as a Vector<Coef>)
@@ -343,8 +404,6 @@ public class BetaMatrix extends Matrix  {
 		}
 	    }
 	}
-	//System.out.println("... done");
-	
     }
 
 

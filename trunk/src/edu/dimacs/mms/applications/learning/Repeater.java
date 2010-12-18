@@ -53,7 +53,8 @@ import edu.dimacs.mms.borj.*;
 public class Repeater {
 
     
-    static boolean emulateSD = false;
+    static boolean emulateSD = false, adaptiveSD=false;
+    
 
     static void usage() {
 	usage(null);
@@ -122,7 +123,9 @@ public class Repeater {
 
 
 	emulateSD = ht.getOption("sd", false);
+	adaptiveSD = ht.getOption("adaptive", false);
 
+	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
 
 	int M =ht.getOption("M", 1);	
 	int r =ht.getOption("r", 1000);
@@ -139,7 +142,7 @@ public class Repeater {
 	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). "+
 			   (cyclic? "Cyclic mode" :
 			    "Random mode with "+nRandom+"repeats")+
-			   ", M="+M +", sd="+emulateSD+", out="+out);
+			   ", M="+M +", sd="+emulateSD+", adaptiveSD="+adaptiveSD+", out="+out);
 	System.out.println("[VERSION] " + Version.version);
 
 	Suite.verbosity = ht.getOption("verbosity", 1);
@@ -276,7 +279,7 @@ public class Repeater {
 				       int M, int r, long seed )
 	throws java.io.IOException,  org.xml.sax.SAXException, BoxerXMLException {
 
-	if (emulateSD && M%train.size() != 0) {
+	if (emulateSD && !adaptiveSD && M%train.size() != 0) {
 		throw new IllegalArgumentException("In the 'emulate SD' mode the checkpoint distance M must be a multiple of the data set size ("+train.size()+")");
 	}
 
@@ -357,10 +360,14 @@ public class Repeater {
 
 		if (!(algo instanceof TruncatedGradient)) throw new  IllegalArgumentException("In the 'emulate SD' mode only TG is supported");
 
-		if (i1 % train.size() != 0 ||i2 % train.size() != 0) throw new AssertionError("emulateSD: i1, i2 not multiple of the train set size");
-		int repeat = (i2-i1) / train.size();
-		for(int j=0; j<repeat; j++) {
-		    algo.absorbExamplesSD(train, 0, train.size());
+		if (adaptiveSD) {
+		   algo.runAdaptiveSD(train, 0, train.size());
+		} else {
+		    if (i1 % train.size() != 0 ||i2 % train.size() != 0) throw new AssertionError("emulateSD: i1, i2 not multiple of the train set size");
+		    int repeat = (i2-i1) / train.size();
+		    for(int j=0; j<repeat; j++) {
+			algo.absorbExamplesSD(train, 0, train.size());
+		    }
 		}
 	    } else {
 		for(int i=i1; i<i2; i++) {
