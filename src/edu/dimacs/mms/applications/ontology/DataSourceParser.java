@@ -34,8 +34,30 @@ abstract class DataSourceParser {
 	return s.replaceAll("[@\\s\\^]", "_");
     }
 
-    static  DataSourceParser parseFile(String fname, FeatureDictionary dic) throws BoxerXMLException {
+    static  DataSourceParser parseFile(String fname)
+	throws BoxerXMLException {
+	return parseFile( fname,  null, null);
+    } 
+
+    static  DataSourceParser parseFile(String fname, FeatureDictionary dic)
+	throws BoxerXMLException {
+	return parseFile( fname,  dic, null);
+    }
+
+    static  DataSourceParser parseFile(String fname, Suite reuseSuite)
+	throws BoxerXMLException {
+	return parseFile( fname,  reuseSuite.getDic(), reuseSuite);
+    }
+
+
+    /**
+       @param reuseSuite - use this suite (expecting to find all
+       classes already defined in it) instead of creating a new one
+     */
+    static private DataSourceParser parseFile(String fname, FeatureDictionary dic,
+				       Suite reuseSuite) throws BoxerXMLException {
 	DataSourceParser p = null;
+
 	if (fname.toLowerCase().endsWith(".csv")) {
 	    p = new CSVDataSourceParser();
 	} else if (fname.toLowerCase().endsWith(".txt")) {
@@ -43,7 +65,16 @@ abstract class DataSourceParser {
 	} else {
 	    throw new IllegalArgumentException("Don't know what data file format this file name refers to: " + fname);
 	}
-	p.init(fname, dic);
+
+	if (reuseSuite==null) {
+	    p.suite =  new Suite(baseName(fname));
+	    if (dic != null) p.suite.setDic(dic);
+	} else {
+	    // dic is ignored, since there's one in reuseSuite already
+	    p.suite = reuseSuite;
+	}
+
+	p.init(fname, reuseSuite!=null);
 	return p;
     }
     
@@ -52,18 +83,12 @@ abstract class DataSourceParser {
     */
     static String baseName(String fname) {
 	File f = new File(fname);
-	return f.getName().replaceAll("\\..*", "");
+	return f.getName().replaceAll("\\.[a-zA-Z]+$", "");
     }
 
 
-    abstract void init(String fname, FeatureDictionary dic)  throws BoxerXMLException;
-
-    /** For use by derived classes only. It is called there from the
-     * method of the same name. */
-    void init0(String fname, FeatureDictionary dic)  {//throws BoxerXMLException
-	suite = new Suite(baseName(fname));
-	if (dic != null) suite.setDic(dic);
-    }
+    abstract void init(String fname, boolean reuseSuiteOn)  throws BoxerXMLException;
+ 
 
     private class BagOfWords extends HashMap<String, Integer> {
 	BagOfWords() { super(); }
@@ -127,5 +152,28 @@ abstract class DataSourceParser {
 
     }
 
+    /** Replaces the suite stored here with an equivalent suite that
+      was obtained from another source (e,g., a pre-computed learner
+      complex), and is essentially equivalent. This method is
+      primarily used when we read a pre-computed learner (instead of
+      computing one "in-house"), and want to "merge" it with the
+      data source description built from the CSV file.
+     */
+    /*
+    void replaceSuiteWithEquivalent(Suite other) {
+	if (suite.disCnt() != other.disCnt()) throw new IllegalArgumentException("Suite sizes do not match");
+	for(int i=0; i<suite.disCnt(); i++) {
+	    if (!suite.getDisc(i).equivalent(other.getDisc(i))) {
+		 throw new IllegalArgumentException("Discrimination " +
+						    suite.getDisc(i) +
+						    " different from " + 
+						    other.getDisc(i));
+	    }
+	}
+	int did = suite.getDid( dis);
+	suite = other;
+	dis = other.getDisc(did);
+    }
+    */
     
 }

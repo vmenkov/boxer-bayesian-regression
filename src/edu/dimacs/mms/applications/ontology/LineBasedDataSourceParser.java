@@ -23,8 +23,8 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 	Suite representing the ontology (column names) and the vector
 	of DataPoint object representing the content of the cells.
      */
-    void init(String fname, FeatureDictionary dic) throws BoxerXMLException {
-	super.init0(fname, dic);
+    void init(String fname,boolean reuseSuiteOn ) throws BoxerXMLException {
+
 	try {
 	    LineNumberReader r = new LineNumberReader( new FileReader(fname));
 	    String s;
@@ -46,11 +46,26 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 	    // interpret column names as class names
 	    String disName = baseName(fname);
 	    Logging.info("Parser: creating discrimination with disName=" + disName);
-	    dis = suite.addDiscrimination(disName);
-	    for(int i=0; i<hv.size(); i++) {
-		if (inputOptions.isExcludableCol(i+1)) continue;
-		Logging.info("Parser: for col="+i+", add class named " + hv.elementAt(i));	
-		dis.addClass( hv.elementAt(i));
+
+	    if (reuseSuiteOn) {
+		dis = suite.getDisc(disName);
+		if (dis == null) {
+		    throw new IllegalArgumentException("No discrimination named " + disName + " was found in the pre-read model file");
+		}
+		for(int i=0; i<hv.size(); i++) {
+		    if (inputOptions.isExcludableCol(i+1)) continue;
+		    //Logging.info("Parser: for col="+i+", add class named " + hv.elementAt(i));	
+		    if (dis.getCla( hv.elementAt(i))==null) {
+			throw new IllegalArgumentException("Data mismatch: class " +  hv.elementAt(i) + " found in the data source file " +fname+", but not found in the pre-reas suite!");
+		    }
+		}
+	    } else {
+		dis = suite.addDiscrimination(disName);
+		for(int i=0; i<hv.size(); i++) {
+		    if (inputOptions.isExcludableCol(i+1)) continue;
+		    //Logging.info("Parser: for col="+i+", add class named " + hv.elementAt(i));	
+		    dis.addClass( hv.elementAt(i));
+		}
 	    }
 
 	    NumberFormat fmt = new DecimalFormat("000000");
@@ -68,7 +83,7 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 		for(int i=0; i<v.size(); i++) {
 		    if (inputOptions.isExcludableCol(i+1)) continue;
 		    DataPoint p = mkDataPoint(v.elementAt(i), rowName,
-					      hv.elementAt(i), dic);
+					      hv.elementAt(i), suite.getDic());
 		    data.add(p);
 		}
 	

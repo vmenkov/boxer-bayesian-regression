@@ -2,8 +2,6 @@ package edu.dimacs.mms.borj;
 
 import java.util.*;
 
-//import boxer.*;
-
 /** An auxiliary class used in command line parsing in borj.Driver */
 public class CMD {
     /** All command-line commands acceptable by the Driver */
@@ -86,7 +84,7 @@ public class CMD {
 	cmd =q[0];
 	f = q[1];
 	f2 = (q.length >= 3) ? q[2] : null;
-	// verifying that no unused args left 
+	// verifying that no unused args are left 
 	if (q.length > (is(twoArgCmd)? 3 : 2)) {
 	    usage("No command other that '"+twoArgCmd+"' can have two arguments");
 	} 
@@ -109,6 +107,10 @@ public class CMD {
 		   (s.endsWith(":") || argv[h].startsWith(":"))) {
 		s += argv[h++];
 	    }
+	    // a rare case of leading/trailing spaces in args - may appear when
+	    // backslashes are used liberally
+	    s = s.trim();
+	    if (s.length()==0) continue;
 	    v.addElement( new CMD(s));
 	}
 	return v.toArray(new CMD[0]);
