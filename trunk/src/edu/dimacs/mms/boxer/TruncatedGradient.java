@@ -210,7 +210,10 @@ public class TruncatedGradient extends PLRMLearner {
 	    }
 	}
 
-	//----
+	/** Runs Steepest Descent (a batch method) with adaptive
+	    learning rate until it converges.
+	    @param xvec The training set
+	 */
 	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2) {
 	    final double eps = 1e-8;
 	    //final double eps = 1e-3;

@@ -1,6 +1,7 @@
 package edu.dimacs.mms.boxer;
 
-import java.util.Vector;
+import java.util.*;
+
 // for XML generation
 import org.w3c.dom.*;
 
@@ -885,7 +886,20 @@ public class Discrimination {
 	    getCla(defName)==getDefaultCla() &&
 	    getLeftoversCla() == null; // leftovers not allowed, as per DL (2009-05-12 msg)
     }
-    
+
+    /** Checks if the 2 discriminations have the same class list (name-wise).
+	// FIXME: Check on any other properties?
+     */
+    public boolean equivalent(Discrimination other) {
+	if (classes == null && other.classes == null) return true;
+	if (classes == null || other.classes == null) return false;
+	if (classes.size() != other.classes.size()) return false;
+	Iterator<Cla> o = other.classes.iterator();
+	for(Cla c: classes) {
+	    if (!o.next().name.equals(c.name)) return false;
+	} 
+	return true;
+    }
 
 }
 

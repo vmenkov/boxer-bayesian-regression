@@ -343,6 +343,9 @@ public class DataPoint implements Measurable  {
 		did = suite.getDid(c);
 	    } catch(Exception e) { 
 		Logging.warning("No record found for class " + c + " in the suite");
+
+		e.printStackTrace(System.err);
+
 		continue; //deleted discr, probably
 	    }
 	    if (unique[did] == null) unique[did] = c;
