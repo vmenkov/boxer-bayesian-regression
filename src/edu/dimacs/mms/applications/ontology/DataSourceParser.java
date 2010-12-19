@@ -110,7 +110,7 @@ abstract class DataSourceParser {
 
     DataPoint mkDataPoint(String cell, String rowName, String colName, FeatureDictionary dic) throws BoxerXMLException  {
 	// condense white space, remove the special char
-	cell = cell.replaceAll("[\\s\\^]+", " ");
+	cell = cell.trim().replaceAll("[\\s\\^]+", " ");
 
 	BagOfWords bag = new BagOfWords();
 
@@ -136,6 +136,8 @@ abstract class DataSourceParser {
 		}
 	    }
 	}
+
+	if (bag.size()==0) bag.add("@@empty");
 
 	try {
 	    DataPoint p=
