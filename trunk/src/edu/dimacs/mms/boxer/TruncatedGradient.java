@@ -302,7 +302,7 @@ public class TruncatedGradient extends PLRMLearner {
 		//eta=safeEta;
 
 		if (Suite.verbosity>0) {
-		    System.out.println("[SD] |grad L|=" + Math.sqrt(sumQ2) +", eta := " + eta);	
+		    System.out.println("[SD] |grad L|=" + Math.sqrt(sumA2) +", eta := " + eta);	
 		}
 		a.multiplyBy(eta);
 		w.add(a);
