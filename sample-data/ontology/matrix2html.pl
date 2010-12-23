@@ -10,7 +10,7 @@
 
 use strict;
 
-require 'abbreviate_sub.pl';
+#require 'abbreviate_sub.pl';
 
 #-- flags controllig how the diagonal blocks of the confusion matrix
 #-- are identified
@@ -19,7 +19,7 @@ if ($::diag eq 'off') {
     $diagPos=$diagNames=0;
 } elsif  ($::diag eq 'pos') {
     $diagPos=1; $diagNames=0;
-} elsif  ($::diag eq 'names') {
+} elsif  ($::diag eq 'names'  || !defined $::diag) {
     $diagPos=0; $diagNames=1;
 } else {
     die "Illegal option value: -diag=$::diag. Legal values are off|pos|names\n";
@@ -215,10 +215,16 @@ sub analyzeName($) {
     # FooList_Foo[Something] --> FooSomething
     if ($base =~ /^(.*)List_(.*)$/) {
 	my ($pref,  $rest) = ($1,$2);
-	if (substr($rest,0, length($base)) eq $base) {
+	if (substr($rest,0, length($pref)) eq $pref) {
 	    $base = $rest;
 	}
     }
     return ($base, $suff);
     
+}
+
+sub abbreviate($) {
+    my ($name)=@_;
+    $name =~ s/([a-z_])([A-Z])/$1 $2/g;
+    return $name;
 }
