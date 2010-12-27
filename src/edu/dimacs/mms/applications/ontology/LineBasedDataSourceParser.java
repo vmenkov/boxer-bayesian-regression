@@ -84,7 +84,9 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 		    if (inputOptions.isExcludableCol(i+1)) continue;
 		    DataPoint p = mkDataPoint(v.elementAt(i), rowName,
 					      hv.elementAt(i), suite.getDic());
-		    data.add(p);
+		    if (p!=null) {
+			data.add(p);
+		    }
 		}
 	
 	    }

@@ -10,24 +10,193 @@ import edu.dimacs.mms.borj.CMD;
 
 /** The main class for the Bayesian Ontology Aligner.
 
+    <h2>Algorithms</h2> 
+    
+    <P>
+    For an overview of the algorithms available
+    for ontology matching, please see the following PDF document: <a
+    href="../../../../../../../pdf/boa-01.pdf">On choosing a suitable
+    score function for the Bayesian Ontology Alignment tool</a>.
+
+    <P>In a nutshell, the usual plan of operations for this tool is
+    the following: 
+    
+    <ol> 
+
+    <li>Read in a data file describing a <b>data source</b> (DS1), i.e.,
+    basically, a table of data where each row (record) corresponds to
+    something like a structured document, and each column, to a
+    particular field of the document (e.g., "Author", "Dateline",
+    "Subject", etc.). 
+
+    <li><b>"Tokenization"</b>: Convert each cell of the table (the data
+    source) into a vector in a feature space. Features may correspond
+    to words, characters, or groups of characters (n-grams).
+
+    <li><b>"Training"</b>: Build some kind of Bayesian model, i.e. a
+    function which maps an arbitrary vector from the feature space to
+    a vector of "scores": real numbers in the [0,1] range, summing to 1.0,
+    describing the putative probabilities of assigning that vector to
+    various classes introduced above (i.e., columns of the data source).
+
+    <li><b>"Alignment"</b>: Read in another data file, describing
+    another data source (DS2). Tokenize its cells' contents in a
+    similar way as that applied to the first data source. Apply the
+    stored model to each cell of the new data source. For every pair
+    of columns (<em>C<sub>i</sub></em> from DS1,
+    <em>C'<sub>j</sub></em> from DS2) compute the confusion matrix
+    coefficient <em>f_<sub>ij</sub></em> by combining, in some way,
+    scores for the cells of <em>C'<sub>j</sub></em>.
+    </ol>
+
+    <p>The tokenization process and the training process are both
+    controlled by command-line arguments.
+
+    <p>Optionally, you can <b>save</b> the model to a file for later
+    re-use, and on a later BOA run read it back, instead of carrying
+    out the training process again.    
+
+    <h2>Usage</h2>
 
    Usage:
+   <ol>
+
+   <li>To build a model based on one data source and then apply it to
+   another data source (or, in a sequence, to several data sources):
+
+<pre> java [options] edu.dimacs.mms.applications.ontology.Driver train:dataSource1.csv test:dataSource2.csv [test:dataSource3.csv ...]
+</pre>
+
+<li>To load a pre-computed model and then apply it to
+   another data source (or, in a sequence, to several data sources):
+
 <pre>
-   java [options] edu.dimacs.mms.applications.ontology.Driver  dataFile1 dataFile2
-
-   java [options] edu.dimacs.mms.applications.ontology.Driver  train:dataSource1.csv  test:dataSource2.csv  
-
-   java [options] edu.dimacs.mms.applications.ontology.Driver  train:dataSource1.csv:precomputedLearner.xml  test:dataSource2.csv  
-
-
+   java [options] edu.dimacs.mms.applications.ontology.Driver  train:dataSource1.csv:precomputedLearner.xml  test:dataSource2.csv  [test:dataSource3.csv ...]
 </pre>
-   Options:
+
+<li>To build a model based on one data source and then save the model to a file:
+<pre> java [options] edu.dimacs.mms.applications.ontology.Driver train:dataSource1.csv write:precomputedLearner.xml  
 </pre>
+</ol>
+
+<p>A particularly recommended set of options for training is 
+<pre>
+   -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8
+</pre>. This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although rather slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set.
+
+   <h3>File formats</h3>
+
+   <p> The names of the data source files supplied to the <tt>train</tt> and
+   <tt>test</tt> commands must have the extension ",csv" or ".txt". 
+
+   <p>If   the file name has the ".csv" extension, it must be in the
+   comma-separated-values format with double quotes, i.e. each line must be in the form.
+<pre>
+"val1","val2",...,"val_N"
+</pre>
+   A data file in such format can be exported for example from <a href="https://wits.nctc.gov/FederalDiscoverWITS/index.do?t=Records&Rcv=Incident&Nf=p_IncidentDate|GTEQ+20060301||p_IncidentDate|LTEQ+20060331&N=0">this page</a> at the WITS site, and choosing the option for sacing as CSV from that page.
+
+   <P>If the file name has the ".txt" extension, the values in each line must be separated by the '|' character, and no double-quotes should be used:
+<pre>
+val1|val2|...|val_N
+</pre>
+
+   <p>The learner and model XML files are in the usual 
+   <a   href="../../../../../../xml.html">BOXER XML format.</a>.
+
+   <h3>Command semantics</h3>
+
+   <ul> 
+
+   <li>train:<em>datasource_file</em> : BOA will build a model
+   describing the fields (i.e. columns) of the data source described
+   in the data file.
+
+   <li>test:<em>datasource_file</em> : BOA will apply the model it
+   currently has to the data source described in the file, and will
+   output the confusion matrix describing the alignment of the fields 
+   of the new data source's ontology against those of the old data source.
+
+   <li>read:<em>datasource_file</em>:<em>model_file</em> : BOA
+   will read the data source file and then, instead of learning on
+   that data source, will read the pre-computed model. This command is
+   not compatible with the <tt>train</tt> command.
+
+   <li>write:<em>model_file</em> : BOA will save its current model to
+   an XML file, so that it can be read some time later with a
+   <tt>read</tt> command.
+
+   </ul>
+
+   <p>On every BOA run, the command line must start with a
+   <tt>read</tt> or <tt>train</tt> command, so that BOA will either
+   compute a model, or read a pre-computed model saved on an earlier
+   run. Any number of <tt>train</tt> commands may follow, to apply
+   this model to the specified other data source(s). One can also save
+   the model with the <tt>write</tt> command; this will allow you to
+   save time on later runs, if you expect to apply the same model to
+   more data sources in the future.
+
+   <h3>Options</h3>
+   The options available with the BOA tool can be divided into several groups.
+   
+   <p>
+   (a) <b>Data source parsing options</b> control the processing of input files. They, in turn, can be divded into subgroups.
+
+   <p> <b>Interpretation of columns:</b>
+   <ul>
+   <li>-Dinput.rid=0 : A 1-based number of the column that should be understood as containing the record each for each record. E.g., use -Dinput.rid=1 if you want the 1st column of the data source file to be interpreted as containing the record ID. If the option is omitted, or is 0, then IDs will be automatically generated. This option does not affect the ontology alignment results; record IDs are used for information purposes only.
+   
+   <li>-Dinput.exclude = col1[:col2...] : A colon-separated list of 1-based numbers of the column that you want to <em>exclude</em> from parsing and alignment. By default, no column is excluded.
+   </ul>
+
+   <p> <b>Tokenization process</b> - these options control how the
+   contents of each cell of the data source (i.e., a text string) are
+   converted to a data point, i.e. a feature vector. A feature vector
+   for a given cell may contain token of anyt of the three types:
+   <b>word</b>-based, <b>character-sequence</b>-based, and
+   <b>special</b>. A vector generated for a cell may contain no
+   feature at all (a zero vector); this must be distingished from 
+   not generating a vector for that cell at all.
+
+   <ul>
+
+   <li>-Dinput.gram=2 : An integer indicating the maximum length of
+   "<em>n</em>-grms" (character sequences) used as features. E.g.,
+   -Dinput.gram=0 means that no character sequences are used;
+   -Dinput.gram=1 means that features for individual characters are used;
+   -Dinput.gram=2 means that, BOA also creates  features for 2-grams; etc.
+   
+   <li>-Dinput.empty.skip=false|true If true, empty cells are ignored
+   (no vectors are created for them). The default is false.
+
+   <li>-DemptySpecial=true|false If true, a special feature is used to
+   mark empty cells. The default is true.
+
+ </ul>
+
+   <p> 
+   (b) <b>Learning options</b> tell BOA how to construct a model on the set of data points generated from the data source.
+<ul>
+<li>
+     -Dlearner=learner.xml  : Learner description file, 
+<li>
+     -Dlearn.rep=1 : How many times repeat training. This option is ignored if adaptive SD is used.
+<li>
+     -Dlearn.sd=true|false : If true, use Steepest Descent instead of Stochastic Gradient Descent (which is simply Truncated Gradient w/o truncation). You can only use this option if the learner file describes
+<li>
+     -Dlearn.adaptive=true|false : Only can be used in combination with learn.sd=true. If learn.adaptive=true, BOA ignores <tt>learn.rep</tt>, and tried to build a log-likelihood-optimizing model by running {@link edu.dimacs.mms.boxer.Learner#runAdaptiveSD Steepest Descent with adaptive learning rate (ASD)} until convergence, as determined by learn.eps. The learner file in this situation should specify "TruncatedGradient with theta=0", i.e. Steepest Descent, as adpative learning is currently only supported for optimizing non-penalized log-likelihood. No priors should be specified.
+<li>
+     -Dlearn.priors=priors.xml : An optional priors file (modifies the penalty term for the function being optimized)
+<li>
+     -Dlearn.eps=1e-8 : The convergence criterion for adaptive SD (in terms of log-likelihood).
+</ul>
+
+   <p>
+   (c) Miscellaneous options
+<pre>
      -Dverbosity=0 : verbosity level (0 or higher)
-
-     -Dlearner=learner.xml  : learner description
-     -Dlearn.rep=1 : how many times repeat training
-
+</pre>
  */
 public class Driver {
     
@@ -52,20 +221,31 @@ public class Driver {
 
 	ParseConfig ht = new ParseConfig();
 	Suite.verbosity = ht.getOption("verbosity", 0);
-	emulateSD = ht.getOption("sd", false);
-	adaptiveSD = ht.getOption("adaptive", false);
+	emulateSD = ht.getOption("learn.sd", false);
+	adaptiveSD = ht.getOption("learn.adaptive", false);
+	double eps = ht.getOptionDouble("learn.eps", 1e-8);
 
 	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
 
 	// configure input data parsing options
 	DataSourceParser.inputOptions.init(ht);
+	if (DataSourceParser.inputOptions.emptySkip && 
+	    DataSourceParser.inputOptions.emptySpecial) {
+	    usage("Cannot combine emptySkip=true and emptySpecial=true!");
+	}
 
 	// How many times repeat training (unless a more sophisticated
 	// termination criterion is used)
 	int learnRep = ht.getOption( "learn.rep" , 1);
 	if (learnRep < 1) usage();
 
-	System.out.println("verbosity="+Suite.verbosity+", SD=" + emulateSD + " adaptiveSD"+adaptiveSD);
+	System.out.println("This is Ontology Matcher, using BOXER Toolkit (version " + Version.version+ ")");
+	System.out.println("Verbosity="+Suite.verbosity);
+	System.out.println("Input options: " + DataSourceParser.inputOptions.describe());
+	System.out.print("Learner options: SD=" + emulateSD + " adaptiveSD="+adaptiveSD);
+	if (adaptiveSD) System.out.print(" with eps=" + eps);
+
+	System.out.println();
 
 	// Stage 1: either read the old data source (and plan for
 	// future training), or read both the data source and the
@@ -141,7 +321,7 @@ public class Driver {
 
 
 	// Any "read-priors" command?
-	String priorsFile = ht.getOption("priors", null);
+	String priorsFile = ht.getOption("learn.priors", null);
 	if (priorsFile!=null) {
 	    System.out.println("Reading priors from file: "+priorsFile);
 	    Priors p = Priors.readPriorsFileMultiformat(new File(priorsFile), suite);
@@ -170,7 +350,7 @@ public class Driver {
 	    
 	    // training the learner on the cells from the first data source
 	    if (adaptiveSD) {
-		algo.runAdaptiveSD(p1.data, 0, p1.data.size());
+		algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps);
 	    } else {	
 		for(int k=0; k<learnRep; k++) {		
 		    if (emulateSD) {
@@ -183,14 +363,12 @@ public class Driver {
 	    alreadyTrained = true;	   
 	}
 
-	// Compute square roots of self-probs (for normalization)
-	double[] sqrtSP =  sqrtSelfProb(p1);
-
+	// Compute square roots of self-probs (for normalization in cosine formula)
+	Aux1 sp =  sqrtSelfProb(p1);
 
 	if (q!=null && q.is(CMD.WRITE)) {
-	    // save the entire model
-	    String out=".";
-	    String path = out + "/out-giant-model.xml"; 
+	    // save the entire model to the specified file
+	    String path = q.f;
 	    System.out.println("Saving the model to: " + path);	    
 	    suite.serializeLearnerComplex(path);
 	    // Save just the W matrix of the learner
@@ -254,29 +432,42 @@ public class Driver {
 	    reportConfusionMatrix(p1, p2,sumProb, false,"Arithmetic  mean, " + in2base);
 	    reportConfusionMatrix(p1, p2,sumLogProb, true,"Geometric mean, "+ in2base);
 	    
-	    // normalized scores
+	    // normalized scores (the cosine measure)
+	    int maxCnt=0;
+	    for(int c: sp.count) { maxCnt = (c>maxCnt)? c: maxCnt;}
+
 	    for(int i=0; i<M2; i++) {
 		if (count[i] > 0) {
 		    for(int j=0; j<M1; j++) {
-			sumProb[i][j] /= sqrtSP[j];
+			double f = sp.sqrtSelfProb[j] *
+			    Math.sqrt( sp.count[j]/(double)maxCnt);
+			sumProb[i][j] *= (f==0 ? 0 : 1/f);
 		    }
 		}
 	    }
-	    reportConfusionMatrix(p1, p2,sumProb, false,"Arithmetic mean normalized, "+ in2base);
+	    reportConfusionMatrix(p1, p2,sumProb, false,"Cosine similarity, "+ in2base);
 
 	    q = cm.next();
+	}
+    }
+
+    /** Result type for a function below */
+    static private class Aux1 {
+	double[] sqrtSelfProb;
+	int[] count;
+	Aux1(int M1) {
+	    sqrtSelfProb = new double[M1];
+	    count = new int[M1];
 	}
     }
 
     /** Probabilities of the old data source's columns'
 	self-assignment (under the simple arithmetic-mean model).
      */
-    static double[] sqrtSelfProb(DataSourceParser p1) {
+    static  Aux1 sqrtSelfProb(DataSourceParser p1) {
 	int M1 = p1.dis.claCount();
 
-	double[] sumProb = new double[M1];
-	int[] count = new int[M1];
-
+	Aux1 r = new Aux1(M1);
 	Learner algo= p1.suite.getAllLearners().elementAt(0);
 	int did = p1.suite.getDid( p1.dis);
 
@@ -285,15 +476,16 @@ public class Driver {
 	    // overcoming underflow...
 	    double[] logProb = algo.applyModelLog(p)[did];
 	    double[] prob = expProb(logProb);
-	    sumProb[newCid] += prob[newCid];
-	    count[newCid] ++;
+	    r.sqrtSelfProb[newCid] += prob[newCid];
+	    r.count[newCid] ++;
 	}
 
 	for(int i=0; i<M1; i++) {
-	    sumProb[i] = Math.sqrt( sumProb[i]/count[i]);
+	    r.sqrtSelfProb[i] = (r.count[i]==0)? 0 :
+		Math.sqrt( r.sqrtSelfProb[i]/r.count[i]);
 	}
 
-	return sumProb;
+	return r;
     }
 
 
@@ -339,7 +531,7 @@ public class Driver {
     }
 
 
-    public  static class ScoreWrapper implements Comparable<ScoreWrapper> {
+    private static class ScoreWrapper implements Comparable<ScoreWrapper> {
 	int i; double value; 
 	public ScoreWrapper( int f, double v) { i=f; value=v;} 
 	/** Used for sorting */
@@ -381,3 +573,28 @@ public class Driver {
 
 
 }
+
+
+/*
+Copyright 2010, Rutgers University, New Brunswick, NJ.
+
+All Rights Reserved
+
+Permission to use, copy, and modify this software and its
+documentation for any purpose other than its incorporation into a
+commercial product is hereby granted without fee, provided that the
+above copyright notice appears in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation, and that the names of Rutgers University, DIMACS, and
+the authors not be used in advertising or publicity pertaining to
+distribution of the software without specific, written prior
+permission.
+
+RUTGERS UNIVERSITY, DIMACS, AND THE AUTHORS DISCLAIM ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR ANY PARTICULAR PURPOSE. IN NO EVENT
+SHALL RUTGERS UNIVERSITY, DIMACS, OR THE AUTHORS BE LIABLE FOR ANY
+SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.  */

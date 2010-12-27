@@ -24,10 +24,12 @@ package edu.dimacs.mms.boxer;
     0.8.000 - 2010-07-05. Transitionary version to the new "individual priors". I/O for individual priors has been added, but not the actual arithmetic yet
     0.8.001 - 2010-07-07. The individual priors appear to work, although more testing and documenting is still upcoming
     0.8.002 - 2010-12-07. Rearranged location of some files and directories. More experimental tools
+    0.8.003 - 2010-12-25. An implementation of  Steepest Descent with adaptive-learning-rate added to TG. A new BOXER application, the Bayesian Antology Aligner(BOA), has been added.
 </pre>
  */
 public class Version {
-    public final static String version = "0.8.002";
+    /** The version number of the BOXER library and BOXER applications */
+    public final static String version = "0.8.003";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

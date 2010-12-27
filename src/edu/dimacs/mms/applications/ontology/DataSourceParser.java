@@ -108,6 +108,10 @@ abstract class DataSourceParser {
     }
 
 
+    /** Returns a DataPoint based on the content of a cell. Will
+	return null (if the cell is empty, and the emptySkip flag is
+	on).
+     */
     DataPoint mkDataPoint(String cell, String rowName, String colName, FeatureDictionary dic) throws BoxerXMLException  {
 	// condense white space, remove the special char
 	cell = cell.trim().replaceAll("[\\s\\^]+", " ");
@@ -137,7 +141,10 @@ abstract class DataSourceParser {
 	    }
 	}
 
-	if (bag.size()==0) bag.add("@@empty");
+	if (bag.size()==0) {
+	    if (inputOptions.emptySkip) return null;
+	    else if (inputOptions.emptySpecial) bag.add("@@empty");
+	}
 
 	try {
 	    DataPoint p=

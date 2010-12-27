@@ -1,4 +1,17 @@
-/**  The Bayesian Ontology Aligner.
+/**  The Bayesian Ontology Aligner (BOA). This is a tool that allows
+   to match ("align") the fields of one ontology (the scheme of one
+   data source) with those of another ontology, based on the content
+   of these fields in the data source records.
+
+<h2>Algorithms</h2>
+For an overview of the algorithms available for ontology matching, please
+see the following PDF document: <a href="../../../../../../../pdf/boa-01.pdf">On choosing a suitable score function for the Bayesian Ontology Alignment tool</a>.
+
+<h2>Technical details</h2>
+
+<p>For the information on using this package, including the
+command-line format, please read about its main class, {@link
+edu.dimacs.mms.applications.ontology.Driver}
 
 <p> This package uses both BOXER and (to a minor extent) BORJ. the
 latter is used for such things as command-line parsing.
@@ -7,7 +20,7 @@ latter is used for such things as command-line parsing.
 package edu.dimacs.mms.applications.ontology;
 
 /*
-Copyright 2009, Rutgers University, New Brunswick, NJ.
+Copyright 2010, Rutgers University, New Brunswick, NJ.
 
 All Rights Reserved
 

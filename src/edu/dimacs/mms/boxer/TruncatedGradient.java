@@ -212,12 +212,20 @@ public class TruncatedGradient extends PLRMLearner {
 
 	/** Runs Steepest Descent (a batch method) with adaptive
 	    learning rate until it converges.
-	    @param xvec The training set
-	 */
-	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2) {
-	    final double eps = 1e-8;
-	    //final double eps = 1e-3;
 
+	    <p>The value of {@link Suite.verbosity} is used to control
+	    what, if anything, is reported during the iterative process.
+
+	    @param xvec xvec[i1:i2-1] is interpreted as the training set
+	    @param eps The convergence criterion. The iterations will
+	    stop when the log-likelihood increment will be smaller
+	    than this value. Something like 1e-8 is a reasonable value
+	    on a data set of a few hundreds data points with a dozen
+	    features each. A smaller value will, of course, make the
+	    resulting model closer to the ideal Bayesian model (optimizing
+	    the log-lik), but a significant computation cost.
+	 */
+	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
 	    System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
 
 	    if (trunc.theta != 0) throw new IllegalArgumentException("Presently, no kind of truncation or priors is supported in Adaptive SD");
