@@ -84,6 +84,10 @@ import edu.dimacs.mms.borj.CMD;
    -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8
 </pre>. This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although rather slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set.
 
+<P>An auxiliary script, <tt> sample-data/ontology/matrix2html.pl
+</tt>, is available to extract confusion matrix(es) from the output of
+BOA, and to convert it into pleasing-to-eye HTML and CVS formats.
+
    <h3>File formats</h3>
 
    <p> The names of the data source files supplied to the <tt>train</tt> and

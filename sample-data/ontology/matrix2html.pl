@@ -1,12 +1,26 @@
 #!/usr/bin/perl -s
 
-# This is a script to extract the confusion matrix from the output of BOA, and 
-# to convert it to a human-readable HTML format
-#-- Usage:
+#-----------------------------------------------------------------------------
+# This is a script to extract the confusion matrix(es) from the output
+# of BOA, and to convert it to a human-readable HTML format and a
+# machine-readable CSV format. Each matrix found in the log file being
+# analyzed is converted into a separate HTML file; a separate CSV file
+# is created as well.
+#
+# Sample Usage:
+#
 # java ... edu.dimacs.mms.applications.ontology.Driver train:... test:... > out.log
 # matrix2html.pl [-diag=off|pos|names] out.log
 #
-# The -diag option controls what cells recognized as "diagonal" and painted yellow
+# The -diag option controls what cells recognized as "diagonal" and
+# painted yellow. With -diag=off, no cells are so marked. With
+# -diag=pos, cells are considered diagonal if the row position is the
+# same as the column position (i.e., the i-th column of the second
+# data source is "supposed to" match the i-th column of the first data
+# source). With -diag=names, the script analyzes column names instead, 
+# identifying both diagonal cells (identical, or nearly identical, names)
+# and diagonal blocks (names different only by a numerical suffix).
+#-----------------------------------------------------------------------------
 
 use strict;
 
