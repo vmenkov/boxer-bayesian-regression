@@ -252,13 +252,34 @@ public abstract class Learner implements Model {
 	}
     }
 
-    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2) {
+    /** Runs Steepest Descent (a batch method) with adaptive
+	learning rate until it converges.
+
+	<p>Presently, this method is only supported for optimizing 
+	log-likelihood without the penalty term. This means that you 
+	need to initialize the learner as a TruncatedGradient learner with
+	theta=0 and no individual priors.
+	
+	<p>The value of {@link Suite#verbosity} is used to control
+	what, if anything, is reported during the iterative process.
+       	
+
+	@param xvec xvec[i1:i2-1] is interpreted as the training set
+	@param eps The convergence criterion. The iterations will
+	stop when the log-likelihood increment will be smaller
+	than this value. Something like 1e-8 is a reasonable value
+	on a data set of a few hundreds data points with a dozen
+	features each. A smaller value will, of course, make the
+	resulting model closer to the ideal Bayesian model (optimizing
+	the log-lik), but a significant computation cost.
+    */
+    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
 	if (!(this instanceof TruncatedGradient)) throw new UnsupportedOperationException("Only TG can emulate SD");
 	createMissingBlocks();
 	for(LearnerBlock block: blocks) {
 	    block.dis.ensureCommitted();
 	    block.validateExamples(xvec, i1,i2);
-	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2);
+	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2, eps);
 	}
     }
 

@@ -93,12 +93,14 @@ public abstract class PLRMLearner extends Learner {
 	    return dot;
 	}
 
-	/** Returns logarithms of scores */
+	/** Returns logarithms of scores (i.e., probabilities
+	 estimated by the current PLRM model). This function can be
+	 used instead of {@link #applyModel(DataPoint)} when
+	 logarithms is what you need, e.g. for computing log-likelyhood. */
 	public double [] applyModelLog( DataPoint p) {
 
 	    double[] dot = p.dotProducts(w, dis);
 	    if (dot.length==0) return dot; // empty discr, probably dummy fallback
-	    double[] e=new double[dot.length];
 	    double z=0, maxDot=dot[0];
 	    // We'll normalize the exponent, to reduce the chance of overflow
 	    for(int i=1; i<dot.length; i++) {
@@ -108,15 +110,13 @@ public abstract class PLRMLearner extends Learner {
 	    }
 	    
 	    for(int i=0; i<dot.length; i++) {
-		dot[i] -= maxDot;
-		e[i] = Math.exp(dot[i]);
-		z += e[i];
+		dot[i] -= maxDot;		
+		z +=  Math.exp(dot[i]);
 	    }
 
 	    double logz = Math.log(z);
 
 	    for(int i=0; i<dot.length; i++) {
-		e[i] /= z;
 		dot[i] -= logz;
 	    }
 	    return dot;

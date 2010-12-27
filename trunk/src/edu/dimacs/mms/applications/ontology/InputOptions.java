@@ -2,8 +2,8 @@ package edu.dimacs.mms.applications.ontology;
 
 import edu.dimacs.mms.boxer.ParseConfig;
 
-/** Flags describing for input data format. Assignments are done from
-    Driver.java; params are used from the parsers. */
+/** An instance of this class stores various flags controlling the
+    processing of input data source files. */
 class InputOptions {
     /** 1-based position of the column that's used as the record
 	ID. If 0, then no such column exists in the data source,
@@ -42,13 +42,31 @@ class InputOptions {
 	use 2-grams, etc.
      */
     int  maxCharSeqLen = 2;
+
+    /** If true, simply skip empty cells, creating no feature vectors
+	for them */
+    boolean emptySkip;
+    /** If true, use a special feature, "@@empty", for empty cells (instead 
+	simply a zero vector.
+     */ 
+    boolean emptySpecial;
     
-    /** initialize params from the Java system properties
+    /** Initializes config params from the Java system properties
      */
     void init(ParseConfig ht) {
 	ridColumn =  ht.getOption( "input.rid", ridColumn );
 	setExcludableColumns( ht.getOption("input.exclude", ""));
-	maxCharSeqLen = ht.getOption("gram", maxCharSeqLen);
+	maxCharSeqLen = ht.getOption("input.gram", maxCharSeqLen);
+	emptySkip =  ht.getOption("input.empty.skip", false);
+	emptySpecial =  ht.getOption("input.empty.special", true);
+    }
+
+    String describe() {
+	return "Empty cells: " + (emptySkip ? "ignored" :
+				  emptySpecial ? "special feature":
+				  "zero vector") +
+	    "; nGrams length<=" + maxCharSeqLen;
+				  
     }
 
 }
