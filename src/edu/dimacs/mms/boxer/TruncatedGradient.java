@@ -42,7 +42,7 @@ public class TruncatedGradient extends PLRMLearner {
     /** How often truncation is carried out */
     private int K = 10;
     
-    class TruncatedGradientLearnerBlock extends PLRMLearner.PLRMLearnerBlock {
+    public class TruncatedGradientLearnerBlock extends PLRMLearner.PLRMLearnerBlock {
 
 	/** The truncation object controls the truncation
 	    modalities. In particular, if trunc.theta=0, there
@@ -216,7 +216,61 @@ public class TruncatedGradient extends PLRMLearner {
 	    <p>The value of {@link Suite.verbosity} is used to control
 	    what, if anything, is reported during the iterative process.
 
-	    @param xvec xvec[i1:i2-1] is interpreted as the training set
+	    <p>The process optimizes the works lof-likelihood (L) as a
+	    function of the PLRM model matrix B. Conceptually, it
+	    proceeds as follows:
+
+	    <ul> 
+
+	    <li>1. Start with B=0.
+
+	    <li>2. Compute A as the gradient of L as a function B.
+	    
+	    <li>3. Compute the theoretically known upper bound M of
+	    the absolute value of the second derivative of L along the
+	    direction A. (That is, a second derivative f''(t) of the
+	    scalar function <em>f(t) = L(B + A*t)</em>. (The actual
+	    second derivative is always negative, due to the known
+	    convexity of -L; that is, we know that for any <em>t</em>,
+	    <center>
+	    <em> -M &le; f''(t) &lt; 0</em>
+	    </center>
+
+	    <li>4. Set the learning rate <em>&eta;</em> for the next
+	    step as <em>&eta; = f'(t=0)/M</em>. This will mean that if
+	    <em>f''(t)</em> were actually equal to <em>-M</em> at all
+	    <em>t</em>, we would converge to the max<em>L</em> for
+	    this one-dimensional problem in one step. In reality we
+	    are simply guaranteed not to over-shoot the max.
+
+	    <li>5. Perform one step along the direction <em>A</em>
+	    with the learning rate <em>&eta;</em> as computed at the
+	    previous step.
+
+	    <li>6. Perform one or more "bonus steps" along the same
+	    direction <em>A</em>, increasing the learning rate by a
+	    factor of 2 at every step. Stop when <em>L</em> stops
+	    increasing, undoing the last bonus step if it has been
+	    counter-productive. One can show that e.g. on a simple
+	    model, where <em>f(t)</em> were a quadratic polynomial,
+	    steps 5 and 6 together allow one to obtain at least 3/4 of
+	    the maximum possible increase that can be obtained with the
+	    one-dimensional optimization.
+
+	    <li>7. If the cumulative change to <em>L</em> since we
+	    last were at step 2 step is less than &eps;, assume that
+	    the process has converged, and return the answer 
+
+	    <li>8. Go back to step 2, with the current <em>B</em>.
+
+	    </ul>
+
+	    <p>The above process, of course, is quite expensive, since
+	    it requires re-computing log-likelihood at every step.
+
+	    @param xvec xvec[i1:i2-1] is interpreted as the training
+	    set over which the log-likelihood is maximized.
+
 	    @param eps The convergence criterion. The iterations will
 	    stop when the log-likelihood increment will be smaller
 	    than this value. Something like 1e-8 is a reasonable value
@@ -230,17 +284,21 @@ public class TruncatedGradient extends PLRMLearner {
 
 	    if (trunc.theta != 0) throw new IllegalArgumentException("Presently, no kind of truncation or priors is supported in Adaptive SD");
 
+	    // compact format for the data
+	    DataPointArray dpa = new DataPointArray(xvec, i1, i2, dis);
 	    int d =  suite.getDic().getDimension(); // feature count
 	    
-	    // 0. Give the safe eta estaimate
-	    double sumX2 = 0;
-	    for(int i=i1; i<i2; i++) {
-		sumX2 += xvec.elementAt(i).normSquare();
-	    }
-
+	    // 0. Give the safe eta estimate
+	    double sumX2 = dpa.sumNormSquare();
 	    double safeEta = (i2-i1)/sumX2;
 
-	    if (Suite.verbosity>0) System.out.println("SD on " + (i2-i1) + " vectors; universal safe eta=" + safeEta);
+	    if (Suite.verbosity>0) {
+		System.out.println("[SD] SD on " + (i2-i1) + " vectors; universal safe eta=" + safeEta);
+		System.out.println("[SD] Among "+(i2-i1)+" data points, found "+
+				   dpa.sumCnt + " labeled ones, " + dpa.points.length + " unique ones");
+	    }
+
+	    if (dpa.sumCnt==0) return; // no labeled points, nothing to optimize
 
 	    boolean first = true;
 	    double prevLogLik = 0;
@@ -250,21 +308,16 @@ public class TruncatedGradient extends PLRMLearner {
 	    while(true) {
 
 		// 1. compute probability predictions, and log-likelyhood
-		double [][] zz = new double[i2-i1][];
-		double logLik = logLikelihood(xvec,i1,i2,zz);
-		int n=0;
-		for(double[] z:zz) { if (z!=null) n++; }
-		if (n==0) return;
-
+		double [][] zz = new double[dpa.points.length][];
+		double logLik = dpa.logLikelihood(this,zz);
+	
 		// 2. Check termination criterion
 		double delta = first? 0:  logLik - prevLogLik;
 		if (Suite.verbosity>0) {
-		    System.out.print("[SD] t=" + t+", sumEta=" + sumEta + ", L=" + logLik);
-		    if (!first) {
-			System.out.print(" (delta L=" + delta + ")");
-			if (delta<0)  System.out.print(" [NEGATIVE delta L?]");
-		    }
-		    System.out.println();
+		    System.out.println("[SD] t="+t+", sumEta="+sumEta+", L="+logLik +
+				       (first? "" :
+					" (delta L=" + delta + ")" +
+					(delta<0? " [NEGATIVE delta L?]":"")));
 		}
 
 		if (!first) {
@@ -278,13 +331,12 @@ public class TruncatedGradient extends PLRMLearner {
 		// 2. Compute grad L - which is also our increment vector
 		BetaMatrix a = new BetaMatrix(d);
 
-		for(int i=i1; i<i2; i++) {
-		    double [] z = zz[i-i1];
-		    if (z==null) continue;
-		    DataPoint x = xvec.elementAt(i);
+		for(int i=0; i< dpa.points.length; i++) {
+		    double [] z = zz[i];
+		    DataPoint x = dpa.points[i];
 		    for(int h=0; h<x.features.length; h++) {
 			int j = x.features[h];	
-			a.addDenseRow(j, z, x.values[h]/n);
+			a.addDenseRow(j, z, x.values[h]/dpa.sumCnt);
 		    }
 		}
 
@@ -293,21 +345,15 @@ public class TruncatedGradient extends PLRMLearner {
 		 */
 		double sumA2 = a.squareOfNorm();
 		double sumQ2 = 0;
-		for(int i=i1; i<i2; i++) {
-		    DataPoint x = xvec.elementAt(i);
-		    double [] z = zz[i-i1];
-		    if (z==null) continue;
-		    double[] dot = x.dotProducts(a, dis);
+		for(int i=0; i< dpa.points.length; i++) {
+		    DataPoint p = dpa.points[i];
 		    double mp = 0;
-		    for(double q: dot) {
-			if (Math.abs(q)>mp) mp = Math.abs(q);
+		    for(double q: p.dotProducts(a, dis)) {
+			mp = Math.max(mp, Math.abs(q));
 		    }
-		    sumQ2 += mp*mp;
+		    sumQ2 += mp*mp * dpa.las[i].sumCnt;
 		}
-		double eta = n * sumA2 / sumQ2;
-
-		//double eta0=eta;
-		//eta=safeEta;
+		double eta = dpa.sumCnt * sumA2 / sumQ2;
 
 		if (Suite.verbosity>0) {
 		    System.out.println("[SD] |grad L|=" + Math.sqrt(sumA2) +", eta := " + eta);	
@@ -317,26 +363,28 @@ public class TruncatedGradient extends PLRMLearner {
 		t++;
 		sumEta+=eta;
 
+		// "bonus" steps - try to keep going in the same
+		// direction, with increasingly longer steps, as long
+		// as log-lik keeps increasing
 
-		// "bonus" steps - try to keep going in the same direction,
-		// faster and faster, while log-lik keeps increasing
-
-		double savedLogLik = logLikelihood(xvec,i1,i2);		
+		double savedLogLik = dpa.logLikelihood(this, null);
 		while(true) {
 		    BetaMatrix savedW = new BetaMatrix(w);
-		    double f = 2;
+		    final double f = 2;
 		    eta *= f ;
 		    a.multiplyBy(f);
 		    w.add(a);
-		    double newLogLik =  logLikelihood(xvec,i1,i2);
+		    double newLogLik =  dpa.logLikelihood(this, null);
 		    double bonusDelta = newLogLik - savedLogLik;
-		    if (bonusDelta>eps) {
+		    if (bonusDelta>0) {
 			savedLogLik = newLogLik;
 			t++;
 			sumEta+=eta;
 			if (Suite.verbosity>0) {
 			    System.out.println("[SD] [BONUS OK] eta=" + eta + ", L=" + newLogLik);
 			}
+			// stop going if it's not too useful anymore.
+			if (bonusDelta < eps) break;
 		    } else {
 			// a jump too far; undo!
 			w.setMatrixFrom(savedW);
