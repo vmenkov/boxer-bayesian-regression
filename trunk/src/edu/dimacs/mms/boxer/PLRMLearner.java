@@ -96,7 +96,9 @@ public abstract class PLRMLearner extends Learner {
 	/** Returns logarithms of scores (i.e., probabilities
 	 estimated by the current PLRM model). This function can be
 	 used instead of {@link #applyModel(DataPoint)} when
-	 logarithms is what you need, e.g. for computing log-likelyhood. */
+	 logarithms is what you need, e.g. for computing log-likelyhood. 
+
+	@param p A DataPoint object to be scored. Its labels don't matter. */
 	public double [] applyModelLog( DataPoint p) {
 
 	    double[] dot = p.dotProducts(w, dis);

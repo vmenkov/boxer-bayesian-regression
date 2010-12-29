@@ -186,8 +186,13 @@ val1|val2|...|val_N
      -Dlearner=learner.xml  : Learner description file, 
 <li>
      -Dlearn.rep=1 : How many times repeat training. This option is ignored if adaptive SD is used.
-<li>
-     -Dlearn.sd=true|false : If true, use Steepest Descent instead of Stochastic Gradient Descent (which is simply Truncated Gradient w/o truncation). You can only use this option if the learner file describes
+
+<li> -Dlearn.sd=true|false : If true, use Steepest Descent instead of
+Stochastic Gradient Descent (which is simply Truncated Gradient w/o
+truncation). You can only use this option if the learner file
+describes a TruncatedGradient learner (which may be, and usually is,
+TG with theta=0, i.e. SGD).
+
 <li>
      -Dlearn.adaptive=true|false : Only can be used in combination with learn.sd=true. If learn.adaptive=true, BOA ignores <tt>learn.rep</tt>, and tried to build a log-likelihood-optimizing model by running {@link edu.dimacs.mms.boxer.Learner#runAdaptiveSD Steepest Descent with adaptive learning rate (ASD)} until convergence, as determined by learn.eps. The learner file in this situation should specify "TruncatedGradient with theta=0", i.e. Steepest Descent, as adpative learning is currently only supported for optimizing non-penalized log-likelihood. No priors should be specified.
 <li>

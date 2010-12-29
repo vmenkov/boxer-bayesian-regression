@@ -259,10 +259,12 @@ public abstract class Learner implements Model {
 	log-likelihood without the penalty term. This means that you 
 	need to initialize the learner as a TruncatedGradient learner with
 	theta=0 and no individual priors.
+
+	<p>For algorithm details, see {@link TruncatedGradient.TruncatedGradientLearnerBlock#runAdaptiveSD}.
 	
 	<p>The value of {@link Suite#verbosity} is used to control
 	what, if anything, is reported during the iterative process.
-       	
+       
 
 	@param xvec xvec[i1:i2-1] is interpreted as the training set
 	@param eps The convergence criterion. The iterations will
