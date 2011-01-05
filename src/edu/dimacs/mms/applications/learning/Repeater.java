@@ -46,6 +46,10 @@ import edu.dimacs.mms.borj.*;
 
      <li>sd: if true, we emulate the Steepest Descent (SD), a batch method. The default is false.
 
+     <li>adaptive: if true (and sd is also true), run SD with adaptive learning rate (ASD) to convergence
+
+     <li>eps=1e-8: convergence criterion for ASD
+
      </ul>
 
 
@@ -54,7 +58,8 @@ public class Repeater {
 
     
     static boolean emulateSD = false, adaptiveSD=false;
-    
+    static double eps;
+ 
 
     static void usage() {
 	usage(null);
@@ -124,6 +129,7 @@ public class Repeater {
 
 	emulateSD = ht.getOption("sd", false);
 	adaptiveSD = ht.getOption("adaptive", false);
+	eps = ht.getOptionDouble("eps", 1e-8);
 
 	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
 
@@ -361,7 +367,7 @@ public class Repeater {
 		if (!(algo instanceof TruncatedGradient)) throw new  IllegalArgumentException("In the 'emulate SD' mode only TG is supported");
 
 		if (adaptiveSD) {
-		   algo.runAdaptiveSD(train, 0, train.size());
+		    algo.runAdaptiveSD(train, 0, train.size(), eps);
 		} else {
 		    if (i1 % train.size() != 0 ||i2 % train.size() != 0) throw new AssertionError("emulateSD: i1, i2 not multiple of the train set size");
 		    int repeat = (i2-i1) / train.size();

@@ -1241,14 +1241,14 @@ public class Suite {
       Learner object described thereby.
 
       The element (which may be the top-level element of an XML file,
-       or more often, may be encountered within the "learner complex"
-       element, ) may contain a complete description of a learner that
-       may have been created on an earlier run with {@link
-       #saveAsXML(String) saveAsXML}, in which case full
-       deserialization takes place. Or the element may just describe
-       the algorithm parameters, in which case the state is nitialized
-       with the defaults.
- 
+      or more often, may be encountered within the "learner complex"
+      element) may contain a complete description of a learner that
+      may have been created on an earlier run with {@link
+      #saveAsXML(String) saveAsXML}, in which case full
+      deserialization takes place. Or the element may just describe
+      the algorithm parameters, in which case the state is initialized
+      with the defaults.
+      
       The new learner will be created in the context of this suite,
       and will add the new learner to the list of the learners using
       this suite.

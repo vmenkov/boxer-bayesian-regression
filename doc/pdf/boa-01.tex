@@ -13,7 +13,7 @@
 \begin{document}
 
 \title{On choosing a suitable score function for the Bayesian Ontology Alignment tool}
-\date{December 27, 2010}
+\date{December 29, 2010}
 \author{Vladimir Menkov}
 
 \maketitle
@@ -180,7 +180,9 @@ In other words, the probability of assigning a given value $v$ to a
 \section{Formulas for aggregating probabilities}
 \label{sec:agg}
 
-{\bf Assumption 1.} All cell values found in DS2 are also found somewhere in DS1. 
+{\bf (These three approaches are available in BOA with the usual combination of the  {\tt train} and  {\tt test} commands.)}
+
+{\bf Assumption 2.} All cell values found in DS2 are also found somewhere in DS1. 
 
 In other words, $\cal{V}_2 \subset \cal{V}_1$, where $\cal{V}_2$ is
 the set of values of cells of DS2.
@@ -201,15 +203,25 @@ cells within a column can be aggregated into the confusion matrix
 elements for the column.
 
 {\bf Arithmetic mean}
-One way to compute the confusion matrix value $f_{ij}$ would be by averaging $P(C_i|v)$ for all cells of the column $C'_j$, which would give us
+One way to compute the confusion matrix value $f_{ij}$ would be by averaging $P(C_i|v)$ for all cells of the column $C'_j$, which would give us the averages
+\begin{equation}
+\label{eq:R-def1}
+R(C_i,C'_j) \equiv  \frac{1}{N_2} \sum_{k=1}^{N_2} P(C_i|z'_{kj}).
+\end{equation}
+We can directly use these averages $R(C_i,C'_j)$ as the confusion matrix coefficients  linking columns of DS1 and DS2:
 \begin{equation}
 \label{eq:ag-ar}
-f_{ij}^{\rm method 1} = R(C_i,C'_j) \equiv \frac{1}{N_2} \sum_{k=1}^{N_2} P(C_i|z'_{kj}) =
-\sum_{\cal{V}} \gamma_j(v) P(C_i|v) 
+f_{ij}^{\rm method 1} = R(C_i,C'_j)  =  \frac{1}{N_2} \sum_{k=1}^{N_2} P(C_i|z'_{kj}).
 \end{equation}
+Under Assumptions 1 and 2, they would become 
+\begin{equation}
+\label{eq:ag-ar2}
+f_{ij}^{\rm method 1} = R(C_i,C'_j)  = \sum_{\cal{V}} \gamma_j(v) P(C_i|v) 
+\end{equation}
+
 An advantage of this method is that $\sum_{i=1\ldots,M_1} f_{ij} = 1$, and the values can be easily interpreted as probabilities. Moreover, if Assumption 1 holds, the confusion matrix would be symmetric when the two data sources are identical (i.e, $\gamma_i(v)=\alpha_i(v)$ for all $i$), since in this case 
 $$
-f_{ij}^{\rm method 1} =\frac{\sum_{\cal{V}} \alpha_i(v)  \alpha_j(v)}{\sum_{j=1,\ldots,M_1} \alpha_j(v)}.
+R(C_i,C_j) =\frac{\sum_{\cal{V}} \alpha_i(v)  \alpha_j(v)}{\sum_{j=1,\ldots,M_1} \alpha_j(v)}.
 $$
 
 {\bf Geometric  mean}
@@ -275,7 +287,7 @@ f_{ij}^{\rm cosine \ method} &=& \frac{\sum_v{ P(C_i|v) \gamma_j(v)}}{
 \end{eqnarray}
 
 The values $R(C_i,C'_j)$ and $R(C_i,C_i)$ are simply the arithmetic
-means introduced in eq. (\ref{eq:ag-ar}) above, and computable without
+means introduced in eq. (\ref{eq:R-def1}) above, and computable without
 reference to Assumption 1. Unfortunately, the last factor,
 $\|\vec{\gamma_j}\|_\phi=\left(\sum_{v\in \cal{V}}{\gamma_j(v)^2 \phi(v)}\right)^{1/2}$ is
   {\em not} computable without reference to Assumption 1. However,
@@ -292,6 +304,11 @@ matrix, one can compare values within the same row of this matrix, but
 not between rows.
 
 \section{Unequal-size samples from different columns}
+
+
+{\bf (This is what's done in BOA when the option {\tt -Dinput.empty.skip=true} is in effect, and empty cells of data sources are ignored.)}
+
+
 The preceding discussion was carried in the assumption that we have
 data from the equal number ($N_1$) of cells from each column of
 DS1. Similarly, we had $N_2$ cells from each column of DS2.
@@ -328,12 +345,12 @@ columns, we will use a different approach: namely, we will continue
 defining $\alpha_i(V)$ as the ratio of the cells whose value is $V$
 among the $n_i$ cells of column $C_i$. The values of $\gamma_j(V)$
 will be defined similarly with respect to $C'_j$. We will still want
-to define the cosine similarity $f_{ij}^{\rm cosine \ method}$ as the
+to define the cosine similarity $f_{ij}^{\rm sym 1}$ as the
 cosine of the angle (in the weighted-dot-product space) between the
 vectors $\vec{\alpha_i}$ and $\vec{\gamma_j}$; that is, if our samples
 of columns $C_i$ and $C_l$ have exactly the same composition, even
-though $n_i \ne n_l$, we'll want $f_{lj}^{\rm cosine \ method} =
-f_{ij}^{\rm cosine \ method}$ for any $C'_j$.
+though $n_i \ne n_l$, we'll want $f_{lj}^{\rm sym 1} =
+f_{ij}^{\rm sym 1}$ for any $C'_j$.
 
 With the above guidelines in mind, we note that, with a perfect Bayesian model, 
 $$P(C_i|V)=\alpha_i(V) n_i / (\sum_k \alpha_k(V) n_k),
@@ -358,7 +375,7 @@ $$
 This gives us the following generalization for (\ref{eq:ag-cos2}): 
 \begin{equation}
 \label{eq:ag-cos-gen-2}
-f_{ij}^{\rm cosine \ method} =
+f_{ij}^{\rm sym 1} =
 \frac{1}{\sqrt{n_i}} \cdot 
 \frac{ R(C_i,C'_j) }{ R(C_i,C_i)^{1/2} \|\vec{\gamma_j}\|}
 \end{equation}
@@ -378,9 +395,9 @@ As with (\ref{eq:ag-cos3}), when the matrix of these ratios $s_{ij}$
 is reported as the confusion matrix, one can compare values within the
 same row of this matrix, but not between rows. 
 
-\section{A symmetric-cosine approach}
+\section{A symmetric-cosine approach (``Symmetric No. 1'')}
 
-{\bf This is presently (2010-12-27) not implemented yet.}
+{\bf (This is available in BOA with the {\tt sym1} command.)}
 
 Here we will propose an alternative approach to that outlined in
 Sectons \ref{sec:overview}, \ref{sec:agg}. While somewhat ``strange''
@@ -395,10 +412,10 @@ The algorithm (outlined in the general, unequal-column-size, case) is
 as follows:
 
 \begin{enumerate}
-\item[1] Consider the set of $M_1+M_2$ fields of DS1 and DS2 as a single
+\item[1.] Consider the set of $M_1+M_2$ fields of DS1 and DS2 as a single
   discrimination (set of labels) with $M_1+M_2$ classes (one per field)
 
-\item[2] Create $N_e = \sum_{i=1}^{M_1} n_i + \sum_{i=1}^{M_2} n'_i$
+\item[2.] Create $N_e = \sum_{i=1}^{M_1} n_i + \sum_{i=1}^{M_2} n'_i$
   training examples, each example being the content of one field of
   one record from DS1 or DS2, and carrying the class label based on
   the name of the data set combined with the name of the field in
@@ -406,20 +423,20 @@ as follows:
   fields as columns, each "example" introduced at this step will
   correspond to the content of one cell of this table).
 
-\item[3] Tokenize etc. each "example" somehow, converting it into a
+\item[3.] Tokenize etc. each "example" somehow, converting it into a
   vector in some linear space (a feature vector)
 
-\item[4] Use some kind of Bayesian regression learning algorithm, such
+\item[4.] Use some kind of Bayesian regression learning algorithm, such
   as one of those implemented by BOXER toolkit learner, on that set of $N_e$
   ``examples'', to come up with a classifier model that
   probabilistically assigns each ``example'' to a ``class'' (i.e., a
   field). 
 
-\item[5] For each pair of columns from DS1+DS2, compute the confusion
+\item[5.] For each pair of columns from DS1+DS2, compute the confusion
   matrix value
 \begin{equation}
 \label{eq:ag-sym1}
-f^{\rm sym} = \sqrt{\frac{ R(C_i|C'_j) R(C'_j|C_i) }{ R(C_i|C_i) R(C'_j|C'_j)}},
+f^{\rm sym 1} = \sqrt{\frac{ R(C_i|C'_j) R(C'_j|C_i) }{ R(C_i|C_i) R(C'_j|C'_j)}},
 \end{equation}
 where the averaged probabilities  $R(C_i|C'_j)$ are computed as in (\ref{eq:R-def2}).
 \end{enumerate}
@@ -432,5 +449,50 @@ $$
 \phi(V) =
  \frac{1}{ \sum_{i=1}^{M_1} \alpha_i(V) n_i + \sum_{i=1}^{M_2} \gamma_i(V) n'_i}.
 $$
+
+{\bf Criticism.} This approach seems sensible when Assumptions 1 and 2
+hold (i.e., both data sources cells are from the same limited
+vocabulary). However, it may have abn unpleasant drawback in a
+situation when free-form texts are stored in some columns.  Since the
+learner is allowed to train on the combined discrimination including
+cells from the columns of both data sources, it is rewarded for
+finding features that distinguish columns from the two data sources
+that otherwise would be viewed as more similar. E.g., if texts in the
+cells of column $C_a$ of DS1 are, overall, fairly similar to those in
+the cells of column $C'_b$ of DS2, but contain some ''shibboleth''
+word not found in DS2, then a well-trained learner {\em will} make
+use of that word to construct a model that views $C_a$ as completely
+distinct from $C'_b$.
+
+\section{A symmetric-cosine approach (``Symmetric No. 2'')}
+
+{\bf (This is available in BOA with the {\tt sym2} command.)}
+
+The approach outlined in this section does not have much of a
+theoretical foundation (yet, at any rate), but is also symmetric in
+the sense that if an ontology is matched against itself, a symmetric
+confusion matrix is produced.
+
+\begin{enumerate}
+\item[1.] Construct a PLRM model based on the cells of DS1, exactly as
+  outlined in Sec. \ref{sec:overview}, Steps 1-4. In this section,
+  $P(C_i|\cdot)$ and $R(C_i, \cdot)$ will refer to the probabilities
+  of assignments to the columns of DS1, and their aggregates (defined
+  as per eq. (\ref{eq:R-def2})) obtained by this DS1-based model.
+
+
+\item[2.] Construct another PLRM model based on the cells of DS2, in a
+  similar way. The notation $P'(C'_i|\cdot)$ and $R'(C'_i, \cdot)$ will
+  refer to assignment probabilities and their aggregates obtained by
+  this DS2-based model.
+
+\item[3.] Apply the first model to the cells of DS2, and the second
+  model, to the cell of DS1. Compute the confusion matrix elements as
+  follows: 
+\begin{equation}
+\label{eq:ag-sym2}
+f^{\rm sym 2}_{ij} = \sqrt{ \frac{ R(C_i|C'_j) R'(C'_j|C_i) }{ R(C_i|C_i) R'(C'_j|C'_j)}}
+\end{equation}
+\end{enumerate}
 
 \end{document}

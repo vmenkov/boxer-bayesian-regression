@@ -25,10 +25,11 @@ public class CMD {
     final public String f2;
     
     /** List of commands that can take an optional second
-     * argument. The rest of commands only can take one
+     * argument. All other commands only may take one argument.
      */
-    static private String twoArgCmd = TEST;
-    static public void setTwoArgCmd(String x) {twoArgCmd = x;}
+    static private String[] twoArgCmds = {TEST};
+    static public void setTwoArgCmd(String x) {twoArgCmds = new String[] {x};}
+    static public void setTwoArgCmd(String[] x) {twoArgCmds = x; }
     
     /** Similar to String.split(), but takes care not to split a
 	single-quoted string. After processing, however, quotes
@@ -85,14 +86,21 @@ public class CMD {
 	f = q[1];
 	f2 = (q.length >= 3) ? q[2] : null;
 	// verifying that no unused args are left 
-	if (q.length > (is(twoArgCmd)? 3 : 2)) {
-	    usage("No command other that '"+twoArgCmd+"' can have two arguments");
+	if (q.length > maxArgAllowed()+1) {
+	    usage("No command other than {"+join(",", twoArgCmds)+"} may have two arguments");
 	} 
     }	
 
     public boolean is(String val) {
 	return cmd.equals(val);
     }
+
+    private int maxArgAllowed() {
+	for(String q:  twoArgCmds) { if (cmd.equals(q)) return 2; }
+	return 1;
+    }
+
+
     public String toString() {
 	return "(cmd=" + cmd + ", arg=" + f+")";
     }
@@ -115,6 +123,16 @@ public class CMD {
 	}
 	return v.toArray(new CMD[0]);
     }	
+
+    static private String join(String sep, String val[]) {
+	StringBuffer b = new StringBuffer();
+	for(String q: val) {
+	    if (b.length()>0) b.append(sep);
+	    b.append(q);
+	}
+	return b.toString();
+    }
+
 }
 
 /*

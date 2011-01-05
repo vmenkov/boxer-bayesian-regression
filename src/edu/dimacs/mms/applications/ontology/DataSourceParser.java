@@ -19,8 +19,10 @@ import edu.dimacs.mms.borj.*;
 abstract class DataSourceParser {
     /** Results */
     Suite suite;
-    /** The discrimination that matters */
+    /** The only discrimination that matters */
     Discrimination dis;
+    /** The ID of the only discrimination that matters */
+    int did() { return  suite.getDid( dis); }
     Vector<DataPoint> data = new Vector<DataPoint>();
 
     /** Parsing options */
@@ -36,26 +38,29 @@ abstract class DataSourceParser {
 
     static  DataSourceParser parseFile(String fname)
 	throws BoxerXMLException {
-	return parseFile( fname,  null, null);
+	return parseFile( fname,  null, null, "");
     } 
 
     static  DataSourceParser parseFile(String fname, FeatureDictionary dic)
 	throws BoxerXMLException {
-	return parseFile( fname,  dic, null);
+	return parseFile( fname,  dic, null, "");
     }
 
     static  DataSourceParser parseFile(String fname, Suite reuseSuite)
 	throws BoxerXMLException {
-	return parseFile( fname,  reuseSuite.getDic(), reuseSuite);
+	return parseFile( fname,  reuseSuite.getDic(), reuseSuite, "");
     }
 
 
-    /**
+    /** At most, only one of dic and reuseSuite should be non-null.
+
        @param reuseSuite - use this suite (expecting to find all
        classes already defined in it) instead of creating a new one
      */
-    static private DataSourceParser parseFile(String fname, FeatureDictionary dic,
-				       Suite reuseSuite) throws BoxerXMLException {
+    static DataSourceParser parseFile(String fname, FeatureDictionary dic,
+					      Suite reuseSuite, String colPrefix) throws BoxerXMLException {
+	if (dic!=null && reuseSuite!=null) throw new  IllegalArgumentException("At most, only one of dic and reuseSuite should be non-null");
+
 	DataSourceParser p = null;
 
 	if (fname.toLowerCase().endsWith(".csv")) {
@@ -74,7 +79,8 @@ abstract class DataSourceParser {
 	    p.suite = reuseSuite;
 	}
 
-	p.init(fname, reuseSuite!=null);
+	p.initDis(fname, reuseSuite!=null);
+	p.readData(fname, reuseSuite==null, colPrefix);
 	return p;
     }
     
@@ -87,8 +93,32 @@ abstract class DataSourceParser {
     }
 
 
-    abstract void init(String fname, boolean reuseSuiteOn)  throws BoxerXMLException;
- 
+    private void initDis(String fname, boolean reuseSuiteOn) throws BoxerXMLException {
+
+	String disName = baseName(fname);
+	if (reuseSuiteOn) {
+	    Logging.info("Parser: finding discrimination with disName=" + disName);
+	    dis = suite.getDisc(disName);
+	    if (dis == null) {
+		throw new IllegalArgumentException("No discrimination named " + disName + " was found in the pre-read model file");
+	    }       
+	} else {
+	    Logging.info("Parser: creating discrimination with disName=" + disName);
+	    dis = suite.addDiscrimination(disName);
+	    if (dis==null) throw new AssertionError("Discrimination lost?");
+	}
+    }
+
+
+    /** Reads in data from a data file representing a data source;
+	adds words and "*-grams" to the feature dictionary, fills the
+	Suite representing the ontology (column names) and the vector
+	of DataPoint object representing the content of the cells.
+     */
+    abstract void readData(String fname, boolean addColumns, 
+			   String classNamePrefix
+			   ) throws BoxerXMLException;
+
 
     private class BagOfWords extends HashMap<String, Integer> {
 	BagOfWords() { super(); }
@@ -184,5 +214,13 @@ abstract class DataSourceParser {
 	dis = other.getDisc(did);
     }
     */
-    
+   
+    String getColName(int j, String prefix) {
+	String s = dis.getClaById(j).getName();
+	if (prefix!=null && prefix.length()>0) {
+	    if (s.startsWith(prefix)) return s.substring(prefix.length());
+	    else throw new IllegalArgumentException("Class no. " + j + " is named '"+s+"', and does not have prefix '"+prefix+"'");
+	} else return s;
+    }
+ 
 }
