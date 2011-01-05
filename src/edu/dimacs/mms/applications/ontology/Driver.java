@@ -91,7 +91,8 @@ import edu.dimacs.mms.borj.CMD;
 <p>A particularly recommended set of options for training is 
 <pre>
    -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8
-</pre>. This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although rather slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set.
+</pre> 
+This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although rather slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set.
 
 <P>An auxiliary script, <tt> sample-data/ontology/matrix2html.pl
 </tt>, is available to extract confusion matrix(es) from the output of
@@ -100,7 +101,7 @@ BOA, and to convert it into pleasing-to-eye HTML and CVS formats.
    <h3>File formats</h3>
 
    <p> The names of the data source files supplied to the <tt>train</tt> and
-   <tt>test</tt> commands must have the extension ",csv" or ".txt". 
+   <tt>test</tt> commands must have the extension ".csv" or ".txt". 
 
    <p>If   the file name has the ".csv" extension, it must be in the
    comma-separated-values format with double quotes, i.e. each line must be in the form.
@@ -139,16 +140,32 @@ val1|val2|...|val_N
    an XML file, so that it can be read some time later with a
    <tt>read</tt> command.
 
+   <li>sym1:<em>datasource_file_1</em>:<em>datasource_file_2</em> : a
+   "symmetric" aligner, where both data sources are used in training
+   or testing. The sym2 command is similar.
+
    </ul>
 
-   <p>On every BOA run, the command line must start with a
-   <tt>read</tt> or <tt>train</tt> command, so that BOA will either
-   compute a model, or read a pre-computed model saved on an earlier
-   run. Any number of <tt>train</tt> commands may follow, to apply
-   this model to the specified other data source(s). One can also save
-   the model with the <tt>write</tt> command; this will allow you to
-   save time on later runs, if you expect to apply the same model to
-   more data sources in the future.
+   <p>There are two families of ontology-alignment algorithms:
+   asymmetric (train on one data source, then apply the resulting
+   model to the other data source) and symmetric (when both data
+   sources are used during the training and the testing). If a
+   symmetric algorithm is used in a situation when the two data
+   sources are identical, it is guaramteed to produce a symmetric
+   confusion matrix.
+
+   <p>On every BOA run involving asymmetric alignment algorithms, the
+   command line must start with a <tt>read</tt> or <tt>train</tt>
+   command, so that BOA will either compute a model, or read a
+   pre-computed model saved on an earlier run. Any number of
+   <tt>train</tt> commands may follow, to apply this model to the
+   specified other data source(s). One can also save the model with
+   the <tt>write</tt> command; this will allow you to save time on
+   later runs, if you expect to apply the same model to more data
+   sources in the future.
+
+   <p>To use a symmetric algorithm, you only need one command on the
+   command line: <tt>sym1</tt> or <tt>sym2</tt>, with 2 arguments.
 
    <h3>Options</h3>
    The options available with the BOA tool can be divided into several groups.
