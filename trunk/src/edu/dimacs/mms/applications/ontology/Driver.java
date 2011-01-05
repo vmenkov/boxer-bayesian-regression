@@ -77,6 +77,15 @@ import edu.dimacs.mms.borj.CMD;
 <li>To build a model based on one data source and then save the model to a file:
 <pre> java [options] edu.dimacs.mms.applications.ontology.Driver train:dataSource1.csv write:precomputedLearner.xml  
 </pre>
+
+<li>To use a "symmetric" method (sym1), which builds a model on the union of two data sources, and uses that model:
+<pre> java [options] edu.dimacs.mms.applications.ontology.Driver sym1:dataSource1.csv:dataSource2.csv
+</pre>
+
+<li>To use another "symmetric" method (sym2), which builds a model on each of the two data sources, and then applies each model to the other data source:
+<pre> java [options] edu.dimacs.mms.applications.ontology.Driver sym2:dataSource1.csv:dataSource2.csv
+</pre>
+
 </ol>
 
 <p>A particularly recommended set of options for training is 
@@ -223,16 +232,25 @@ public class Driver {
 	System.exit(1);
     }
 
-    static boolean emulateSD = false, adaptiveSD=false;
-   
+    /** Additional commands (not listed in CMD.java) */
+    static final String CMD_SYM1="sym1", CMD_SYM2="sym2";
+
+    /** Learning options (initialized in main()) */
+    static private boolean emulateSD = false, adaptiveSD=false;
+    static double eps;
+    static int learnRep;
+
+    static private ParseConfig ht = null;
+
+
     static public void main(String argv[]) throws IOException, BoxerXMLException , org.xml.sax.SAXException {
 	//if (argv.length != 2) usage();
 
-	ParseConfig ht = new ParseConfig();
+	ht = new ParseConfig();
 	Suite.verbosity = ht.getOption("verbosity", 0);
 	emulateSD = ht.getOption("learn.sd", false);
 	adaptiveSD = ht.getOption("learn.adaptive", false);
-	double eps = ht.getOptionDouble("learn.eps", 1e-8);
+	eps = ht.getOptionDouble("learn.eps", 1e-8);
 
 	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
 
@@ -245,7 +263,7 @@ public class Driver {
 
 	// How many times repeat training (unless a more sophisticated
 	// termination criterion is used)
-	int learnRep = ht.getOption( "learn.rep" , 1);
+	learnRep = ht.getOption( "learn.rep" , 1);
 	if (learnRep < 1) usage();
 
 	System.out.println("This is Ontology Matcher, using BOXER Toolkit (version " + Version.version+ ")");
@@ -260,22 +278,36 @@ public class Driver {
 	// future training), or read both the data source and the
 	// pre-computed learner.
 
-	DataSourceParser p1; 
-	Suite suite;
+	DataSourceParser p1=null; 
+	Suite suite=null;
 	String in1=null;
 	boolean alreadyTrained = false;	
-	CMD.setTwoArgCmd(CMD.READ);
+
+	CMD.setTwoArgCmd(new String[] {CMD.READ, CMD_SYM1, CMD_SYM2});
+
 	CmdManager cm  = new CmdManager(argv);
 	CMD q = cm.next();
 
-
-	if (q!=null && q.is(CMD.TRAIN)) {
+	if (q==null) {
+	    usage(); // no args
+	} else if (q.is(CMD_SYM1) || q.is(CMD_SYM2)) {
+	    // One of the symmetric methods
+	    doSymmetric( q);
+	    CMD q0 = q;
+	    q = cm.next();
+	    if (q!=null) {
+		String msg="All commands that follow " + q0 + " were ignored";
+		System.out.println(msg);
+		Logging.error(msg);
+	    }
+	    return;
+	} else if (q.is(CMD.TRAIN)) {
 	    in1 = q.f;
-	    System.out.println("Reading the Old DataSource from file: "+in1);
+	    System.out.println("Reading DS1 from file: "+in1);
 	    p1 =  DataSourceParser.parseFile(in1);
 	    suite =  p1.suite;
 	    q = cm.next();
-	} else 	if (q!=null && q.is(CMD.READ)) {
+	} else 	if (q.is(CMD.READ)) {
 	    // Reading a complete learner complex (i.e., a pre-computed
 	    // model), and then reading the
 	    // orignal data source  (which we'll need for normalization)
@@ -299,8 +331,7 @@ public class Driver {
 
 	    int d0 = suite.getDic().getDimension();
 
-
-	    System.out.println("Reading the Old DataSource from file: "+in1);
+	    System.out.println("Re-reading DS1 from file: "+in1);
 	    p1 =  DataSourceParser.parseFile(in1,  suite);
 
 	    int d1 = suite.getDic().getDimension();
@@ -315,8 +346,6 @@ public class Driver {
 	}
 
 
-	// the only non-trivial dis
-	int did = suite.getDid( p1.dis);
 	// reporting
 	if (Suite.verbosity>=1) {
 	    suite.saveAsXML("out-suite.xml");
@@ -329,51 +358,14 @@ public class Driver {
 	FeatureDictionary dic = suite.getDic();
 
 
-	// Any "read-priors" command?
-	String priorsFile = ht.getOption("learn.priors", null);
-	if (priorsFile!=null) {
-	    System.out.println("Reading priors from file: "+priorsFile);
-	    Priors p = Priors.readPriorsFileMultiformat(new File(priorsFile), suite);
-	    suite.setPriors(p);
-	}
-
-	Learner algo= null;
-	if (alreadyTrained) {
-	    algo= suite.getAllLearners().elementAt(0);
-	} else {
-	    // initializing the learner
-	    String learnerFile = ht.getOption("learner", null);
-	    if (learnerFile==null) usage("Must specify -Dlearner=name.xml");
-	    System.out.println("Getting a learner from file: "+learnerFile);
-	    Element learnerXML = ParseXML.readFileToElement(new File(learnerFile));
-	    suite.addLearner(learnerXML);
-	    
-	    int nLearners =  suite.getLearnerCount();
-	    if (nLearners != 1) throw new AssertionError("nLearners="+nLearners+" There must be exactly one learner!");
-	    algo= suite.getAllLearners().elementAt(0);
-	    if (Suite.verbosity>0) {
-		System.out.println("Describing the learner:");
-		algo.describe(System.out, false);
-		System.out.println("-----------------------------------");
-	    }
-	    
-	    // training the learner on the cells from the first data source
-	    if (adaptiveSD) {
-		algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps);
-	    } else {	
-		for(int k=0; k<learnRep; k++) {		
-		    if (emulateSD) {
-			algo.absorbExamplesSD(p1.data, 0, p1.data.size());
-		    } else {
-			algo.absorbExample(p1.data, 0, p1.data.size());
-		    }		
-		}
-	    }
+	if (!alreadyTrained) {
+	    train(p1);
 	    alreadyTrained = true;	   
 	}
+	Learner algo= suite.getAllLearners().elementAt(0);
 
-	// Compute square roots of self-probs (for normalization in cosine formula)
-	Aux1 sp =  sqrtSelfProb(p1);
+	// Compute  self-probs (for normalization in cosine formula)
+	Aux1 sp =  selfProb(p1);
 
 	if (q!=null && q.is(CMD.WRITE)) {
 	    // save the entire model to the specified file
@@ -393,87 +385,265 @@ public class Driver {
 	    }
 
 	    String in2 = q.f;
-	    String in2base = DataSourceParser.baseName(in2);
-
-	    DataSourceParser p2 =  DataSourceParser.parseFile(in2, dic);
-	    if (Suite.verbosity>=1 && !in2.equals(in1)) {
-		String outName = "out-" + in2base;
-		DataPoint.saveAsXML(p2.data, outName, outName+".xml");
-	    }
-
-	    int M1 = p1.dis.claCount(), M2 = p2.dis.claCount();
-	    // [newOnto.class][oldOnto.class]
-	    double[][] sumProb = new double[M2][], sumLogProb = new double[M2][];	    for(int i=0; i<M2; i++) {
-		sumProb[i] = new double[M1];
-		sumLogProb[i] = new double[M1];
-	    }
-	    // [newOnto.class]
-	    int[] count = new int[M2];
-	    	    
-	    // score    
-	    for( DataPoint p: p2.data) {
-		int newCid = p.getClasses(p2.suite).elementAt(0).getPos();
-		// overcoming underflow...
-		double[] logProb = algo.applyModelLog(p)[did];
-		double[] prob = expProb(logProb);
-		for(int j=0; j<M1; j++) {
-		    sumProb[newCid][j] += prob[j];
-		    sumLogProb[newCid][j] += logProb[j];
-		}
-		count[newCid] ++;
-	    }
-	    
-	    //System.out.print("Cell counts:");
-	    //for(int i=0; i<M2; i++) System.out.print(" " + count[i]);	
-	    //System.out.println();
-
-	    // average scores
-	    for(int i=0; i<M2; i++) {
-		if (count[i] > 0) {
-		    for(int j=0; j<M1; j++) {
-			sumProb[i][j] /= count[i];
-			sumLogProb[i][j] /= count[i];
-		    }
-		}
-	    }
-	    
-	    // reporting	    	    
-	    reportConfusionMatrix(p1, p2,sumProb, false,"Arithmetic  mean, " + in2base);
-	    reportConfusionMatrix(p1, p2,sumLogProb, true,"Geometric mean, "+ in2base);
-	    
-	    // normalized scores (the cosine measure)
-	    int maxCnt=0;
-	    for(int c: sp.count) { maxCnt = (c>maxCnt)? c: maxCnt;}
-
-	    for(int i=0; i<M2; i++) {
-		if (count[i] > 0) {
-		    for(int j=0; j<M1; j++) {
-			double f = sp.sqrtSelfProb[j] *
-			    Math.sqrt( sp.count[j]/(double)maxCnt);
-			sumProb[i][j] *= (f==0 ? 0 : 1/f);
-		    }
-		}
-	    }
-	    reportConfusionMatrix(p1, p2,sumProb, false,"Cosine similarity, "+ in2base);
-
+	    scoreTestSet( p1, in2, sp);
 	    q = cm.next();
 	}
     }
 
+    /** Initializes and trains the learner associated with p1 */
+    private static void train(DataSourceParser p1) throws BoxerXMLException, IOException, org.xml.sax.SAXException  {
+	Suite suite = p1.suite;
+
+	// Any "read-priors" command?
+	String priorsFile = ht.getOption("learn.priors", null);
+	if (priorsFile!=null) {
+	    System.out.println("Reading priors from file: "+priorsFile);
+	    Priors p = Priors.readPriorsFileMultiformat(new File(priorsFile), suite);
+	    suite.setPriors(p);
+	}
+
+	// initializing the learner
+	String learnerFile = ht.getOption("learner", null);
+	if (learnerFile==null) usage("Must specify -Dlearner=name.xml");
+	System.out.println("Getting a learner from file: "+learnerFile);
+	Element learnerXML = ParseXML.readFileToElement(new File(learnerFile));
+	suite.addLearner(learnerXML);
+	    
+	int nLearners =  suite.getLearnerCount();
+	if (nLearners != 1) throw new AssertionError("nLearners="+nLearners+" There must be exactly one learner!");
+	Learner algo= suite.getAllLearners().elementAt(0);
+	if (Suite.verbosity>0) {
+	    System.out.println("Describing the learner:");
+	    algo.describe(System.out, false);
+	    System.out.println("-----------------------------------");
+	}
+	    
+	// training the learner on the cells from the first data source
+	if (adaptiveSD) {
+	    algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps);
+	} else {	
+	    for(int k=0; k<learnRep; k++) {		
+		if (emulateSD) {
+		    algo.absorbExamplesSD(p1.data, 0, p1.data.size());
+		} else {
+		    algo.absorbExample(p1.data, 0, p1.data.size());
+		}		
+	    }
+	}
+    }
+
+    /** Scores examples from p2 with the learner that has been trained in 
+	p1 */
+    private static void scoreTestSet( DataSourceParser p1,
+				      String in2,  Aux1 sp) 
+ throws IOException, BoxerXMLException , org.xml.sax.SAXException {
+
+	String in2base = DataSourceParser.baseName(in2);
+
+	System.out.println("Reading DS2 from file: "+in2);	
+	DataSourceParser p2 =  DataSourceParser.parseFile(in2, 
+							  p1.suite.getDic());
+
+	int M1 = p1.dis.claCount(), M2 = p2.dis.claCount();
+	AvgScores avg = new AvgScores( p1, p2);
+	// reporting	    	    
+	reportConfusionMatrix(p1, p2, avg.avgProb, false,"Arithmetic  mean, " + in2base);
+	reportConfusionMatrix(p1, p2, avg.avgLogProb, true,"Geometric mean, "+ in2base);
+	    
+	// normalized scores (the cosine measure)
+	int maxCnt=0;
+	for(int c: sp.count) { maxCnt = (c>maxCnt)? c: maxCnt;}
+	
+	for(int i=0; i<M2; i++) {
+	    if (avg.count[i] > 0) {
+		for(int j=0; j<M1; j++) {
+		    double f = 
+			Math.sqrt( sp.selfProb[j] * sp.count[j]/(double)maxCnt);
+		    avg.avgProb[i][j] *= (f==0 ? 0 : 1/f);
+		}
+	    }
+	}
+
+
+	reportConfusionMatrix(p1, p2, avg.avgProb, false,"Cosine similarity, "+ in2base);
+    }
+
+    /**
+     */
+    static private class AvgScores {
+	/**  avgProb[i][j] is what's called R(i,j) in boa-01.pdf. The
+	   meaning of indexes: [newOnto.class][oldOnto.class].  */
+	double [][] avgProb, avgLogProb;
+	/** [newOnto.class]  */
+	int [] count;
+
+	/** Allocates a probability array */
+	static double [][] array(int M1, int M2) {
+	    double[][] p = new double[M2][];
+	    for(int i=0; i<M2; i++) {
+		p[i] = new double[M1];
+	    }    
+	    return p;
+	}
+
+	AvgScores(DataSourceParser p1, DataSourceParser p2) {
+	// the only non-trivial dis
+	int did = p1.did();
+
+	int M1 = p1.dis.claCount(), M2 = p2.dis.claCount();
+	double[][] sumProb = array(M1,M2), sumLogProb = array(M1,M2);
+	// [newOnto.class]
+	count = new int[M2];
+	
+	// score    
+	Learner algo= p1.suite.getAllLearners().elementAt(0);
+	for( DataPoint p: p2.data) {
+	    int newCid = p.getClasses(p2.suite).elementAt(0).getPos();
+	    // overcoming underflow...
+	    double[] logProb = algo.applyModelLog(p)[did];
+	    double[] prob = expProb(logProb);
+	    for(int j=0; j<M1; j++) {
+		sumProb[newCid][j] += prob[j];
+		sumLogProb[newCid][j] += logProb[j];
+	    }
+	    count[newCid] ++;
+	}
+	
+	//System.out.print("Cell counts:");
+	//for(int i=0; i<M2; i++) System.out.print(" " + count[i]);	
+	//System.out.println();
+	
+	// average scores
+	for(int i=0; i<M2; i++) {
+	    if (count[i] > 0) {
+		for(int j=0; j<M1; j++) {
+		    sumProb[i][j] /= count[i];
+		    sumLogProb[i][j] /= count[i];
+		}
+	    }
+	}
+
+	avgProb = sumProb;
+	avgLogProb = sumLogProb;
+    }
+    }
+
+    /** Processes the "symmetric-matching" command line 
+     */
+    static void doSymmetric(CMD q)  throws IOException, BoxerXMLException , org.xml.sax.SAXException {
+	String in1 = q.f, in2 = q.f2;
+	if (in2==null) {
+	    usage("'Symmetric' commands expect two arguments'");
+	}
+
+	String in1base = DataSourceParser.baseName(in1);
+	String in2base = DataSourceParser.baseName(in2);
+
+	if (q.is(CMD_SYM1)) { 
+	    // building a joint model on the union of the two ontologies   
+	    System.out.println("Matching method: SYM1");
+
+	    final String  prefix1 = "DS1_", prefix2= "DS2_";
+	    
+	    // Create a single suite for bothe data sources, and read
+	    // the first data source in
+	    System.out.println("Reading DS1 from file: "+in1);
+	    DataSourceParser pJoint = 
+		DataSourceParser.parseFile(in1, null, null,prefix1);
+	    // how many examples in the first data set?
+	    int ds1size = pJoint.data.size();
+	    int M1 = pJoint.dis.claCount(); 
+	    // read the second data source into the same suite
+	    System.out.println("Reading DS2 from file: "+in2);
+	    pJoint.readData(in2, true, prefix2);
+	    int M2 = pJoint.dis.claCount() - M1; 
+	    System.out.println("Found "+M1 + " columns in DS1, "+M2+" columns in DS2");	    
+
+	    // train the joint learner on the examples from both data sources
+	    train(pJoint);
+	    // apply the joint model to all columns from both DS
+	    AvgScores avg = new AvgScores( pJoint, pJoint);
+
+	    double[][] p = AvgScores.array(M1,M2);
+	    for(int i0=0; i0<M2; i0++) {
+		int i = M1 + i0;
+		if (avg.count[i] > 0) {
+		    for(int j=0; j<M1; j++) {
+			double f =  avg.avgProb[i][i]* avg.avgProb[j][j];
+			f = (f==0 ? 0 : 1/f);
+			p[i0][j] =  
+			    Math.sqrt(avg.avgProb[i][j]*avg.avgProb[j][i]*f);
+		    }
+		}
+	    }
+	    reportConfusionMatrix(pJoint, pJoint, 0, M1,  M1, M1+M2,
+				  prefix1, prefix2,
+				  p, false,
+				  "Sym1, "+ in1base + " | " + in2base);
+ 
+	} else if (q.is(CMD_SYM2)) {
+	    // Two separate models, one for each DS
+	    System.out.println("Reading DS1 from file: "+in1);
+	    DataSourceParser p1 = DataSourceParser.parseFile(in1);
+	    System.out.println("Reading DS2 from file: "+in2);
+	    DataSourceParser p2 = DataSourceParser.parseFile(in2, p1.suite.getDic());
+	    int M1 = p1.dis.claCount(); 
+	    int M2 = p2.dis.claCount(); 
+	    Logging.info("Sym2: M1="+M1+", M2=" +M2);
+
+
+	    // train both learners
+	    train(p1);
+	    train(p2);
+
+
+	    // Compute  self-probs (for normalization in cosine formula)
+	    Aux1 sp1 =  selfProb(p1);
+	    Aux1 sp2 =  selfProb(p2);
+
+	    // Apply the model trained on each DS to the other DS
+	    AvgScores s12 = new AvgScores( p1, p2);
+	    AvgScores s21 = new AvgScores( p2, p1);
+	    
+	    double[][] p = AvgScores.array(M1,M2);
+	    for(int i=0; i<M2; i++) {
+		for(int j=0; j<M1; j++) {
+		    if (s12.count[i] > 0 && s21.count[j] > 0) {
+			double f =  sp1.selfProb[j] * sp2.selfProb[i];
+			f = (f==0 ? 0 : 1/f);
+			p[i][j] =  
+			    Math.sqrt(s12.avgProb[i][j]*s21.avgProb[j][i]*f);
+		    }
+		}
+	    }
+
+	    reportConfusionMatrix(p1, p2,  p, false,
+				  "Sym2, "+ in1base + " | " + in2base);
+ 
+
+	} else {
+	    throw new IllegalArgumentException(q.toString());
+	}  
+    }
+
+
+
     /** Result type for a function below */
     static private class Aux1 {
-	double[] sqrtSelfProb;
+	double[] selfProb;
 	int[] count;
 	Aux1(int M1) {
-	    sqrtSelfProb = new double[M1];
+	    selfProb = new double[M1];
 	    count = new int[M1];
 	}
     }
 
-    /** Probabilities of the old data source's columns'
-	self-assignment (under the simple arithmetic-mean model).
+    /** The averaged probabilities of the old data
+	source's columns' self-assignment (under the simple
+	arithmetic-mean model).
      */
-    static  Aux1 sqrtSelfProb(DataSourceParser p1) {
+    static  Aux1 selfProb(DataSourceParser p1) {
+
 	int M1 = p1.dis.claCount();
 
 	Aux1 r = new Aux1(M1);
@@ -485,13 +655,13 @@ public class Driver {
 	    // overcoming underflow...
 	    double[] logProb = algo.applyModelLog(p)[did];
 	    double[] prob = expProb(logProb);
-	    r.sqrtSelfProb[newCid] += prob[newCid];
+	    r.selfProb[newCid] += prob[newCid];
 	    r.count[newCid] ++;
 	}
 
 	for(int i=0; i<M1; i++) {
-	    r.sqrtSelfProb[i] = (r.count[i]==0)? 0 :
-		Math.sqrt( r.sqrtSelfProb[i]/r.count[i]);
+	    r.selfProb[i] = (r.count[i]==0)? 0 :
+		 r.selfProb[i]/r.count[i];
 	}
 
 	return r;
@@ -501,29 +671,64 @@ public class Driver {
     private static void reportConfusionMatrix(DataSourceParser p1, DataSourceParser p2,
 					      double prob[][],boolean isLog, 
 					      String name)    {
+	reportConfusionMatrix(p1,p2, 0, p1.dis.claCount(), 0, p2.dis.claCount(),
+			      "", "", 
+			      prob, isLog, name);
+
+    }
+
+    /**
+       Prints the content of the confusion matrix
+
+       @param p1 The DSP instance whose columns [p1from .. p1to)
+       (typically, all columns) correspond to DS1
+
+       @param p2 The DSP instance whose columns [p2from .. p2to)
+       (typically, all columns) correspond to DS2
+
+       @param prefix1 Prefix (typically, an empty string) to be found
+       in and removed from column names in DS1
+
+       @param prefix2 Prefix (typically, an empty string) to be found
+       in and removed from column names in DS1
+
+       @param prob The confusion matrix sized[ p2to-p2from][p1to - p1from]
+
+       @param isLog True means that prob contains logs of scores, rather
+       than scores themselves
+     */
+    private static void reportConfusionMatrix(DataSourceParser p1, DataSourceParser p2,
+					      int p1from, int p1to,
+					      int p2from, int p2to,
+					      String prefix1, String prefix2,
+					      double prob[][],boolean isLog, 
+					      String name)    {
+
 	NumberFormat fmt = new DecimalFormat("0.0000");
-	int M1 = p1.dis.claCount();
-	int M2 = p2.dis.claCount();
 	System.out.println("=== Confusion matrix - "+name+" ===");
-	for(int i=0; i<M2; i++) {
-	    for(int j=0; j<M1; j++) {
+	Logging.info("" + p2from + " <=i< " + p2to + "; " +
+		     p1from + " <=j< " + p1to);
+	for(int i=p2from; i<p2to; i++) {
+	    for(int j=p1from; j<p1to; j++) {
 		if (j>0) System.out.print("\t");
-		double q = isLog? Math.exp(prob[i][j]): prob[i][j];
-		System.out.print("P(" + p1.dis.getClaById(j).getName() + "|" + 
-				 p2.dis.getClaById(i).getName() + ")=" + q);
+		double p = prob[i-p2from][j-p1from];
+		double q = isLog? Math.exp(p): p;
+		System.out.print("P(" + 
+				 p1.getColName(j, prefix1) + "|" + 
+				 p2.getColName(i, prefix2) + ")=" + q);
 	    }
 	    System.out.println();
 	}
 
 	System.out.println("=== Top matches - "+name+" ===");
-	for(int i=0; i<M2; i++) {
-	    ScoreWrapper[] w=sortScores( prob[i] );
-	    System.out.print( p2.dis.getClaById(i).getName() + " :");
+	for(int i=p2from; i<p2to; i++) {
+	    ScoreWrapper[] w=sortScores( prob[i-p2from]);
+	    System.out.print( p2.getColName(i, prefix2) + " :");
 	    for(int k=0; k<3 && k<w.length; k++) {
 		double q = isLog? Math.exp(w[k].value): w[k].value;
 				
-		System.out.print("\t{"+p1.dis.getClaById(w[k].i).getName() + 
-				 "=" + q + "}");
+		System.out.print("\t{"+p1.getColName(p1from+w[k].i, prefix1)+ 
+				 "=" + fmt.format(q) + "}");
 	    }
 	    System.out.println();
 	}
@@ -550,10 +755,13 @@ public class Driver {
     }
 
     /** descending sort */
-    static ScoreWrapper[] sortScores(double[] scores) {
-	ScoreWrapper[] w = new ScoreWrapper[scores.length];
-	for( int k=0; k< scores.length; k++) {
-	    w[k]=new ScoreWrapper(k, scores[k]);
+    private static ScoreWrapper[] sortScores(double[] scores) {
+	return sortScores(scores, 0, scores.length);
+    }
+    private static ScoreWrapper[] sortScores(double[] scores, int from, int to) {
+	ScoreWrapper[] w = new ScoreWrapper[to-from];
+	for( int k=from; k< to; k++) {
+	    w[k-from]=new ScoreWrapper(k, scores[k]);
 	}
 	Arrays.sort(w);
 	return w;

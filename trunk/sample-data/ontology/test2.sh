@@ -21,13 +21,15 @@ set onto=edu.dimacs.mms.applications.ontology.Driver;
 set wits=$HOME/boxer/WITS
 
 set log=emptySpecial.log
+set dir=matrix-1e-3-empty=special.v4/
 
-time java $opt -Dverbosity=1  -Dlearn.rep=1 -Dlearner=notg-learner-param-eta=0_001.xml -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8 \
+time java $opt -Dverbosity=1  -Dlearn.rep=1 -Dlearner=notg-learner-param-eta=0_001.xml -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-3 \
 -Dinput.gram=0 -Dinput.empty.skip=false  -Dinput.empty.special=true \
 $onto train:$wits/safeWITS_2006_03.1-100.txt test:$wits/safeWITS_2006_03.1-100.txt > $log
 
 ./matrix2html.pl $log
- mv matrix-?.* $log  out-safeWITS_2006_03.1-100.xml matrix-1e-8-empty=special.v2/
+mkdir $dir
+ mv matrix-?.* $log  out-safeWITS_2006_03.1-100.xml $dir
 
 
 #java $opt -Dverbosity=1  -Dlearn.rep=1 -Dlearner=notg-learner-param-eta=0_001.xml -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=0.001 \

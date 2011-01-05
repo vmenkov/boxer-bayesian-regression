@@ -213,7 +213,7 @@ public class TruncatedGradient extends PLRMLearner {
 	/** Runs Steepest Descent (a batch method) with adaptive
 	    learning rate until it converges.
 
-	    <p>The value of {@link Suite.verbosity} is used to control
+	    <p>The value of {@link Suite#verbosity} is used to control
 	    what, if anything, is reported during the iterative process.
 
 	    <p>The process optimizes the works lof-likelihood (L) as a
@@ -266,7 +266,8 @@ public class TruncatedGradient extends PLRMLearner {
 	    </ul>
 
 	    <p>The above process, of course, is quite expensive, since
-	    it requires re-computing log-likelihood at every step.
+	    it requires re-computing log-likelihood (a very expensive
+	    function!) at every step.
 
 	    @param xvec xvec[i1:i2-1] is interpreted as the training
 	    set over which the log-likelihood is maximized.
@@ -383,15 +384,15 @@ public class TruncatedGradient extends PLRMLearner {
 			if (Suite.verbosity>0) {
 			    System.out.println("[SD] [BONUS OK] eta=" + eta + ", L=" + newLogLik);
 			}
-			// stop going if it's not too useful anymore.
+			// Stop going along this direction if it's not
+			// too useful anymore.
 			if (bonusDelta < eps) break;
 		    } else {
-			// a jump too far; undo!
+			// A jump too far; undo!
 			w.setMatrixFrom(savedW);
 			if (Suite.verbosity>0) {
 			    System.out.println("[SD] [BONUS UNDONE] eta=" + eta + ", L=" + newLogLik);
 			}
-
 			break;
 		    }
 		}

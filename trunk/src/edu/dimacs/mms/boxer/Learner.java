@@ -771,7 +771,8 @@ public abstract class Learner implements Model {
 	blocks = b;
     } 
 
-    
+    /** "Links" a learner with a particular suite. This method is typically
+     invoked from Learner constructors. */
     final void setSuite(Suite _suite) {
 	suite = _suite;
 	suite.addLearner(this);
