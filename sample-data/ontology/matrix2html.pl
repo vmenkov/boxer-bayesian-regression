@@ -45,6 +45,10 @@ my $inside = 0;
 
 my $s;
 my $rowCnt=0;
+
+my @inTop=(0,0,0);
+my $diagCnt=0;
+
 while(defined ($s = <>)) {
  
     if ($s =~ /^=+ Confusion matrix -(.*?)=*\s*$/) {
@@ -64,14 +68,12 @@ while(defined ($s = <>)) {
 	    "<h1>$title</h1>" .
 	    "<table border=1>\n";
 	$inside=1;
-	$rowCnt=0;
 	next;
     }
 
     if ($s !~ /^P\(.+?\)/) {
 	if ($inside) {
 	    &finalizeFile();
-	    $inside=0;
 	}
 	next;
     }
@@ -126,6 +128,16 @@ while(defined ($s = <>)) {
 	}
 	    
 
+	#-- if the diag value the top? the second from top? ...
+	if ($diag == 2) {
+	    $diagCnt++;
+	    for(my $k=0; $k<3; $k++) {
+		if ($indexes[$k]==$colCnt) {
+		    $inTop[$k]++;
+		}
+	    }
+	}
+
 
 	my $att = ($diag==0) ? '' :
 	    ' bgcolor="'. ($diag==2 ? "#ffff90" : "#ffffd8") . '"';
@@ -144,6 +156,7 @@ while(defined ($s = <>)) {
     $rowCnt++;
 }
 
+
 #-- Appends a modifier element before and after a given text
 sub wrap($$) {
     my ($text, $mod) = @_;
@@ -152,10 +165,25 @@ sub wrap($$) {
 
 
 sub finalizeFile() {
+#-- compute cumulative numbers
+    for(my $k=1; $k<3; $k++) {
+	$inTop[$k] += $inTop[$k-1];
+    }
+
     print G  "</table>\n" .
-	 "</body></html>\n";
+	"<p>Out of the $diagCnt diagonal elements:<ul>\n" .
+	"<li>$inTop[0] are the top ones in their row,\n".
+	"<li>$inTop[1] are in the top 2,\n".
+	"<li>$inTop[2] are in the top 3\n".
+	"</p>\n".
+	"</body></html>\n";
     close(G);
     close(H);
+
+    $inside=0;
+    $rowCnt=0;
+    $diagCnt=0;
+    @inTop=(0,0,0);
 }
 
 
