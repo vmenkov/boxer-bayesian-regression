@@ -66,7 +66,7 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 		} else {
 		    
 		    // Verify the existence of eacj named column
-		    if (dis.getCla( hv.elementAt(i))==null) {
+		    if (dis.getCla( colPrefix )==null) {
 			throw new IllegalArgumentException("Data mismatch: class " +  hv.elementAt(i) + " found in the data source file " +fname+", but not found in the pre-reas suite!");
 		    }
 		}
