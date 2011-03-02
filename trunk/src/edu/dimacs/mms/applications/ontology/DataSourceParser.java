@@ -8,10 +8,12 @@ import org.w3c.dom.Element;
 import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.borj.*;
 
-/** Methods for converting a data source file into an internal
-    representation suitable for use with BOXER. The list of columns is
-    converted into a discrimination; cells of a table, into data
-    points, assigned to the classes corresponding to the columns.
+/** A DataSourceParser instance is a wrapper for all the data obtained
+    from a data soruce description file. This class contains methods
+    for converting a data source file into an internal representation
+    suitable for use with BOXER. The list of columns is converted into
+    a discrimination; cells of a table, into data points, assigned to
+    the classes corresponding to the columns.
 
     This is an abstract class; its concrete derived classes handle
     particular data file formats (CVS etc).
@@ -58,7 +60,8 @@ abstract class DataSourceParser {
        classes already defined in it) instead of creating a new one
      */
     static DataSourceParser parseFile(String fname, FeatureDictionary dic,
-					      Suite reuseSuite, String colPrefix) throws BoxerXMLException {
+				      Suite reuseSuite, String colPrefix)
+	throws BoxerXMLException {
 	if (dic!=null && reuseSuite!=null) throw new  IllegalArgumentException("At most, only one of dic and reuseSuite should be non-null");
 
 	DataSourceParser p = null;
