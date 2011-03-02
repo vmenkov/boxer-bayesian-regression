@@ -325,9 +325,10 @@ public class Driver {
 	    suite =  p1.suite;
 	    q = cm.next();
 	} else 	if (q.is(CMD.READ)) {
-	    // Reading a complete learner complex (i.e., a pre-computed
-	    // model), and then reading the
-	    // orignal data source  (which we'll need for normalization)
+	    // Reading a complete learner complex (i.e., a
+	    // pre-computed model), and then reading the orignal data
+	    // source on which that learner has been trained (which
+	    // we'll need for normalization)
 
 	    String inMatrix= q.f2;
 	    in1=q.f;
