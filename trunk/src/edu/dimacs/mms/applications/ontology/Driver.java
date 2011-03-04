@@ -250,7 +250,8 @@ public class Driver {
     }
 
     /** Additional commands (not listed in CMD.java) */
-    static final String CMD_SYM1="sym1", CMD_SYM2="sym2";
+    static final String CMD_SYM1="sym1", CMD_SYM2="sym2",
+       CMD_VEC_COS="vec_cos", CMD_VEC_JS="vec_js";
 
     /** Learning options (initialized in main()) */
     static private boolean emulateSD = false, adaptiveSD=false;
@@ -267,6 +268,7 @@ public class Driver {
 	Suite.verbosity = ht.getOption("verbosity", 0);
 	emulateSD = ht.getOption("learn.sd", false);
 	adaptiveSD = ht.getOption("learn.adaptive", false);
+	eps = ht.getOptionDouble("learn.eps", 1e-8);
 	eps = ht.getOptionDouble("learn.eps", 1e-8);
 
 	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
@@ -300,14 +302,17 @@ public class Driver {
 	String in1=null;
 	boolean alreadyTrained = false;	
 
-	CMD.setTwoArgCmd(new String[] {CMD.READ, CMD_SYM1, CMD_SYM2});
+	CMD.setTwoArgCmd(new String[] {CMD.READ, CMD_SYM1, CMD_SYM2,
+				       CMD_VEC_COS, CMD_VEC_JS
+	    });
 
 	CmdManager cm  = new CmdManager(argv);
 	CMD q = cm.next();
 
 	if (q==null) {
 	    usage(); // no args
-	} else if (q.is(CMD_SYM1) || q.is(CMD_SYM2)) {
+	} else if (q.is(CMD_SYM1) || q.is(CMD_SYM2) ||
+		   q.is(CMD_VEC_COS) || q.is(CMD_VEC_JS)   ) {
 	    // One of the symmetric methods
 	    doSymmetric( q);
 	    CMD q0 = q;
@@ -638,6 +643,37 @@ public class Driver {
 	    reportConfusionMatrix(p1, p2,  p, false,
 				  "Sym2, "+ in1base + " | " + in2base);
  
+	} else if (q.is(CMD_VEC_COS) || q.is(CMD_VEC_JS)) {
+	    
+	    // Vector representation (on the same dictionary)
+	    // for each data source
+	    System.out.println("Reading DS1 from file: "+in1);
+	    DataSourceParser p1 = DataSourceParser.parseFile(in1);
+	    System.out.println("Reading DS2 from file: "+in2);
+	    DataSourceParser p2 = DataSourceParser.parseFile(in2, p1.suite.getDic());
+	    int M1 = p1.dis.claCount(); 
+	    int M2 = p2.dis.claCount(); 
+
+	    String vms = ht.getOption("vec.mode",null);
+	    FrequencyTable.Mode  mode = (vms==null? FrequencyTable.Mode.TF :
+					 FrequencyTable.Mode.valueOf(vms));
+
+	    Logging.info(q + " (mode="+mode+"): M1="+M1+", M2=" +M2);
+
+	    FrequencyTable ft1 = new FrequencyTable(p1, mode);
+	    FrequencyTable ft2 = new FrequencyTable(p2, mode);
+
+	    if (q.is(CMD_VEC_COS)) {
+		double [][] p = ft2.cosineSim(ft1);
+		reportConfusionMatrix(p1, p2,  p, false,
+				      "CosineSimilarity(mode="+mode+"), "+ in1base + " | " + in2base);
+ 
+
+	    } else if  (q.is(CMD_VEC_JS)) {
+		double [][] p = ft2.jensenShannonDivergence(ft1);
+		reportConfusionMatrix(p1, p2,  p, false,
+				      "JensenShannonDivergence(mode="+mode+"), "+ in1base + " | " + in2base);
+ 	    } 
 
 	} else {
 	    throw new IllegalArgumentException(q.toString());

@@ -10,9 +10,9 @@ import org.apache.xerces.dom.DocumentImpl;
 
 
 /** A DataPoint represents a document, or some other object
-    ("example") being classified.  Once read in and stored, DataPoint
-    objects can be passed to learners for training (be "absorbed") or
-    scoring.
+    ("example") being classified, converted to a feature vector.  Once
+    read in and stored, DataPoint objects can be passed to learners
+    for training (be "absorbed") or scoring.
 
     <p>For the convenience of reporting etc, each DataPoint carries an
     identifier (name). The identifier is immutable, i.e. it is given
@@ -75,8 +75,12 @@ public class DataPoint implements Measurable  {
     FeatureDictionary dic;
     /** Feature ids, as per the FeatureDictionary, in increasing order */
     int[] features;
-    /** Feature values */
+    /** List of feature ids */
+    public int[] getFeatures() { return features; }
+    /** Feature values. Application programs should not modify this array. */    
     double[] values;
+    /** List of values (in the same order as features). Application programs should not modify this array. */
+    public double[] getValues() { return values; }
     /** Name of this data point. It is used for human readability, as
       well as for matching dataset files with label files, and for identifying
       examples in output score files.
@@ -965,6 +969,14 @@ public class DataPoint implements Measurable  {
 	return classList.equals(o.classList);
     }
 
+    /*
+    static public class Pair { 
+	public int feature;
+	public double value;
+    }
+  
+    Iterator<Pair> iterator() ....
+    */
 }
 
 /*

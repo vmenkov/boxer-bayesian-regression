@@ -10,7 +10,7 @@
 # Sample Usage:
 #
 # java ... edu.dimacs.mms.applications.ontology.Driver train:... test:... > out.log
-# matrix2html.pl [-diag=off|pos|names] out.log
+# matrix2html.pl [-diag=off|pos|names] [-div] out.log
 #
 # The -diag option controls what cells recognized as "diagonal" and
 # painted yellow. With -diag=off, no cells are so marked. With
@@ -20,7 +20,12 @@
 # source). With -diag=names, the script analyzes column names instead, 
 # identifying both diagonal cells (identical, or nearly identical, names)
 # and diagonal blocks (names different only by a numerical suffix).
-#-----------------------------------------------------------------------------
+#
+# The -div option means that the values must be interpreted as
+# "divergence" (non-negative numbers, with 0 meaning greatest
+# similarity) rather than as "similarity" (where greater numbers mean
+# greater similarity)
+# -----------------------------------------------------------------------------
 
 use strict;
 
@@ -38,6 +43,8 @@ if ($::diag eq 'off') {
 } else {
     die "Illegal option value: -diag=$::diag. Legal values are off|pos|names\n";
 }
+
+my ($isDivergence) = ($::div ? 1 : 0);
 
 my @colNames=();
 my $matNo=0;
@@ -112,10 +119,14 @@ while(defined ($s = <>)) {
 
     print H join(",", map{ '"' . $_ . '"'; } @longnums) . "\n";
 
-    #-- Find top values, using desc sort
+    #-- Find top similarity values, using desc sort 
     my @indexes = ($0..$#nums);
-    @indexes = sort {$nums[$b]<=>$nums[$a]} @indexes;
-
+    if ($isDivergence) {
+	#-- (or ascending sort, when sorting divergence values)
+	@indexes = sort {$nums[$a]<=>$nums[$b]} @indexes;
+    } else {
+	@indexes = sort {$nums[$b]<=>$nums[$a]} @indexes;
+    }
 
     $colCnt=0;
     foreach my $num (@nums) {
@@ -142,7 +153,11 @@ while(defined ($s = <>)) {
 	my $att = ($diag==0) ? '' :
 	    ' bgcolor="'. ($diag==2 ? "#ffff90" : "#ffffd8") . '"';
 	my $text = $num;
-	if ($num >= 0.1) {
+
+	#-- is the similarity at least somewhat close?
+	my $close = ($isDivergence ? ($num <= 0.1) : ($num>=0.1));
+
+	if ($close) {
 	    $text = &wrap($text, "i");
 	}
 	if ($colCnt == $indexes[0]) {
