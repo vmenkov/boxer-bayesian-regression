@@ -37,6 +37,12 @@ class InputOptions {
 	return false;
     }
 
+    /** This flag indicates if we use tokens (words, mostly) as features. 
+	We normally do, of course, unless the user explicitly asks not to
+	use them (so that he can only use n-grams instead)
+    */
+    boolean useWords = true;
+
     /** Max length of an "n-gram". E.g. if it's 0, we don't index on
 	characters; if 1, we use single chars as features; if 2, we also 
 	use 2-grams, etc.
@@ -54,6 +60,7 @@ class InputOptions {
     /** Initializes config params from the Java system properties
      */
     void init(ParseConfig ht) {
+	useWords = ht.getOption("input.words", true);
 	ridColumn =  ht.getOption( "input.rid", ridColumn );
 	setExcludableColumns( ht.getOption("input.exclude", ""));
 	maxCharSeqLen = ht.getOption("input.gram", maxCharSeqLen);

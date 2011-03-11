@@ -141,9 +141,11 @@ abstract class DataSourceParser {
     }
 
 
-    /** Returns a DataPoint based on the content of a cell. Will
-	return null (if the cell is empty, and the emptySkip flag is
-	on).
+    /** Returns a DataPoint based on the content of a cell. Based on
+	{@link InputOptions}, the DataPoint will include features
+	corresponding to words and/or n-grams of the cell's text, or a
+	special feature indicating an empty cell. The method will
+	return null if if the cell is empty, and the emptySkip flag is on.
      */
     DataPoint mkDataPoint(String cell, String rowName, String colName, FeatureDictionary dic) throws BoxerXMLException  {
 	// condense white space, remove the special char
@@ -152,16 +154,18 @@ abstract class DataSourceParser {
 	BagOfWords bag = new BagOfWords();
 
 	// words (i.e., tokens separated by "word boundaries")
-	String[] words = cell.split("\\b");
-	for(String w: words) {
-	    w=w.replaceAll("\\s", "");
-	    if (w.length()>0) bag.add("@@w." + w);
+	if (inputOptions.useWords) {
+	    String[] words = cell.split("\\b");
+	    for(String w: words) {
+		w=w.replaceAll("\\s", "");
+		if (w.length()>0) bag.add("@@w." + w);
+	    }
 	}
 
 	// single chars, 2-grams, etc. 2-grams etc don't include 
 	// spaces, and don't go across spaces
 
-	words = cell.split("\\s+");
+	String[] words = cell.split("\\s+");
 	for(String w: words) {
 	    for(int len=1; len<=inputOptions.maxCharSeqLen; len++) {
 		for(int start=0; start+len <= w.length(); start++) {

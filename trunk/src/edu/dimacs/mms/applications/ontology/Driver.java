@@ -49,6 +49,10 @@ import edu.dimacs.mms.borj.CMD;
     scores for the cells of <em>C'<sub>j</sub></em>.
     </ol>
 
+    <p>There are also "symmetric" methods, where, instead of separate
+    "Training" and "Alignment" steps, a matching algorithm is applied
+    to both data sources simultaneously,
+
     <p>The tokenization process and the training process are both
     controlled by command-line arguments.
 
@@ -85,10 +89,24 @@ import edu.dimacs.mms.borj.CMD;
 <li>To use another "symmetric" method (sym2), which builds a model on each of the two data sources, and then applies each model to the other data source:
 <pre> java [options] edu.dimacs.mms.applications.ontology.Driver sym2:dataSource1.csv:dataSource2.csv
 </pre>
-
 </ol>
 
-<p>A particularly recommended set of options for training is 
+There are also two "non-Bayesian" methods. Instead of laboriously
+training a Bayesian model, they map each field (column) of each data
+source to a feature vector, and directly compute similarity of these
+vectors. Sample commands are as follows:
+
+<ol>
+<li>To use cosine similarity of feature vectors:
+<pre> java [options] edu.dimacs.mms.applications.ontology.Driver vec_cos:dataSource1.csv:dataSource2.csv
+</pre>
+
+<li>To use Jensen-Shannon divergence between feature vectors:
+<pre> java [options] edu.dimacs.mms.applications.ontology.Driver vec_js:dataSource1.csv:dataSource2.csv
+</pre>
+</ol>
+
+<p>A particularly recommended set of options for training Bayesian learners is 
 <pre>
    -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8
 </pre> 
@@ -151,7 +169,7 @@ val1|val2|...|val_N
    model to the other data source) and symmetric (when both data
    sources are used during the training and the testing). If a
    symmetric algorithm is used in a situation when the two data
-   sources are identical, it is guaramteed to produce a symmetric
+   sources are identical, it is guaranteed to produce a symmetric
    confusion matrix.
 
    <p>On every BOA run involving asymmetric alignment algorithms, the
@@ -183,17 +201,23 @@ val1|val2|...|val_N
    <p> <b>Tokenization process</b> - these options control how the
    contents of each cell of the data source (i.e., a text string) are
    converted to a data point, i.e. a feature vector. A feature vector
-   for a given cell may contain token of anyt of the three types:
-   <b>word</b>-based, <b>character-sequence</b>-based, and
-   <b>special</b>. A vector generated for a cell may contain no
+   for a given cell may contain tokens of any of the three types:
+   <ul>
+   <li><b>word</b>-based; 
+   <li><b>character-sequence</b>-based;
+   <li><b>special</b>.
+   </ul> A vector generated for a cell may contain no
    feature at all (a zero vector); this must be distingished from 
    not generating a vector for that cell at all.
 
    <ul>
 
+   <li>-Dinput.words=true : If true (which is the default), words are
+   used as features.
+
    <li>-Dinput.gram=2 : An integer indicating the maximum length of
    "<em>n</em>-grms" (character sequences) used as features. E.g.,
-   -Dinput.gram=0 means that no character sequences are used;
+   -Dinput.gram=0 means that no character sequences are used as features;
    -Dinput.gram=1 means that features for individual characters are used;
    -Dinput.gram=2 means that, BOA also creates  features for 2-grams; etc.
    
@@ -203,10 +227,10 @@ val1|val2|...|val_N
    <li>-DemptySpecial=true|false If true, a special feature is used to
    mark empty cells. The default is true.
 
- </ul>
+   </ul>
 
    <p> 
-   (b) <b>Learning options</b> tell BOA how to construct a model on the set of data points generated from the data source.
+   (b) <b>Learning options</b> tell BOA how to construct a Bayesian model on the set of data points generated from the data source.
 <ul>
 <li>
      -Dlearner=learner.xml  : Learner description file, 
@@ -227,8 +251,18 @@ TG with theta=0, i.e. SGD).
      -Dlearn.eps=1e-8 : The convergence criterion for adaptive SD (in terms of log-likelihood).
 </ul>
 
+<P>Note: No learner options need to be used when using a non-Bayesian method (cosine similarity of JSD).
+
+ <p>
+   (c) Special options for non-Bayesian methods (cosine similarity and JSD)
+
+<ul>
+<li>
+ -Dvec.mode=TF|PREVALENCE : This controls how the feature vector describing a field (column) of a data source is assembled from the fature vectors for individual cells. The default mode, TF, adds term frequencies from each cell within the column; the PREVALENCE mode simply counts the number of cells within the column in which the term is present.
+</ul>
+
    <p>
-   (c) Miscellaneous options
+   (d) Miscellaneous options
 <pre>
      -Dverbosity=0 : verbosity level (0 or higher)
 </pre>
