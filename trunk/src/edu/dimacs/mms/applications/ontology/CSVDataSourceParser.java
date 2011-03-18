@@ -32,5 +32,4 @@ class CSVDataSourceParser extends LineBasedDataSourceParser {
 	return v;
     }
 
-    
 }
