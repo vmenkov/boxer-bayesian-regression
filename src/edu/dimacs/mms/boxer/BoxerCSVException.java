@@ -1,9 +1,11 @@
 package edu.dimacs.mms.boxer;
 
-/** An exception of this class, or subclass, may be thrown by Boxer on
- * encountering certain problems */
-public class BoxerException extends Exception {
-    public BoxerException(String msg) {
+/** An exception of this type may be thrown by a Boxer application during
+ * parsing a CSV file.
+ 
+ */
+public class BoxerCSVException extends BoxerException {
+    public BoxerCSVException(String msg) {
 	super(msg);
     }
 } 
