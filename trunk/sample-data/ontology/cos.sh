@@ -23,21 +23,45 @@ set wits=$HOME/boxer/WITS
 
 set sym=vec_cos
 
-set log=${sym}-safe-vs-self.log
-set dir=matrix-${sym}-safe-vs-self
-time java $opt -Dverbosity=1  -Dvec.mode=TF \
--Dinput.gram=0 -Dinput.empty.skip=false -Dinput.empty.special=true \
-$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/safeWITS_2006_03.1-100.txt  > $log
 
-#set log=${sym}-safe-vs-sent.log
-#set dir=matrix-${sym}-safe-vs-sent
-#time java $opt -Dverbosity=1  -Dvec.mode=TF \
-#-Dinput.gram=0 -Dinput.empty.skip=false -Dinput.empty.special=true \
-#$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/Sent2010.12.21WITS_2006_04.1-100.txt  > $log
+set logbase=${sym}-word-gram2-safe-vs-self
+set log=${logbase}.log
+set dir=matrix-${logbase}
+
+
+time java $opt -Dverbosity=1  -Dvec.mode=TF \
+-Dinput.word=true -Dinput.gram=2 -Dinput.empty.skip=false -Dinput.empty.special=true \
+$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/safeWITS_2006_03.1-100.txt  > $log
 
 
 cp $log $log.bak
+./matrix2html.pl $log
+mkdir $dir
+mv matrix-?.* $log  $dir
 
+
+set logbase=${sym}-word-gram2-safe-vs-sent1
+set log=${logbase}.log
+set dir=matrix-${logbase}
+
+time java $opt -Dverbosity=1  -Dvec.mode=TF \
+-Dinput.word=true -Dinput.gram=2 -Dinput.empty.skip=false -Dinput.empty.special=true \
+$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/Sent2010.12.21WITS_2006_04.1-100.txt  > $log
+
+cp $log $log.bak
+./matrix2html.pl $log
+mkdir $dir
+mv matrix-?.* $log  $dir
+
+set logbase=${sym}-word-gram2-safe-vs-sent2
+set log=${logbase}.log
+set dir=matrix-${logbase}
+
+time java $opt -Dverbosity=1  -Dvec.mode=TF \
+-Dinput.word=true -Dinput.gram=2 -Dinput.empty.skip=false -Dinput.empty.special=true \
+$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/Sent2010.12.21WITS_2006_04.500-600.txt  > $log
+
+cp $log $log.bak
 ./matrix2html.pl $log
 mkdir $dir
 mv matrix-?.* $log  $dir
