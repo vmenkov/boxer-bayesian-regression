@@ -1,6 +1,6 @@
 package edu.dimacs.mms.applications.util;
 
-//import edu.dimacs.mms.boxer.ParseConfig;
+import edu.dimacs.mms.boxer.ParseConfig;
 
 /** An instance of this class stores various flags controlling the
     processing of input data source files. */
@@ -25,4 +25,15 @@ public class TokenizerOptions {
 	of simply a zero vector.)
      */ 
     public boolean emptySpecial; 
+
+
+    /** Initializes config params from the Java system properties
+     */
+    public void init(ParseConfig ht) {
+	useWords = ht.getOption("input.words", true);
+	maxCharSeqLen = ht.getOption("input.gram", maxCharSeqLen);
+	emptySkip =  ht.getOption("input.empty.skip", false);
+	emptySpecial =  ht.getOption("input.empty.special", true);
+    }
+
 }

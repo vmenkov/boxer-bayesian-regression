@@ -7,7 +7,8 @@ import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.borj.*;
-
+import edu.dimacs.mms.applications.util.TokenizerOptions;
+import edu.dimacs.mms.applications.util.BagOfWords;
 /** A DataSourceParser instance is a wrapper for all the data obtained
     from a data soruce description file. This class contains methods
     for converting a data source file into an internal representation
@@ -122,77 +123,28 @@ abstract class DataSourceParser {
 			   String classNamePrefix
 			   ) throws BoxerXMLException;
 
-
-    private class BagOfWords extends HashMap<String, Integer> {
-	BagOfWords() { super(); }
-	void add(String w) {
-	    int x = containsKey(w) ? get(w).intValue() : 0;
-	    put( w, x+1);
-	}
-
-	Vector<DataPoint.FVPair> toVector() throws BoxerXMLException {
-	    Vector<DataPoint.FVPair> v = new Vector<DataPoint.FVPair>();
-	    for( Map.Entry<String, Integer> e: entrySet()) {
-		v.add(new DataPoint.FVPair( suite.getDic().getIdAlways(e.getKey()),  e.getValue().intValue()));
-	    }
-	    return v;    
-	}
-	
-    }
-
-
     /** Returns a DataPoint based on the content of a cell. Based on
 	{@link InputOptions}, the DataPoint will include features
 	corresponding to words and/or n-grams of the cell's text, or a
 	special feature indicating an empty cell. The method will
 	return null if if the cell is empty, and the emptySkip flag is on.
      */
-    DataPoint mkDataPoint(String cell, String rowName, String colName, FeatureDictionary dic) throws BoxerXMLException  {
-	// condense white space, remove the special char
-	cell = cell.trim().replaceAll("[\\s\\^]+", " ");
+    DataPoint mkDataPoint(String cell, String rowName, String colName, FeatureDictionary dic, TokenizerOptions options) throws BoxerXMLException  {
 
-	BagOfWords bag = new BagOfWords();
+	BagOfWords bag = BagOfWords.mkBagOfWords( cell, inputOptions);
 
-	// words (i.e., tokens separated by "word boundaries")
-	if (inputOptions.useWords) {
-	    String[] words = cell.split("\\b");
-	    for(String w: words) {
-		w=w.replaceAll("\\s", "");
-		if (w.length()>0) bag.add("@@w." + w);
-	    }
-	}
-
-	// single chars, 2-grams, etc. 2-grams etc don't include 
-	// spaces, and don't go across spaces
-
-	String[] words = cell.split("\\s+");
-	for(String w: words) {
-	    for(int len=1; len<=inputOptions.maxCharSeqLen; len++) {
-		for(int start=0; start+len <= w.length(); start++) {
-		    String gram = w.substring( start, start+len);
-		    // to save space, we only add the "char" prefix
-		    // in one special case.
-		    if (gram.startsWith("@")) gram = "@@c." + gram;
-		    bag.add( gram);
-		}
-	    }
-	}
-
-	if (bag.size()==0) {
-	    if (inputOptions.emptySkip) return null;
-	    else if (inputOptions.emptySpecial) bag.add("@@empty");
-	}
+	if (bag==null) return null;
 
 	try {
-	    DataPoint p=
-		new DataPoint(bag.toVector(), suite.getDic(), rowName+"_"+colName);
+	    String pointName = rowName+"_"+colName;
+	    DataPoint p= new DataPoint(bag.toVector(dic), dic, pointName);
 	    Vector<Discrimination.Cla> vc = new Vector<Discrimination.Cla>();
 	    vc.add( dis.getCla(colName));
 	    p.setClasses(vc, suite);
 	    return p; 
 	} catch(BoxerXMLException ex) {
 	    // report the problem
-	    Logging.error("Error when parsing the following cell: " + cell);
+	    Logging.error("Error when trying to convert the following text into a DataPoint: " + cell);
 	    throw ex;
 	}
 
