@@ -1,11 +1,11 @@
 package edu.dimacs.mms.applications.ontology;
 
 import edu.dimacs.mms.boxer.ParseConfig;
+import edu.dimacs.mms.applications.util.TokenizerOptions;
 
 /** An instance of this class stores various flags controlling the
     processing of input data source files. */
-class InputOptions extends edu.dimacs.mms.applications.util.TokenizerOptions 
-{
+class InputOptions extends TokenizerOptions {
     /** 1-based position of the column that's used as the record
 	ID. If 0, then no such column exists in the data source,
 	and we use generated IDs instead. The existence of the
@@ -40,13 +40,10 @@ class InputOptions extends edu.dimacs.mms.applications.util.TokenizerOptions
 
     /** Initializes config params from the Java system properties
      */
-    void init(ParseConfig ht) {
-	useWords = ht.getOption("input.words", true);
+    public void init(ParseConfig ht) {
+	super.init(ht); // init TokenizerOptions 
 	ridColumn =  ht.getOption( "input.rid", ridColumn );
 	setExcludableColumns( ht.getOption("input.exclude", ""));
-	maxCharSeqLen = ht.getOption("input.gram", maxCharSeqLen);
-	emptySkip =  ht.getOption("input.empty.skip", false);
-	emptySpecial =  ht.getOption("input.empty.special", true);
     }
 
     String describe() {
