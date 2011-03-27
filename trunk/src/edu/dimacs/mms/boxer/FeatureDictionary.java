@@ -7,6 +7,7 @@ import java.text.*;
 import org.w3c.dom.*;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+import org.apache.xerces.dom.DocumentImpl;
 
 /** A FeatureDictionary provides a two-way mapping between feature
     labels (strings found in input and output files) and internal
@@ -146,6 +147,22 @@ public class FeatureDictionary {
 	Text textNode = xmldoc.createTextNode(b.toString());
 	e.appendChild(textNode);
 	return e;
+    }
+
+   /** Saves the dictionary as an XML document
+     */
+    public Document saveAsXML() {
+	Document xmldoc= new DocumentImpl();
+	Element root = createFeaturesElement(xmldoc);
+	xmldoc.appendChild(root);
+	return xmldoc;
+    }
+
+
+   /** Saves the dictionary as an XML document and writes it to a file
+     */
+    public void saveAsXML(String fname) {
+	XMLUtil.writeXML(saveAsXML(), fname);
     }
 
     /** Reads in a   FeatureDictionary from an XML file.

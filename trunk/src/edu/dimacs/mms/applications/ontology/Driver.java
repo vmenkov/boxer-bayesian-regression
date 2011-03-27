@@ -288,22 +288,25 @@ public class Driver {
        CMD_VEC_COS="vec_cos", CMD_VEC_JS="vec_js";
 
     /** Learning options (initialized in main()) */
-    static private boolean emulateSD = false, adaptiveSD=false;
+    static private boolean emulateSD = false, adaptiveSD=false, useBXR=false;
     static double eps;
     static int learnRep;
 
     static private ParseConfig ht = null;
 
 
-    static public void main(String argv[]) throws IOException, BoxerXMLException , org.xml.sax.SAXException {
+    static public void main(String argv[]) throws IOException, BoxerException , org.xml.sax.SAXException {
 	//if (argv.length != 2) usage();
 
 	ht = new ParseConfig();
 	Suite.verbosity = ht.getOption("verbosity", 0);
+	useBXR =  ht.getOption("learn.bxr", false);
 	emulateSD = ht.getOption("learn.sd", false);
 	adaptiveSD = ht.getOption("learn.adaptive", false);
 	eps = ht.getOptionDouble("learn.eps", 1e-8);
 	eps = ht.getOptionDouble("learn.eps", 1e-8);
+
+	if (useBXR && (emulateSD || adaptiveSD)) usage("SD options, or priors, are not compatible with BXR");
 
 	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
 
@@ -322,7 +325,7 @@ public class Driver {
 	System.out.println("This is Ontology Matcher, using BOXER Toolkit (version " + Version.version+ ")");
 	System.out.println("Verbosity="+Suite.verbosity);
 	System.out.println("Input options: " + DataSourceParser.inputOptions.describe());
-	System.out.print("Learner options: SD=" + emulateSD + " adaptiveSD="+adaptiveSD);
+	System.out.print("Learner options: BXR="+useBXR+", SD=" + emulateSD + ", adaptiveSD="+adaptiveSD);
 	if (adaptiveSD) System.out.print(" with eps=" + eps);
 
 	System.out.println();
@@ -364,38 +367,42 @@ public class Driver {
 	    suite =  p1.suite;
 	    q = cm.next();
 	} else 	if (q.is(CMD.READ)) {
-	    // Reading a complete learner complex (i.e., a
-	    // pre-computed model), and then reading the orignal data
-	    // source on which that learner has been trained (which
-	    // we'll need for normalization)
-
 	    String inMatrix= q.f2;
 	    in1=q.f;
-
-	    if (inMatrix==null) usage("The 'read' command must supply both the learner file and the data source file, as in read:ds.cvs:model.xml");
-
-	    System.out.println("Reading pre-computed learner(s) from file: "+
+		
+	    if (useBXR) {
+		p1 =  DataSourceParser.parseFile(in1);
+		suite =  p1.suite;
+		suite.addBXRLearner(new String[] {inMatrix}, eps);
+		Logging.info("Reusing BXR model file " + in1);
+	    } else {
+		// Reading a complete learner complex (i.e., a
+		// pre-computed model), and then reading the orignal data
+		// source on which that learner has been trained (which
+		// we'll need for normalization)
+		
+		if (inMatrix==null) usage("The 'read' command must supply both the learner file and the data source file, as in read:ds.cvs:model.xml");
+		
+		System.out.println("Reading pre-computed learner(s) from file: "+
 			       inMatrix);
-	    suite =  Learner.deserializeLearnerComplex(new File(inMatrix));
-	    alreadyTrained = true;
-	    Vector <Learner> algos = suite.getAllLearners();
-	    
-	    Logging.info("Read "+algos.size()+" learners from the 'learner complex' file " + inMatrix );
-	    if (algos.size()==0) {
-		//usage("The file " + q.f + " did not specify even a single learner");
-		Logging.info("The 'learner complex' file " + inMatrix + " did not specify even a single learner. We expect that one will be added with a separate read-learner command");
+		suite =  Learner.deserializeLearnerComplex(new File(inMatrix));
+		Vector <Learner> algos = suite.getAllLearners();
+		
+		Logging.info("Read "+algos.size()+" learners from the 'learner complex' file " + inMatrix );
+		if (algos.size()==0) {
+		    //usage("The file " + q.f + " did not specify even a single learner");
+		    Logging.info("The 'learner complex' file " + inMatrix + " did not specify even a single learner. We expect that one will be added with a separate read-learner command");
+		}
+
+		int d0 = suite.getDic().getDimension();
+		
+		System.out.println("Re-reading DS1 from file: "+in1);
+		p1 =  DataSourceParser.parseFile(in1,  suite);
+
+		int d1 = suite.getDic().getDimension();
+		if (d1 < d0) usage("The pre-computed learner and the old data source read in by the 'read' command must be consistent with each other. This wasn't the case here, as indicated by the dictionary growth after reading the data source: d0=" + d0 +", d1="+d1);	    
 	    }
-
-	    int d0 = suite.getDic().getDimension();
-
-	    System.out.println("Re-reading DS1 from file: "+in1);
-	    p1 =  DataSourceParser.parseFile(in1,  suite);
-
-	    int d1 = suite.getDic().getDimension();
-	    if (d1 < d0) usage("The pre-computed learner and the old data source read in by the 'read' command must be consistent with each other. This wasn't the case here, as indicated by the dictionary growth after reading the data source: d0=" + d0 +", d1="+d1);
-	    
-	    //p1.replaceSuiteWithEquivalent(suite);
-
+	    alreadyTrained = true;
 	    q = cm.next();
 	} else {
 	    usage("There must be a 'train' or 'read' command going first");
@@ -454,6 +461,7 @@ public class Driver {
 	// Any "read-priors" command?
 	String priorsFile = ht.getOption("learn.priors", null);
 	if (priorsFile!=null) {
+	    if (useBXR) usage("Priors not yet supported with BXR");
 	    System.out.println("Reading priors from file: "+priorsFile);
 	    Priors p = Priors.readPriorsFileMultiformat(new File(priorsFile), suite);
 	    suite.setPriors(p);
@@ -461,11 +469,20 @@ public class Driver {
 
 	// initializing the learner
 	String learnerFile = ht.getOption("learner", null);
-	if (learnerFile==null) usage("Must specify -Dlearner=name.xml");
-	System.out.println("Getting a learner from file: "+learnerFile);
-	Element learnerXML = ParseXML.readFileToElement(new File(learnerFile));
-	suite.addLearner(learnerXML);
-	    
+
+	if (useBXR) {
+	    // FIXME: eventually, the creation of BXR learners should also
+	    //  be controlled by XML, as with "normal" learners
+	    if (learnerFile!=null) usage("Cannot use -Dlearner=... with BXR");
+	    System.out.println("Creating a BXR-based learner");
+	    suite.addBXRLearner(eps);
+	} else {
+	    if (learnerFile==null) usage("Must specify -Dlearner=name.xml");
+	    System.out.println("Getting a learner from file: "+learnerFile);
+	    Element learnerXML = ParseXML.readFileToElement(new File(learnerFile));
+	    suite.addLearner(learnerXML);
+	}
+
 	int nLearners =  suite.getLearnerCount();
 	if (nLearners != 1) throw new AssertionError("nLearners="+nLearners+" There must be exactly one learner!");
 	Learner algo= suite.getAllLearners().elementAt(0);
@@ -476,7 +493,10 @@ public class Driver {
 	}
 	    
 	// training the learner on the cells from the first data source
-	if (adaptiveSD) {
+	if (useBXR) {
+	    // call BXR once; it knows how to iterate
+	    algo.absorbExample(p1.data, 0, p1.data.size());
+	} else 	if (adaptiveSD) {
 	    algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps);
 	} else {	
 	    for(int k=0; k<learnRep; k++) {		
@@ -493,7 +513,7 @@ public class Driver {
 	p1 */
     private static void scoreTestSet( DataSourceParser p1,
 				      String in2,  Aux1 sp) 
- throws IOException, BoxerXMLException , org.xml.sax.SAXException {
+ throws IOException, BoxerException , org.xml.sax.SAXException {
 
 	String in2base = DataSourceParser.baseName(in2);
 
@@ -543,7 +563,8 @@ public class Driver {
 	    return p;
 	}
 
-	AvgScores(DataSourceParser p1, DataSourceParser p2) {
+	AvgScores(DataSourceParser p1, DataSourceParser p2) 
+	    throws BoxerException{
 	// the only non-trivial dis
 	int did = p1.did();
 
@@ -554,6 +575,26 @@ public class Driver {
 	
 	// score    
 	Learner algo= p1.suite.getAllLearners().elementAt(0);
+
+	double [][] vprob =  algo.applyModelLog(p2.data, 0, p2.data.size(),did);
+	if (vprob==null) {
+	    throw new BoxerException(" algo.applyModelLog failed");
+	}
+
+	for(int i=0; i<p2.data.size(); i++) {
+	    DataPoint p = p2.data.elementAt(i);
+	    int newCid = p.getClasses(p2.suite).elementAt(0).getPos();
+	    // overcoming underflow...
+	    double[] logProb = vprob[i];
+	    double[] prob = expProb(logProb);
+	    for(int j=0; j<M1; j++) {
+		sumProb[newCid][j] += prob[j];
+		sumLogProb[newCid][j] += logProb[j];
+	    }
+	    count[newCid] ++;
+	    
+	}
+	/*
 	for( DataPoint p: p2.data) {
 	    int newCid = p.getClasses(p2.suite).elementAt(0).getPos();
 	    // overcoming underflow...
@@ -565,7 +606,8 @@ public class Driver {
 	    }
 	    count[newCid] ++;
 	}
-	
+	*/
+
 	//System.out.print("Cell counts:");
 	//for(int i=0; i<M2; i++) System.out.print(" " + count[i]);	
 	//System.out.println();
@@ -587,7 +629,7 @@ public class Driver {
 
     /** Processes the "symmetric-matching" command line 
      */
-    static void doSymmetric(CMD q)  throws IOException, BoxerXMLException , org.xml.sax.SAXException {
+    static void doSymmetric(CMD q)  throws IOException, BoxerException , org.xml.sax.SAXException {
 	String in1 = q.f, in2 = q.f2;
 	if (in2==null) {
 	    usage("'Symmetric' commands expect two arguments'");
@@ -730,7 +772,7 @@ public class Driver {
 	source's columns' self-assignment (under the simple
 	arithmetic-mean model).
      */
-    static  Aux1 selfProb(DataSourceParser p1) {
+    static  Aux1 selfProb(DataSourceParser p1) throws BoxerException {
 
 	int M1 = p1.dis.claCount();
 
@@ -738,6 +780,19 @@ public class Driver {
 	Learner algo= p1.suite.getAllLearners().elementAt(0);
 	int did = p1.suite.getDid( p1.dis);
 
+	double [][] vprob =  algo.applyModelLog(p1.data, 0, p1.data.size(),did);
+
+	for(int i=0; i<p1.data.size(); i++) {
+	    DataPoint p = p1.data.elementAt(i);
+	    int newCid = p.getClasses(p1.suite).elementAt(0).getPos();
+	    // overcoming underflow...
+	    double[] logProb = vprob[i];
+	    double[] prob = expProb(logProb);
+	    r.selfProb[newCid] += prob[newCid];
+	    r.count[newCid] ++;
+	}
+
+	/*
 	for( DataPoint p: p1.data) {
 	    int newCid = p.getClasses(p1.suite).elementAt(0).getPos();
 	    // overcoming underflow...
@@ -746,6 +801,7 @@ public class Driver {
 	    r.selfProb[newCid] += prob[newCid];
 	    r.count[newCid] ++;
 	}
+	*/
 
 	for(int i=0; i<M1; i++) {
 	    r.selfProb[i] = (r.count[i]==0)? 0 :

@@ -128,7 +128,7 @@ public abstract class Learner implements Model {
 	}
 
 	/** Training for this particular block */
-	abstract public void absorbExample(Vector<DataPoint> xvec, int i1, int i2);
+	abstract public void absorbExample(Vector<DataPoint> xvec, int i1, int i2) throws  BoxerException;
 	/** Reads in the data - parameters and the classifier's state
 	    - pertaining to this particular discrimination
 	 */
@@ -184,6 +184,7 @@ public abstract class Learner implements Model {
 	return s;	
     }
 
+
     /** Similar to {@link #applyModel( DataPoint p)}, but returns
      * <em>logarithms</em> of probabilities, rather than probabilities
      * themselves. This is useful when one want to look at the
@@ -197,6 +198,20 @@ public abstract class Learner implements Model {
 	}
 	return s;	
     }
+
+    /** Applies the model for a particular discrimination to all data
+       point in a given Vector section. This is implemented here as a
+       wrapper over a single-datapoint method, but may be overriden by
+       a learner such as BXRLearner. */
+    public double [][] applyModelLog(Vector<DataPoint> v, int i0, int i1, int did) throws BoxerException {
+	double [][] s = new double[i1-i0][];
+	for(int i=i0; i<i1; i++) {
+	    s[i-i0] = blocks[did].applyModelLog(v.elementAt(i));
+	}
+	return s;	
+    }
+
+
 
     /** Estimates probabilities of a given data point's belonging to
 	various classes of a specified discrimination.
@@ -227,13 +242,22 @@ public abstract class Learner implements Model {
      same name are just "syntactic sugar" for it.
 
      @param xvec A vector of data points for training. Only a section of this vector (from i1 thru i2-1) will be used.
+
+     // FIXME should throw BoxerException
+
      */
     final public void absorbExample(Vector<DataPoint> xvec, int i1, int i2) {
 	createMissingBlocks();
 	for(LearnerBlock block: blocks) {
 	    block.dis.ensureCommitted();
 	    block.validateExamples(xvec, i1,i2);
-	    block.absorbExample(xvec, i1, i2);
+	    try {
+		block.absorbExample(xvec, i1, i2);
+	    } catch(BoxerException ex) {
+		Logging.error(ex.getMessage());
+		// FIXME
+		throw new AssertionError(ex.getMessage());
+	    }
 	}
     }
 

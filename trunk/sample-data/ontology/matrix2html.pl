@@ -78,6 +78,11 @@ while(defined ($s = <>)) {
 	next;
     }
 
+    #-- skip log lines
+    if ($s =~ /edu.dimacs.mms.boxer.Logging/ ||	$s =~ /INFO:/) { next; }
+
+
+
     if ($s !~ /^P\(.+?\)/) {
 	if ($inside) {
 	    &finalizeFile();

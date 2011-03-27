@@ -1210,6 +1210,14 @@ public class Suite {
 	return deserializeLearner( e);
     }
 
+    public Learner addBXRLearner(double eps) {
+	return new BXRLearner(this, eps );
+    }
+
+
+    public Learner addBXRLearner(String[] modelfiles, double eps) {
+	return new BXRLearner(this, modelfiles, eps );
+    }
 
     /** Parses the "learners" element, which is found nested inside
       "learnercomplex"; adds each found learner to the list of

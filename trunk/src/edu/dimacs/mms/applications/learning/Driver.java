@@ -140,7 +140,7 @@ public class Driver {
     static boolean verbose=false;
     
     static public void main(String argv[]) 
-	throws IOException, org.xml.sax.SAXException, BoxerXMLException {
+	throws IOException, org.xml.sax.SAXException, BoxerException {
 
 	memory("ACCURACY TEST startup");
 	if (argv.length==0) usage();
@@ -239,7 +239,7 @@ public class Driver {
 				       Vector<DataPoint> origTrain, 
 				       String scoreFileBase,
 				       int M, long seed )
-	throws java.io.IOException,  org.xml.sax.SAXException, BoxerXMLException {
+	throws java.io.IOException,  org.xml.sax.SAXException, BoxerException {
 
 	Vector<DataPoint> train = origTrain;
 	if (seed >= 0) {
