@@ -27,11 +27,12 @@ package edu.dimacs.mms.boxer;
     0.8.003 - 2010-12-25. An implementation of  Steepest Descent with adaptive-learning-rate added to TG. A new BOXER application, the Bayesian Antology Aligner(BOA), has been added.
     0.8.004 - 2010-12-28. An optimization for Adaptive Steepest Descent: "folding" multiple examples with identical feature vectors.
     0.8.005 - 2011-01-04. Two "symmetric" matching methods are added to BOA.
+    0.8.006 - 2011-03-27. BXRlearner added to BOXER; several new methods, to BORJ
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.8.005";
+    public final static String version = "0.8.006";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.
