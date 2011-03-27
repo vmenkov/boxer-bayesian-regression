@@ -306,7 +306,7 @@ public class Driver {
     }
 
     static public void main(String argv[]) 
-	throws IOException, org.xml.sax.SAXException, BoxerXMLException {
+	throws IOException, org.xml.sax.SAXException, BoxerException {
 
 	memory("BORJ startup");
 	if (argv.length==0) usage();

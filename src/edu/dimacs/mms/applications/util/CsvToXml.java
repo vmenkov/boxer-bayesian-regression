@@ -5,12 +5,19 @@ import java.util.regex.*;
 import java.io.*;
 //import java.text.*;
 //import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
 import edu.dimacs.mms.boxer.*;
 //import edu.dimacs.mms.borj.*;
 
 /** A utility for converting a CSV file (one data point per line) into
- * a BOXER-format XML dataset file. 
+ * a BOXER-format XML dataset file.
+
+ <pre>
+ -DdicIn=...
+ -DdicOut=...
+ </pre>
+ 
  */
 public class CsvToXml {
 
@@ -38,7 +45,7 @@ public class CsvToXml {
     }
 
 
-    static public void main(String argv[]) throws BoxerException, BoxerXMLException, IOException {
+    static public void main(String argv[]) throws BoxerException, BoxerXMLException, IOException, SAXException {
 
 	// process options
 	ParseConfig ht = new ParseConfig();
@@ -56,10 +63,42 @@ public class CsvToXml {
 	DataPoint.setDefaultNameBase(suiteName); // for naming points
 	Suite suite = new Suite(suiteName);	
    
+	String dicFileName =ht.getOption("dicIn", null);	
+	
+	if ( dicFileName != null) {
+	    suite.setDic(new  FeatureDictionary(new File(dicFileName)));
+	}
+
+
 	Vector<DataPoint> data=readInputFile(inputFile, schema, suite, options);
 
 	suite.saveAsXML(outSuiteFile);
-	DataPoint.saveAsXML(data, suiteName, outDataFile); 
+
+
+	String dicOutName =ht.getOption("dicOut", null);	
+	
+	if ( dicOutName != null) {
+	    suite.getDic().saveAsXML(dicOutName);
+	}
+
+
+	final String BMR_EXT = ".bmr";
+	if (outDataFile.endsWith(BMR_EXT)) {
+	    // Save as BMR, in several files (one per each "real" disc)
+	    String base = outDataFile.substring(0, outDataFile.length()-BMR_EXT.length());
+	    int disCnt = suite.disCnt();
+	    for(int i=0; i<disCnt; i++) {
+		Discrimination dis = suite.getDisc(i);
+		if (dis==suite.getFallback()) continue;
+		String outName = base + "_" + dis.getName() + BMR_EXT;
+		final boolean numericCla=false;
+		DataPoint.saveAsBMR(data, dis, numericCla, outName); 
+	    }
+
+	} else {
+	    // XML
+	    DataPoint.saveAsXML(data, suiteName, outDataFile); 
+	}
 
 	
     }

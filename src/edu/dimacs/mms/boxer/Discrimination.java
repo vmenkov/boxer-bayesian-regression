@@ -507,7 +507,6 @@ public class Discrimination {
 	return XMLUtil.nonempty(s) && Boolean.parseBoolean(s);
     }
 
-
     /** This constructor should not be called other than from
 	Suite.createDisc(), or from other constructors of this class. */
     Discrimination(Suite _suite, String _name) {

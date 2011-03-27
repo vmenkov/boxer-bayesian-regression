@@ -421,7 +421,7 @@ public class DataPoint implements Measurable  {
        creation may have been triggered by labels found on the "later"
        data points in the XML file), calling this method may be
        advisable to ensure that data points that were not labeled with
-       respect to those "latter-day" discriminarions get their default
+       respect to those "latter-day" discriminations get their default
        classes.
 
        Note also that this method would be of no help if the default
@@ -592,6 +592,35 @@ public class DataPoint implements Measurable  {
 	return e;
     }
 
+    /** Describes the data point in BMR format, only carrying the label for a
+	specified discrimination.
+
+	@param numeric Print classes' numeric IDs, rather than symbolic names
+     */
+    public String toBMR(Discrimination dis, boolean keepDummy, boolean numeric) throws BoxerException {
+	Discrimination.Cla cla = claForDisc(dis);
+	StringBuffer b = new StringBuffer();
+	if (cla == null) {
+	    // Unknonw class: this is a possibility for the test set, anyway
+	    //throw new BoxerException("Data point "+name+" is not labeled with respect to discrimination " + dis + ", nor does the discrimination have a default class");
+	    b.append("?");
+	} else 	if (numeric) {
+	    b.append(cla.getPos());
+	} else {
+	    b.append(cla.getName());
+	}
+	for(int i=0; i < features.length;i++) {
+	    if (!keepDummy && dic.isDummy(features[i])) continue; // skip the dummy feature
+	    b.append(" ");
+	    b.append(features[i]);
+	    b.append(BXRReader.BMR_PAIR_SEPARATOR);
+	    b.append((double)(int)values[i] == values[i] ? 
+		     "" + (int)values[i] :   "" + values[i] );
+	}
+	return b.toString();
+    }
+
+
    /** Saves a list of data points as an XML file.
        @param v Saves all DataPoints from this vector
        @param name The name that will be written as <dataset name="..."> 
@@ -621,6 +650,66 @@ public class DataPoint implements Measurable  {
 	xmldoc.appendChild(root);
 	XMLUtil.writeXML(xmldoc, fname);
     }
+
+    public static void saveAsBMR(Vector<DataPoint> v,
+				 Discrimination dis,
+				 boolean numericCla,
+				 String fname) 
+	throws IOException, BoxerException {
+	saveAsBMR( v, 0, v.size(), dis, numericCla, fname);
+    }
+
+   /** Saves a list of data points (a dataset) as a BBR/BMR file, for
+       use with BBR/<a href="http://www.bayesianregression.com/bmr.html">BMR</a>/BXR.<p>
+
+       <p>
+       BBR/BMR/BXR is not set up for dealing with multiple discriminations
+       at a time; therefore, when saving a dataset, one must indicate 
+       what discrimination's labels should go into the BMR file.
+
+       <p> The BMR file produced by this method always encodes
+       features by their numeric IDs. This is different from BOXER's
+       own XML format, where symboliuc feature names are
+       used. Therefore, if multuiple datasets that are (conceptually,
+       at least) viewed to be in the same feature space are to be
+       converted to BMR format, it is essential that the same
+       FeatureDictionary was associated with the data points from all
+       sets. 
+
+       <p>On the other hand, one can control how the classes are
+       represented. One can use symbolic class names, which is more
+       flexible and easier to understand for a human reader. On the
+       other hand, one needs to use numeric class IDs in order to
+       provide better compatibility with BXR's various modes, e.g. to
+       be able to run "BXRclassify --classic". If multiple datasets
+       are converted to BMR format with numeric class IDs, care should
+       be taken to ensure that Discriminations from the same Suite
+       object is used on them all, to ensure proper numbering of
+       classes.       
+
+       @param v Saves DataPoints v[i1:i2-1] from this vector
+       @param dis Print labels with respect to this discrimination
+       @param fname The name of the output file to create
+       @param numericCla If true, classes are encoded by IDs, rather than names. This is necessary e.g. to be able to run "BXRclassify --classic".
+     */
+    public static void saveAsBMR(Vector<DataPoint> v, int i1, int i2, 
+				 Discrimination dis,
+				 boolean numericCla,
+				 String fname) throws IOException, BoxerException {
+	PrintWriter w = new PrintWriter(new FileWriter(fname));
+	saveAsBMR(v,i1,i2, dis,  numericCla,w);
+	w.close();
+    }
+
+   public static void saveAsBMR(Vector<DataPoint> v, int i1, int i2, 
+				 Discrimination dis,
+				 boolean numericCla,
+				 PrintWriter w) throws IOException, BoxerException {
+	for(int i=i1; i<i2; i++) {  
+	    w.println( v.elementAt(i).toBMR(dis, false, numericCla));
+	}	
+    }
+
 
     public long memoryEstimate() {
 	return Sizeof.OBJ + 2* Sizeof.OBJREF +
