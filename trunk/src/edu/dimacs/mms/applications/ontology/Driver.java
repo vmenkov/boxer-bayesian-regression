@@ -110,7 +110,7 @@ vectors. Sample commands are as follows:
 <pre>
    -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8
 </pre> 
-This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although rather slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set.
+This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set. In practice, the precision 1e-6 or even 1e-4 is sufficient on many tasks; so one may want to start with  -Dlearn.eps=1e-4, and then reduce eps if needed.
 
 <P>An auxiliary script, <tt> sample-data/ontology/matrix2html.pl
 </tt>, is available to extract confusion matrix(es) from the output of
@@ -249,6 +249,8 @@ TG with theta=0, i.e. SGD).
      -Dlearn.priors=priors.xml : An optional priors file (modifies the penalty term for the function being optimized)
 <li>
      -Dlearn.eps=1e-8 : The convergence criterion for adaptive SD (in terms of log-likelihood).
+<li>
+     -Dlearn.bxr=true|false : If true, BOA piggybacks on BXR, instead of using BOXER's built-in learning methods. If this option is used, the only other learning option that should be supplied is -Dlearn.eps (typically, -Dlearn.eps=0.01 or thereabout); this is interpreted as BXR's eps. Please see {@link edu.dimacs.mms.boxer.BXRLearner} for additional important details on using this option.
 </ul>
 
 <P>Note: No learner options need to be used when using a non-Bayesian method (cosine similarity of JSD).

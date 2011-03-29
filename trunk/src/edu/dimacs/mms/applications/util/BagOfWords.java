@@ -26,7 +26,7 @@ public class BagOfWords extends HashMap<String, Integer> {
 
     
     /** Returns a DataPointBagOfWords based on the content of a
-	cell. Depending on {@link InputOptions}, the BagOfWords will
+	cell. Depending on the {@link TokenizerOptions}, the BagOfWords will
 	include features corresponding to words and/or n-grams of the
 	cell's text, or a special feature indicating an empty
 	cell. The method will return null if if the cell is empty, and
