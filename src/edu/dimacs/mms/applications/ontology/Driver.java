@@ -329,6 +329,7 @@ public class Driver {
 	System.out.println("Input options: " + DataSourceParser.inputOptions.describe());
 	System.out.print("Learner options: BXR="+useBXR+", SD=" + emulateSD + ", adaptiveSD="+adaptiveSD);
 	if (adaptiveSD) System.out.print(" with eps=" + eps);
+	else  System.out.print(" rep=" + learnRep);
 
 	System.out.println();
 
