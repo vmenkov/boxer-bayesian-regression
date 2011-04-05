@@ -14,7 +14,7 @@ import edu.dimacs.mms.borj.*;
 
      <p>
      Usage:<br>
-     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml test:test-set.xml
+     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml[:train-scores.dat] test:test-set.xml[:test-scores.dat]
 
      <p>
      Sample usage:
@@ -92,7 +92,7 @@ public class Repeater {
 	/** Initializes the command manager by parsing the entire command line */
         CmdManager(String [] argv) {
 	    // we only have one cmd here, and it takes 2 arg
-	    CMD.setTwoArgCmd(CMD.TRAIN); 
+	    CMD.setTwoArgCmd(new String[]{CMD.TRAIN, CMD.TEST}); 
             cm = CMD.parse(argv);
         }
 	/** Are there more commands?*/
@@ -200,7 +200,7 @@ public class Repeater {
 	    throw new AssertionError("Expected a 'train:' command!");
 	}
 	String trainFile = q.f;
-	String scoreFileBase = (q.f2==null) ? "scores.tmp" : q.f2;
+	String scoreFileBaseTrain = (q.f2==null) ? null : q.f2;
 	q = cm.next();
 
 
@@ -208,6 +208,7 @@ public class Repeater {
 	    throw new AssertionError("Expected a 'test:' command!");
 	}
 	String testFile = q.f;
+	String scoreFileBase = (q.f2==null) ? "scores.tmp" : q.f2;
 	q = cm.next();
 
 	String dumpLearnerFile = null;
@@ -226,7 +227,8 @@ public class Repeater {
 
 	    runOneOrdering(suite, learnerXML, 	defaultModel,
 			   trainFile,   train,    testFile, 	test,
-			   scoreFileBase,    M, r,  (cyclic? -1: seed));
+			   scoreFileBaseTrain,    scoreFileBase,    
+			   M, r,  (cyclic? -1: seed));
 
 	    if (seed == start && dumpLearnerFile != null) {
 		System.out.println("Saving the learner(s) from the 1st run to file: "+dumpLearnerFile );
@@ -281,6 +283,7 @@ public class Repeater {
 				       Vector<DataPoint> train, 
 				       String testFile, 
 				       Vector<DataPoint> test,
+				       String scoreFileBaseTrain,
 				       String scoreFileBase,
 				       int M, int r, long seed )
 	throws java.io.IOException,  org.xml.sax.SAXException, BoxerXMLException {
@@ -398,13 +401,21 @@ public class Repeater {
 
 	    if (Suite.verbosity>0) System.out.println("After training the learner on the first " + i2 + " examples, applying it to the other " + (train.size()-i2) + " examples");
 		
-	    PrintWriter sw = null;
-	    if (Suite.verbosity>0 && scoreFileBase != null) {
-		String scoreFile = scoreFileBase + "." + fmt.format(i2);
-		System.out.println("Scores will go to text file ("+
+	    PrintWriter sw1 = null, sw2=null;
+	    if (Suite.verbosity>0 && scoreFileBaseTrain != null) {
+		String scoreFile = scoreFileBaseTrain + "." + fmt.format(i2);
+		System.out.println("Train set scores will go to text file ("+
 				   scoreFile+")");
-		sw = new PrintWriter( new FileWriter(scoreFile));
+		sw1 = new PrintWriter( new FileWriter(scoreFile));
 	    }
+	    if ( scoreFileBase != null) {
+		String scoreFile = scoreFileBase + "." + fmt.format(i2);
+		System.out.println("Test set scores will go to text file ("+
+				   scoreFile+")");
+		sw2 = new PrintWriter( new FileWriter(scoreFile));
+	    }
+
+
 	    Scores scoresTrain = new Scores(suite);
 	    Scores scoresTest = new Scores(suite);
 	  
@@ -421,7 +432,7 @@ public class Repeater {
 				       x.describeScores(prob, suite));
 		}
 
-		//if (sw!=null) x.reportScoresAsText(prob,algo,runid,sw);
+		if (sw1!=null) x.reportScoresAsText(prob,algo,runid,sw1);
 
 		scoresTrain.evalScores(x, suite, prob);
 		x.addLogLinLik(probLog, prob, suite, 
@@ -439,7 +450,7 @@ public class Repeater {
 		    System.out.println("Scored test vector "+i+"; scores=" +
 				       x.describeScores(prob, suite));
 		}
-		if (sw!=null) x.reportScoresAsText(prob,algo,runid,sw);
+		if (sw2!=null) x.reportScoresAsText(prob,algo,runid,sw2);
 		scoresTest.evalScores(x, suite, prob);
 		/** Adding prob, instead of probLog, because it's not 
 		    logarithmized */
@@ -450,7 +461,8 @@ public class Repeater {
 	    }
 
 
-	    if (sw != null) sw.close();
+	    if (sw1 != null) sw1.close();
+	    if (sw2 != null) sw2.close();
 
 	    // Print report on scores so far
 	    if (Suite.verbosity>=0) {
