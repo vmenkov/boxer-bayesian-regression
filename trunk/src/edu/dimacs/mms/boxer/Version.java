@@ -28,11 +28,12 @@ package edu.dimacs.mms.boxer;
     0.8.004 - 2010-12-28. An optimization for Adaptive Steepest Descent: "folding" multiple examples with identical feature vectors.
     0.8.005 - 2011-01-04. Two "symmetric" matching methods are added to BOA.
     0.8.006 - 2011-03-27. BXRlearner added to BOXER; several new methods, to BORJ
+    0.8.007 - 2011-04-04. Beginning- and end-of-word n-grams in util.BagOfWords
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.8.006";
+    public final static String version = "0.8.007";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

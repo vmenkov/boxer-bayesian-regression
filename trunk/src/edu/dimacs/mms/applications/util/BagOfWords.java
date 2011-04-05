@@ -62,6 +62,10 @@ public class BagOfWords extends HashMap<String, Integer> {
 		    if (gram.startsWith("@")) gram = "@@c." + gram;
 		    bag.add( gram);
 		}
+		if (w.length() + 1 < len) break;
+		// special beginning-of-word and end-of-word n-grams
+		bag.add( "@@cb." + w.substring(0, len-1));
+		bag.add( "@@ce." + w.substring(w.length()-(len-1)));
 	    }
 	}
 
