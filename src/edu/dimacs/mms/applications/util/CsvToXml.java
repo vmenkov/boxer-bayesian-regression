@@ -8,14 +8,63 @@ import java.io.*;
 import org.xml.sax.SAXException;
 
 import edu.dimacs.mms.boxer.*;
-//import edu.dimacs.mms.borj.*;
 
 /** A utility for converting a CSV file (one data point per line) into
- * a BOXER-format XML dataset file.
+    a BOXER-format XML dataset file. Each line of the CSV file is
+    converted into a data point object; various fields of the record
+    are interpreted
+
+    <h3> Usage </h3>
+    <pre>
+    java [options] CsvToXml input.csv input-schema.txt out-suite.xml out-data.xml
+    </pre>
+    Here,
+    <ul>
+    input.csv is CSV file to be converted
+    input-schema.txt is a file that controls how the columns of input.csv are to be interpreted (see the "schema file" below).
+    out-suite.xml is the name of the XML to be generated, which will contain the list of classes etc.
+    out-data.xml is the name of the output XML file to which the dataset will be written
+    </ul>
+    
+    <h4>Schema file</h4> 
+
+    <p>The "schema file", which you have to create by hand, tells
+    this application what to do with various columns of the CSV file
+    to be converted. Each line of the file contains the name of a
+    column, and the instruction, which is one of the IGNORE, NAME,
+    LABEL, DATA. The meaning of instructions is as follows:
+
+    <ul>
+
+    <li>IGNORE: the data in this column are ignored
+
+    <li>NAME: the value in this column is interpreted as the name of
+    the data point. No more than one column of a CSV file may be
+    interpreted as name. If no column is identified as a name column,
+    a name will be automatically generated for every data point.
+
+    <li>LABEL: the value in this column is interpreted as a label of
+    the data point. Multiple columns may be identified as label
+    columns. There will be a separate Discrimination for each column.
+    
+    <li>DATA: the text from the data field of each record will be
+    parsed, tokenized, and converted into the datapoint's feature
+    vector.
+    </ul>
+
+    <p>The schema file may list more fields than there are in the CSV
+    file. Fields not found in the CSV file will be simply
+    ignored. This allows one to use the same schema file for
+    processing several related CSV files.
+    
+    <h4>Options</h4>
 
  <pre>
+ Dictionary options:
  -DdicIn=...
  -DdicOut=...
+ Parsing options:
+  Everything that's supported by  {@link TokenizerOptions}
  </pre>
  
  */
@@ -195,6 +244,7 @@ public class CsvToXml {
 		    bag = BagOfWords.mkBagOfWords(q[i], options);
 		} else if (m == FieldMode.NAME) {
 		    pointName = q[i];
+		    pointName = pointName.replaceAll("\\s", "_");
 		} else if (m == FieldMode.LABEL) {
 		    String disName = headers[i];
 		    String claName = q[i];
