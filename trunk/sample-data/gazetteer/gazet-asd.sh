@@ -11,7 +11,7 @@ set cp=$HOME/boxer/lib/boxer.jar
 set opt="-Xmx256m -cp ${cp}" 
 
 foreach w (true false)
-foreach g (0 1 2 3) 
+foreach g (0 1 2 3 4) 
 
 if ($w == "true") then
   set wx=1
