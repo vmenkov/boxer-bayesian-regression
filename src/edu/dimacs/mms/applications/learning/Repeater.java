@@ -318,7 +318,7 @@ public class Repeater {
 	Learner algo= suite.getAllLearners().elementAt(0);
 
 	if (Suite.verbosity>0) {
-	    System.out.println("Describing the learner:");
+	    System.out.println("Describing the Learner:");
 	    algo.describe(System.out, false);
 	    System.out.println("-----------------------------------");
 	}
@@ -350,7 +350,7 @@ public class Repeater {
 
 	// Matrix is only saved when it is the only run of a cyclic
 	// repeater (seed<0), or the first run of the random repeater (seed=0)	
-	boolean saveMatrix = (Suite.verbosity>0 && seed<=0);
+	boolean saveMatrix = (Suite.verbosity>0 && seed<=0 && algo instanceof PLRMLearner);
 
 	PrintWriter matWriter = null;
 	if (saveMatrix) {
@@ -423,9 +423,16 @@ public class Repeater {
 	    // not seen so far)
 	    for(int i=0; i< train.size(); i++) {
 		DataPoint x = train.elementAt(i);
-		// overcoming underflow...
-		double [][] probLog = algo.applyModelLog(x);
-		double [][] prob = expProb(probLog);
+		double [][] prob, probLog;
+		if (algo instanceof PLRMLearner) {
+		    // overcoming underflow...
+		    probLog = algo.applyModelLog(x);
+		    prob = expProb(probLog);
+		} else {
+		    prob = algo.applyModel(x);
+		    probLog = logProb(prob);
+		}
+
 		
 		if (Suite.verbosity>1) {
 		    System.out.println("Scored training vector "+i+"; scores=" +
@@ -443,9 +450,16 @@ public class Repeater {
 	    // score the test set
 	    for(int i=0; i< test.size(); i++) {
 		DataPoint x = test.elementAt(i);
-		// overcoming underflow...
-		double [][] probLog = algo.applyModelLog(x);
-		double [][] prob = expProb(probLog);
+
+		double [][] prob, probLog;
+		if (algo instanceof PLRMLearner) {
+		    // overcoming underflow...
+		    probLog = algo.applyModelLog(x);
+		    prob = expProb(probLog);
+		} else {
+		    prob = algo.applyModel(x);
+		    probLog = logProb(prob);
+		}
 		if (Suite.verbosity>1) {
 		    System.out.println("Scored test vector "+i+"; scores=" +
 				       x.describeScores(prob, suite));
@@ -550,6 +564,21 @@ public class Repeater {
 	    prob[j] = new double[v.length];
 	    for( int k=0; k< v.length; k++) {
 		prob[j][k] = Math.exp(v[k]);
+	    }
+	}
+	return prob;
+    }
+
+
+    /** Computes log of each array element */
+   private static double [][] logProb(double[][] prob) {
+       final double M = -100;
+       double [][] probLog = new double[prob.length][];
+       for(int j=0; j<prob.length;j++) {
+	    double [] v = prob[j];
+	    probLog[j] = new double[v.length];
+	    for( int k=0; k< v.length; k++) {
+		probLog[j][k] = (v[k]==0) ? M : Math.log(v[k]);
 	    }
 	}
 	return prob;

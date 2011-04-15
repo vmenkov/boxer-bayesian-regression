@@ -116,6 +116,25 @@ public class DataPoint implements Measurable  {
 	return sum;
     }
 
+
+    public double dotProductWithoutDummy( DataPoint p) {
+	if (p.dic != dic) throw new IllegalArgumentException("Two vectors are in different feature spaces!");
+	int i=0, pi=0;
+	double sum=0;
+	while(i < features.length && pi< p.features.length) {
+	    if (features[i] ==  p.features[pi]) {
+		if (!dic.isDummy(features[i])) sum += values[i]*p.values[pi];
+		i++;
+		pi++;
+	    } else if (features[i] <=  p.features[pi]) { 
+		i++;
+	    } else {
+		pi++;
+	    }
+	}
+	return sum;
+    }
+
     /** Computes the vector sum of this vector and another vector. Does <em>not</em> modify this vector. 
 
 	The labels are <strong>lost</strong>, i.e. the result comes out without labels. If needed, they can be copied later separately (see  {@link #linkLabels(DataPoint)}).

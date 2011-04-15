@@ -1293,6 +1293,8 @@ public class Suite {
 	    return new TruncatedGradient(this, e );
 	} else if (algoName.endsWith("boxer.ExponentiatedGradient")) {
 	    return new ExponentiatedGradient(this, e );
+	} else if (algoName.endsWith("boxer.NormalizedKnnLearner")) {
+	    return new NormalizedKnnLearner(this, e );
 	} else {
 	    throw new IllegalArgumentException("Model reading for algorithm='"+algoName+"' is not supported.");
 	}

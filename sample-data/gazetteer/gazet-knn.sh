@@ -10,8 +10,12 @@ set rep=edu.dimacs.mms.applications.learning.Repeater
 set cp=$HOME/boxer/lib/boxer.jar
 set opt="-Xmx256m -cp ${cp}" 
 
+set k=3
+
 foreach w (true false)
 foreach g (0 1 2 3 4) 
+#foreach w (true false)
+#foreach g (1 2 3 4) 
 
 if ($w == "true") then
   set wx=1
@@ -24,8 +28,6 @@ set d=$db/knn-k${k}-w${wx}-g${g}
 echo Directory $d
 mkdir $d
 
-cp train.csv test.csv $db
-
 #-- Tokenizer run
 set copt="${opt} -Dinput.words=${w} -Dinput.gram=${g}"
 echo copt=$opt
@@ -35,7 +37,7 @@ java  $copt -DdicIn=${dic} $conv $db/test.csv schema.txt $d/test-suite.xml $d/te
 
 #-- Classifier run
 echo "Using the following JVM options: ${opt}"
-/usr/bin/time java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=0.00001  -Dr=428 -DM=428 $rep read-suite:$d/train-suite.xml read-learner:sgd-learner-param-eta=0.01.xml train:$d/train.xml:$d/train-scores.out  test:$d/test.xml:$d/test-scores.out >& $d/gazetteer.log
+/usr/bin/time java $opt -Dverbosity=1 -Drandom=0 -Dr=428 -DM=428 $rep read-suite:$d/train-suite.xml read-learner:knn-learner-param-k=${k}.xml train:$d/train.xml:$d/train-scores.out  test:$d/test.xml:$d/test-scores.out >& $d/gazetteer.log
 
 end
 end
