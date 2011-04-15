@@ -29,11 +29,12 @@ package edu.dimacs.mms.boxer;
     0.8.005 - 2011-01-04. Two "symmetric" matching methods are added to BOA.
     0.8.006 - 2011-03-27. BXRlearner added to BOXER; several new methods, to BORJ
     0.8.007 - 2011-04-04. Beginning- and end-of-word n-grams in util.BagOfWords
+    0.8.009 - 2011-04-12. kNN learner added. Tweaking in n-grams: no mere "^", "$" tokens anymore.
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.8.007";
+    public final static String version = "0.8.009";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

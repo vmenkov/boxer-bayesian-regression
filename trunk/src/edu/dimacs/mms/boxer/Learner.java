@@ -178,7 +178,7 @@ public abstract class Learner implements Model {
 	different classes. For details, see {@link Model#applyModel( DataPoint p)}
 
      */
-    final public double [][] applyModel( DataPoint p) {
+    public double [][] applyModel( DataPoint p) {
 	double [][] s = new double[blocks.length][];
 	for(int did=0; did<s.length; did++) s[did] = applyModel(p,did);
 	return s;	
@@ -191,7 +191,7 @@ public abstract class Learner implements Model {
      * smallest values, and to prevent digital underflow from making
      * them look like zeros. 
      */
-    final public double [][] applyModelLog( DataPoint p) {
+    public double [][] applyModelLog( DataPoint p) {
 	double [][] s = new double[blocks.length][];
 	for(int did=0; did<s.length; did++) {
 	    s[did] = blocks[did].applyModelLog(p);
@@ -246,7 +246,7 @@ public abstract class Learner implements Model {
      // FIXME should throw BoxerException
 
      */
-    final public void absorbExample(Vector<DataPoint> xvec, int i1, int i2) {
+    public void absorbExample(Vector<DataPoint> xvec, int i1, int i2) {
 	createMissingBlocks();
 	for(LearnerBlock block: blocks) {
 	    block.dis.ensureCommitted();
@@ -449,7 +449,9 @@ public abstract class Learner implements Model {
 
     final public void describe(PrintStream out, boolean verbose) {
 	//System.out.println("=== (X1)" + getClass());
-	describe(new PrintWriter(out), verbose);
+	PrintWriter w=new PrintWriter(out);
+	describe(w, verbose);
+	w.flush();
 	out.flush();
     }
 
@@ -875,6 +877,25 @@ public abstract class Learner implements Model {
 	}
 	return null;
     }
+
+    /** Finds the "parameters" element enclosed into the given "learner" element
+	@param e A "learner" XML element
+	@return A "parameters" element, or null if none is found
+     */
+    Element findParameters( Element e) throws org.xml.sax.SAXException,  BoxerXMLException {
+	XMLUtil.assertName(e, XMLUtil.LEARNER);
+
+	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
+	    if (n.getNodeType() == Node.ELEMENT_NODE) {
+		Element ce = (Element)n;		
+		if (n.getNodeName().equals( PARAMETERS)) return ce;
+	    }
+	}
+	return null;
+    }
+
+
+
 
 }
 

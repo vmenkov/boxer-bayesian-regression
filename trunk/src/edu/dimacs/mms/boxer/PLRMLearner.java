@@ -353,23 +353,6 @@ public abstract class PLRMLearner extends Learner {
     abstract void parseParams(Element e) throws BoxerXMLException;
 
 
-    /** Finds the "parameters" element enclosed into the given "learner" element
-	@param e A "learner" XML element
-	@return A "parameters" element, or null if none is found
-     */
-    private Element findParameters( Element e) throws org.xml.sax.SAXException,  BoxerXMLException {
-	XMLUtil.assertName(e, XMLUtil.LEARNER);
-
-	for(Node n = e.getFirstChild(); n!=null; n = n.getNextSibling()) {
-	    if (n.getNodeType() == Node.ELEMENT_NODE) {
-		Element ce = (Element)n;		
-		if (n.getNodeName().equals( PARAMETERS)) return ce;
-	    }
-	}
-	return null;
-    }
-
-
     /** This is invoked from {@link Suite.deleteDiscrimination()},
      * before the discrimination is purged from the Suite. Child
      * classes may override it, to delete more structures.

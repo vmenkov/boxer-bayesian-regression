@@ -1,5 +1,6 @@
 #!/bin/csh
 
+
 #-- prepares training and test sets
 echo 'Label,Name,Text' >  head.csv
 
@@ -18,6 +19,7 @@ set conv=edu.dimacs.mms.applications.util.CsvToXml;
 set cp=$HOME/boxer/lib/boxer.jar
 set opt="-Xmx256m" 
 set opt="${opt} -cp ${cp} -Dinput.gram=4"
+
 
 echo opt=$opt
 java  $opt -DdicOut=tmp-train.dic $conv train.csv schema.txt train-suite.xml train.xml

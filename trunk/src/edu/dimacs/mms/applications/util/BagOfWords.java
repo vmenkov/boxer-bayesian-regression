@@ -49,6 +49,9 @@ public class BagOfWords extends HashMap<String, Integer> {
 	    }
 	}
 
+	// If this flag is true, '^' and '$' are recorded 1-grams, too
+	final boolean USE_EOW_MARKERS=true;
+
 	// single chars, 2-grams, etc. 2-grams etc don't include 
 	// spaces, and don't go across spaces
 
@@ -62,10 +65,12 @@ public class BagOfWords extends HashMap<String, Integer> {
 		    if (gram.startsWith("@")) gram = "@@c." + gram;
 		    bag.add( gram);
 		}
-		if (w.length() + 1 < len) break;
-		// special beginning-of-word and end-of-word n-grams
-		bag.add( "@@cb." + w.substring(0, len-1));
-		bag.add( "@@ce." + w.substring(w.length()-(len-1)));
+		if (len > w.length() + 1) break;
+		if (len==1 && USE_EOW_MARKERS ||  len>1) {
+		    // special beginning-of-word and end-of-word n-grams
+		    bag.add( "@@cb." + w.substring(0, len-1));
+		    bag.add( "@@ce." + w.substring(w.length()-(len-1)));
+		}
 	    }
 	}
 
