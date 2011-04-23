@@ -59,6 +59,8 @@ public class BXRLearner extends Learner {
 	<pre>
 	6 0.00039637625 0.0013176977 0.00023326283 0.00019617477 0.0011210707 0.00057918535 0.99476179 0.00025656682 0.00047311797 8.3813329e-05 0.00046581839 0.00011512403 6
 	</pre>
+	
+	<p>The data provided by BXRclassify are probabilities; we convert them to logs here.
      */
 
     class ReadScoresThread extends Thread {

@@ -12,10 +12,10 @@ set opt="-Xmx256m -cp ${cp}"
 
 set k=3
 
-foreach w (true false)
-foreach g (0 1 2 3 4) 
 #foreach w (true false)
-#foreach g (1 2 3 4) 
+#foreach g (0 1 2 3 4) 
+foreach w (true false)
+foreach g (5) 
 
 if ($w == "true") then
   set wx=1

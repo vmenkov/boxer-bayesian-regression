@@ -78,7 +78,6 @@ public class NormalizedKnnLearner extends Learner {
 	  full content of coefficient matrices
 	*/
 	void describe(PrintWriter out, boolean verbose) {
-	    out.print("B"); // just to see if it works...
 	}
 
 	public long memoryEstimate() {return 0;}
@@ -86,92 +85,19 @@ public class NormalizedKnnLearner extends Learner {
     }; // End of class KnnLearnerBlock 
 
     private Vector<DataPoint> points=new  Vector<DataPoint>();
-    private Vector<Double> norms = new Vector<Double>();
+    //private Vector<Double> norms = new Vector<Double>();
+
     /** This is the <em>k</em> in  <em>k</em>-NN.
      */
     int neighborhoodSize= 3;
+    /** Only training examples with the cosine greater than this value (i.e., within r&lt;sqrt(2*(1-mincos))) are considered "neighbors".
+     */
+    double mincos=0;
 
     enum Weighting {
 	EQUAL, INVERSE_DISTANCE;
     };
     final Weighting weighting = Weighting.INVERSE_DISTANCE;
-
-    /*
-    static class Pair implements Comparable<Pair> { 
-	DataPoint point; double cos; 
-	Pair(	DataPoint _point, double _cos) {
-	    point = _point;
-	    cos = _cos;	      
-	} 
-	public int compareTo(Pair a) {
-	    return (cos < a.cos) ? -1 : cos>a.cos? 1 : 0;
-	}
-    }
-    */
-    /** This class stores a specified number of the top values from
-	those "offered" to you. It may store more, if it's needed to
-	break a tie.
-     */
-    static private class TopValues {
-	/** Each vector contains all DataPoints with the same cos value. Ordered in the order of
-	 ascending cos. */
-	SortedMap<Double, Vector<DataPoint>> map=new TreeMap<Double, Vector<DataPoint>>();
-	/** number of DataPoint objects stored */
-	private int cnt=0;
-	int getCnt() { return cnt; }
-	final int desiredSize;
-	TopValues(int n) {
-	    desiredSize=n;
-	    if (desiredSize<1) throw new IllegalArgumentException();
-	}
-	/** How many elements with the identical value are at the bottom
-	    of the list? */
-	/* Insert the value; adjust count.
-	*/
-	private void insert(DataPoint q, double cos) {
-	    Double key = new Double(cos);
-	    if (map.containsKey(cos)) map.get(key).add(q);
-	    else {
-		Vector<DataPoint> v = new 		Vector<DataPoint>(1);
-		v.add(q);
-		map.put(key, v);
-	    }
-	    cnt++;
-	}
-
-	/** Removes the values (a vector of them, that is) with the lowest key value, if doing this
-	    does not make the stored element count less than the desired size. Adjust the count.
-	 */
-	private void trimIfCan() {
-	    if (cnt > desiredSize) {
-		Double key = map.firstKey();
-		int cnt1 = cnt - map.get(key).size();
-		if (cnt1 >= desiredSize) {
-		    map.remove(key);
-		    cnt=cnt1;
-		}
-	    }
-	}
-
-	void offer(DataPoint q, double cos) {
-	    if (cos == 0) return;
-	    if (cnt<desiredSize || cos >=  map.firstKey().doubleValue()) {
-		insert(q,cos);
-		trimIfCan();
-		return;
-	    } 
-	}
-
-	/*
-	int tbCnt() {
-	    if (size()<=desiredSize) return 0;
-	    int tb = lowestValueCount();
-	    if (size()-lowestValueCount()>=desiredSize) throw new AssertionError("toplist: we've been storing extra values all the way!");
-	    return tb;
-	}
-	*/
-    }
-
 
 
     /** Applies the classifiers to the example p and returns the
@@ -183,13 +109,13 @@ public class NormalizedKnnLearner extends Learner {
 
      */
     final public double [][] applyModel( DataPoint p) {
-	TopValues toplist= new  TopValues(neighborhoodSize);
+	TopValues toplist= new  TopValues(neighborhoodSize, mincos);
 
 	double pNorm = Math.sqrt(p.normSquareWithoutDummy());
-	for(int i=0; i<points.size(); i++) {	
-	    DataPoint q=points.elementAt(i);
-	    double cos = p.dotProductWithoutDummy(q) / (pNorm*norms.elementAt(i).doubleValue());
-	    toplist.offer(q,cos);
+	for(Map.Entry<DataPoint, PointInfo> e: pointInfoMap.entrySet()) {
+	    DataPoint q=e.getKey();
+	    double cos = p.dotProductWithoutDummy(q) / (pNorm * e.getValue().norm);
+	    toplist.offer(q, e.getValue().multiplicity, cos);
 	}
 
 	double [][] s = new double[blocks.length][];
@@ -200,29 +126,6 @@ public class NormalizedKnnLearner extends Learner {
 
 
 	final double minDist=1e-6;
-	
-	/*
-	// are there any tie-breaking values at the bottom of toplist?
-	int tbCnt= toplist.tbCnt();
-	double tbWt = (tbCnt==0) ? 1 : 
-	    ((double)(neighborhoodSize - toplist.getCnt() + tbCnt))/tbCnt;
-	if (tbWt<0 || tbWt>1) throw new AssertionError("Tie-breaking error");
-
-	
-	if (Suite.verbosity>0) {
-	    String msg = "";
-	    int skipCnt=Math.max(toplist.size() - 10,0);    
-	    if (skipCnt>0) msg += " ... and " + skipCnt + " more!";
-	    int cnt=0;
-	    for(Pair pair: toplist) {
-		if (cnt++ < skipCnt) continue;
-		msg = ", " + pair.point.getName() + " : "+ pair.cos + msg;
-	    }
-	    System.out.println(p.getName() + msg);
-	    System.out.println("toplist size=" + toplist.size() + ", tbCnt=" + tbCnt+", wt=" + tbWt);
-	}
-	*/
-	
 	final int  SHOW_VAL_CNT=5;
 
 	if (Suite.verbosity>0) {
@@ -232,15 +135,22 @@ public class NormalizedKnnLearner extends Learner {
 	    }
 	}
 
-
 	// dot products (cosine similarities) in ascending order
 	int valCnt=0;
-	for( Map.Entry<Double,  Vector<DataPoint>> e:  toplist.map.entrySet()) {
-	    Vector<DataPoint> points = e.getValue();
-	    // when processing the 1st array, tiebreaking may be involved 
-	    double dw = (valCnt==0) ?
-		dw =  ((double)(neighborhoodSize - toplist.getCnt() + points.size()))/points.size() :
-		1;
+	for( Map.Entry<Double, TopValues.VectorDP> e:  toplist.map.entrySet()) {
+	    TopValues.VectorDP points = e.getValue();
+	    // when processing the 1st array, tie-breaking may be involved 
+	    double dw = 1;
+	    if (valCnt==0) {
+		int excess = toplist.getCnt() - neighborhoodSize;
+		if (excess > points.multi) throw new AssertionError( "(neighborhoodSize="+neighborhoodSize+") - (toplist.cnt="+toplist.getCnt()+") + (points.multi="+points.multi+") < 0");
+		if (excess > 0) {
+		    dw =  ((double)(points.multi - excess))/points.multi;
+		}
+		if (dw < 0) {
+		    Logging.warning("dw=" + dw + "= (neighborhoodSize="+neighborhoodSize+") - (toplist.cnt="+toplist.getCnt()+") + (points.multi="+points.multi+")");
+		}
+	    }
 	    double cos = e.getKey().doubleValue();
 	    if (weighting == Weighting.INVERSE_DISTANCE) {
 		double dist = (cos>1)? 0 : Math.sqrt( 2*(1-cos));
@@ -248,22 +158,20 @@ public class NormalizedKnnLearner extends Learner {
 	    }
 
 	    if (Suite.verbosity>0 && toplist.map.size()-valCnt<=SHOW_VAL_CNT ) {
-		System.out.print(" [cos="+cos+" : ");
-		if (points.size()>3) System.out.print( "" + points.size() + " points");
-		else for(DataPoint q: points) System.out.print(" " + q.getName());
+		System.out.print(" [cos="+cos+" :");
+		if (points.multi > 1) System.out.print(" cnt=" + points.multi);
+		if (points.size()>3) System.out.print( " ...");
+		else  for(DataPoint q: points) System.out.print(" " + q.getName());
 		System.out.print("]");
 		//	System.out.print(p.getName() + " : toplist size=" + toplist.getCnt());
 	    }
 
 	    for(DataPoint q: points) {
-		boolean[] y = q.getY(suite);
-		boolean ysec[][] = suite.splitVectorByDiscrimination(y);
+		double [][] ysec = pointInfoMap.get(q).ysec;
 		for(int did=0; did<s.length; did++) {
-		    for(int i=0; i<ysec[did].length; i++) {
-			if (ysec[did][i]) {
-			    s[did][i] += dw;
-			    sum[did] += dw;
-			}
+		    for(int i=0; i<ysec[did].length; i++) {	
+			s[did][i] += ysec[did][i] * dw;
+			sum[did] += ysec[did][i] * dw;
 		    }	
 		}
 	    }
@@ -306,37 +214,83 @@ public class NormalizedKnnLearner extends Learner {
     }
 
     /** Applies the model for a particular discrimination to all data
-       point in a given Vector section. This is implemented here as a
+       points in a given Vector section. This is implemented here as a
        wrapper over a single-datapoint method, but may be overriden by
        a learner such as BXRLearner. */
     public double [][] applyModelLog(Vector<DataPoint> v, int i0, int i1, int did) throws BoxerException {
-	throw new UnsupportedOperationException("N/a");
-	/*
 	double [][] s = new double[i1-i0][];
 	for(int i=i0; i<i1; i++) {
-	    s[i-i0] = blocks[did].applyModelLog(v.elementAt(i));
+	    double q[][] = applyModelLog(v.elementAt(i)); 
+	    s[i-i0] = q[did];
 	}
 	return s;	
-	*/
     }
 
-
-
-    /** Estimates probabilities of a given data point's belonging to
-	various classes of a specified discrimination.
-
-	@param p DataPoint to score
-	@param did Discrimination id
-
-	@return double[], an array of probabilities for all classes of
-	the discrimination in question. It will be aligned with
-	Discrimination.classes of the selected discrimination */
-    /*
-    final public double [] applyModel( DataPoint p, int did) {
-	throw new UnsupportedOperationException("N/a");
-	//return blocks[did].applyModel(p);
+  public double [][] applyModel(Vector<DataPoint> v, int i0, int i1, int did) throws BoxerException {
+	double [][] s = new double[i1-i0][];
+	for(int i=i0; i<i1; i++) {
+	    double q[][] = applyModel( v.elementAt(i)); 
+	    s[i-i0] = q[did];
+	}
+	return s;	
     }
-    */
+
+    /** Stores the norm and the sum-of-labels of a data point or a family of data points with an identical featur vector */
+    private static class PointInfo {
+	/** The norm of underlying feature vector */
+	double norm;
+	/** How many data points have this feature vector? */
+	int multiplicity;
+	/** Sum of labels from these vectors */
+	double ysec[][];
+	PointInfo(double[][] _ysec, double _norm) {
+	    multiplicity = 1;
+	    ysec=_ysec; 
+	    norm=_norm;
+	}
+	PointInfo(boolean[][] _ysec, double _norm) {
+	    multiplicity = 1;
+	    ysec=new double[_ysec.length][];
+	    for(int i=0; i<ysec.length; i++) {
+		ysec[i]=new double[_ysec[i].length];
+		int j=0;
+		for(boolean w: _ysec[i]) {
+		    ysec[i][j++] =  (w ?  1: 0);
+		}
+	    }	    
+	    norm=_norm;
+	}
+
+	void addYSec(double [][] z) {
+	    multiplicity++;
+	    for(int i=0; i<ysec.length; i++) {
+		int j=0;
+		for(double w: z[i]) {
+		    ysec[i][j++] += w;
+		}
+	    }
+	}
+ 	void addYSec(boolean [][] z) {
+	    multiplicity++;
+	    for(int i=0; i<ysec.length; i++) {
+		int j=0;
+		for(boolean w: z[i]) {
+		    ysec[i][j++]+= (w ? 1:0);
+		}
+	    }
+	}
+    }
+
+    /** The training set is stored like this. */
+    private HashMap<DataPoint, PointInfo> pointInfoMap=new HashMap<DataPoint, PointInfo>();
+
+    /** If true, the learner will check if some data points have
+     * identical feature vectors, and try to save on this */
+    boolean pragmaCacheDataPoints=false;
+
+    public void setPragmaCacheDataPoints(boolean x) {
+	pragmaCacheDataPoints=x;
+    }
 
     /** Incrementally trains this classifier on data points xvec[i],
      * i1&le;i&lt;i2. 
@@ -361,26 +315,25 @@ public class NormalizedKnnLearner extends Learner {
     public void absorbExample(Vector<DataPoint> xvec, int i1, int i2) {
 	createMissingBlocks();
 	for(LearnerBlock block: blocks) {
-	    block.dis.ensureCommitted();
-	    /*
-	    block.validateExamples(xvec, i1,i2);
-	    try {
-		block.absorbExample(xvec, i1, i2);
-	    } catch(BoxerException ex) {
-		Logging.error(ex.getMessage());
-		// FIXME
-		throw new AssertionError(ex.getMessage());
-	    }
-	    */
+	    block.dis.ensureCommitted(); 
 	}
 	for(int i=i1; i<i2; i++) {
 	    DataPoint p=xvec.elementAt(i);
-	    points.add(p);
-	    norms.add(new Double(Math.sqrt(p.normSquareWithoutDummy())));
 
-	    // Adjust counts of examples in each class
 	    boolean[] y = p.getY(suite);
 	    boolean ysec[][] = suite.splitVectorByDiscrimination(y);
+
+	    // create a local copy, so that we can look for identical vectors
+	    DataPoint key = pragmaCacheDataPoints ? p.shallowCopyWithoutLabels(p.getName()) : p;
+
+	    if (pointInfoMap.containsKey(key)) {
+		pointInfoMap.get(key).addYSec(ysec);
+	    } else {
+		points.add(key);
+		pointInfoMap.put(key, new PointInfo( ysec, Math.sqrt(key.normSquareWithoutDummy())));	    
+	    }
+
+	    // Adjust counts of examples in each class
 	    for(int did=0; did<sDefault.length; did++) {
 		for(int j=0; j<ysec[did].length; j++) {
 		    if (ysec[did][j]) {
@@ -395,7 +348,7 @@ public class NormalizedKnnLearner extends Learner {
     }
 
     public void describe(PrintWriter out, boolean verbose) {
-	out.println("kNN learner with k=" + neighborhoodSize + "; weighting="+weighting);
+	out.println("kNN learner with k=" + neighborhoodSize + "; cos>"+mincos+"; weighting="+weighting);
     }
 
  
@@ -405,6 +358,9 @@ public class NormalizedKnnLearner extends Learner {
      * Suite}) as an XML Document object, which can later be written
      * into an XML file. The file can be read in later on to re-create
      * the classifier.
+
+     FIXME: the data aren't actually saved.
+
      @return An XML document that can be saved to the file
 
      @see #describe() describe()
@@ -438,13 +394,14 @@ public class NormalizedKnnLearner extends Learner {
 	probably piggybacking on the parent class's method.  */
     public long memoryEstimate() {
 	long sum = 2*Sizeof.OBJ +  Sizeof.OBJREF;
-	if (blocks!=null) { // TrivialLearner has no blocks
+	if (blocks!=null) { 
 	    for(LearnerBlock block: blocks) {
 		sum += Sizeof.OBJREF + block.memoryEstimate();
 	    }
 	}
 	for( DataPoint p: points) sum+= p.memoryEstimate();
-	sum += norms.size() * Sizeof.DOUBLE;
+	// FIXME: plenty more per entry, in fact...
+	sum += pointInfoMap.size() * Sizeof.DOUBLE;
 	return sum;
     }
 
@@ -514,20 +471,22 @@ public class NormalizedKnnLearner extends Learner {
    /** Names of parameters, as they appear in XML files */
     static class PARAM {
 	final static String 
-	    K = "k";
+	    K = "k", MINCOS="mincos";
     }
   
     private void parseParams(Element e) throws BoxerXMLException  {
 	XMLUtil.assertName(e, Learner.PARAMETERS);
 
 	HashMap<String,Object> h = makeHashMap
-	    ( new String[] { PARAM.K},
-	      new Object[] {   new Integer(neighborhoodSize)});
+	    ( new String[] { PARAM.K, PARAM.MINCOS},
+	      new Object[] {   new Integer(neighborhoodSize), new Double(mincos)	      });
 
 	h = parseParamsElement(e,h);
 	neighborhoodSize = ((Number)(h.get(PARAM.K))).intValue();
+	if (neighborhoodSize<1) throw  new BoxerXMLException("k must be >=1");
+	mincos = ((Double)(h.get(PARAM.MINCOS))).doubleValue();
+	if (mincos>=1 || mincos < 0) throw  new BoxerXMLException("mincos must be in the range 0<=mincos<1");
     }
-
 
 }
 

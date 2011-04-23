@@ -47,11 +47,10 @@ class InputOptions extends TokenizerOptions {
     }
 
     String describe() {
-	return "Empty cells: " + (emptySkip ? "ignored" :
-				  emptySpecial ? "special feature":
-				  "zero vector") +
-	    "; nGrams length<=" + maxCharSeqLen;
-				  
+	return "Empty cells: " + 
+	    (emptySkip ? "ignored": emptySpecial ? "special feature":  "zero vector") +
+	    (useWords? "; words" : "; no words") +
+	    "; nGrams length<=" + maxCharSeqLen;		  
     }
 
 }

@@ -20,7 +20,7 @@ else
 endif
 
 set db=../gazetteer-out
-set d=$db/knn-k${k}-w${wx}-g${g}
+set d=$db/asd-w${wx}-g${g}
 echo Directory $d
 mkdir $d
 

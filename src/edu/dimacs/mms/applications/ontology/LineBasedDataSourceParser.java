@@ -31,8 +31,9 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
        which should be concatenated with each column names to obtain
        the corresponding class name.
      */
-    void readData(String fname, boolean addColumns, String colPrefix
-		  ) throws BoxerXMLException {
+    void readData(String fname, boolean addColumns, String colPrefix) throws BoxerXMLException {
+
+	Logging.info("LineBasedDataSourceParser.readData("+fname+", "+addColumns+", "+colPrefix+")");
 
 	try {
 	    LineNumberReader r = new LineNumberReader( new FileReader(fname));
@@ -61,11 +62,12 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 		
 
 		if (addColumns) {
-		    //Logging.info("Parser: for col="+i+", add class named " + colName);	
-		    dis.addClass( colName);
+		    // Record the new class in the discrimination AND in the suite
+		    // Logging.info("disName="+ disName+"; Parser: for col="+i+", add class named " + colName);	
+		    suite.addClass( disName, colName);
 		} else {
 		    
-		    // Verify the existence of eacj named column
+		    // Verify the existence of each named column
 		    if (dis.getCla( colPrefix )==null) {
 			throw new IllegalArgumentException("Data mismatch: class " +  hv.elementAt(i) + " found in the data source file " +fname+", but not found in the pre-reas suite!");
 		    }
