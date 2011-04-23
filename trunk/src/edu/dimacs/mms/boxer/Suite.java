@@ -506,6 +506,7 @@ public class Suite {
 	if (d == null) throw new IllegalArgumentException("No discrimination named '" + disName + "' exists");
 
 	Discrimination.Cla c= d.addClass(className);
+	Logging.info("Add class " + c.getName());
 	recordCla(c);
 	return c;
     }
@@ -743,7 +744,30 @@ public class Suite {
 	boolean b[] = new boolean[r];
 	for( Discrimination.Cla c: classes) {
 	    Integer idObj = cla2id.get(c);
-	    if (idObj == null) throw new IllegalArgumentException("Array of classes contained a class label '"+c+"' not registered in cla2id");
+	    if (idObj == null) {
+		/*
+		String msg="id2cla=[";
+		for(Discrimination.Cla x: id2cla ) msg+= " "+x.getName();
+		msg+="]";
+		Logging.info(msg);
+		msg = "cla2id.size=" + cla2id.size();
+		Logging.info(msg);
+		*/
+		Logging.info("Suite description: " + describe());
+		Logging.info("id2cla.size()="+id2cla.size()+", cla2id.size=" + cla2id.size());
+
+		// message...
+		/*
+Exception in thread "main" java.lang.IllegalArgumentException: Array of classes contained a class label 'safeWITS_2006_03.1-100^DataSource_UniqueURI' not registered in cla2id
+        at edu.dimacs.mms.boxer.Suite.getY(Suite.java:746)
+        at edu.dimacs.mms.boxer.DataPoint.getY(DataPoint.java:528)
+        at edu.dimacs.mms.boxer.NormalizedKnnLearner.absorbExample(NormalizedKnnLearner.java:382)
+        at edu.dimacs.mms.applications.ontology.Driver.train(Driver.java:509)
+        at edu.dimacs.mms.applications.ontology.Driver.main(Driver.java:429)
+		*/
+	       
+		throw new IllegalArgumentException("Array of classes contained a class label '"+c+"' not registered in cla2id");
+	    }
 	    int id = idObj.intValue();
 	    b[id] = true;
 	}

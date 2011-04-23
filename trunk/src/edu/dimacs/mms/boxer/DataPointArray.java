@@ -29,18 +29,20 @@ class DataPointArray {
 	}
     };
 
-    DataPoint [] points;
-    LabelArray [] las;
+    Vector<DataPoint> points;
+    Vector<LabelArray> las;
     /** Sum of multiplicities, i.e. the number of labeled vectors in
 	the original input arrays
      */
-    final int sumCnt;
+    private int sumCnt;
+
+    private HashMap<DataPoint, LabelArray> h = new HashMap<DataPoint,LabelArray>();
+
 
     DataPointArray( Vector<DataPoint> xvec, int i1, int i2, Discrimination dis) {
 
 	final int nCla = dis.claCount();
 
-	HashMap<DataPoint, LabelArray> h = new HashMap<DataPoint,LabelArray>();
 	for(int i=i1; i<i2; i++) {
 	    DataPoint x = xvec.elementAt(i);
 	    Discrimination.Cla trueC = x.claForDisc(dis);
@@ -52,16 +54,30 @@ class DataPointArray {
 	}
 
 	// how many unique points?
-	points = h.keySet().toArray(new DataPoint [0]);
-	int un = points.length;
-	las = new  LabelArray [un];
-	int _sumCnt = 0;
-	for(int i=0; i<un; i++) {
-	    las[i] = h.get( points[i]);
-	    _sumCnt += las[i].sumCnt;
+	points = new Vector<DataPoint>();
+	points.addAll( h.keySet() );
+	int un = points.size();
+	las = new  Vector<LabelArray>(un);
+	sumCnt = 0;
+	for(DataPoint q: points) {
+	    LabelArray a = h.get( q);
+	    las.add( a );
+	    sumCnt += a.sumCnt;
 	}
-	sumCnt = _sumCnt;
+    }
 
+    void addPoint(DataPoint x, Discrimination dis) {
+	final int nCla = dis.claCount();
+	Discrimination.Cla trueC = x.claForDisc(dis);
+	if (trueC==null) return; // unlabeled
+	DataPoint q = x.shallowCopyWithoutLabels();
+	LabelArray la = h.get(q);
+	if (la == null) {
+	    h.put( q, la  = new LabelArray(nCla));	    
+	    points.add(q);
+	    las.add(la);	   
+	}
+	la.add(  trueC.getPos());
     }
 
     /** Sum of squares of the Euclidean norms of all vectors, taking
@@ -69,8 +85,8 @@ class DataPointArray {
      */
     double sumNormSquare() {
 	double sum=0;
-	for( int i=0; i<points.length; i++) {
-	    sum += points[i].normSquare() * las[i].sumCnt;
+	for( int i=0; i<points.size(); i++) {
+	    sum += points.elementAt(i).normSquare() * las.elementAt(i).sumCnt;
 	}
 	return sum;
     }
@@ -84,15 +100,14 @@ class DataPointArray {
        @return The avg log-likelihood for all labeled examples from
        this.points[], or 0 if points[] is empty.
     */
-    double logLikelihood( 
-			 PLRMLearner.PLRMLearnerBlock block,
+    double logLikelihood(PLRMLearner.PLRMLearnerBlock block,
 			 double zz[][]) {
-	if (zz!=null && zz.length != points.length) throw new IllegalArgumentException("The log prob array, if supplied, must be pre-allocated to size "+points.length);
+	if (zz!=null && zz.length != points.size()) throw new IllegalArgumentException("The log prob array, if supplied, must be pre-allocated to size "+points.size());
 
 	double logLik = 0;
-	for( int i=0; i<points.length; i++) {
-	    DataPoint x = points[i];
-	    LabelArray la = las[i];
+	for( int i=0; i<points.size(); i++) {
+	    DataPoint x = points.elementAt(i);
+	    LabelArray la = las.elementAt(i);
 	    double [] logProb = block.applyModelLog(x);
 	    if (zz!=null) {
 		double z[] =  zz[i] = new double[logProb.length];

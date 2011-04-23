@@ -103,12 +103,16 @@ while(defined ($s = <>)) {
     my @nums=();
     my @longnums=();
     my $rowName = "";
-    while($s =~ /P\((.+?)\|(.+?)\)=([\d\.E+\-]+)/ig) {
+    while($s =~ /P\((.+?)\|(.+?)\)=([\d\.E\+\-Na]+)/ig) {  #-- or NaN...
 	if ($colCnt==0) {
 	    $rowName = $2;
 	    print G "<th>$2</th>\n";
 	}
 	my $num = $3;
+	if ($num eq 'NaN') {
+	    print "P($1|$2) = $num !\n";
+	    $num=0;		
+	}
 	push @longnums, $num;
 	if ($num =~ /E-\d\d?$/) {
 	    $num = 0;
@@ -214,9 +218,10 @@ sub printHeader {
     my @w=();
     my $csv="";
     @colNames = ();
-    while($s =~ /P\((.+?)\|(.+?)\)=([\d\.E+\-]+)/ig) {
+    while($s =~ /P\((.+?)\|(.+?)\)=([\d\.E\+\-Na]+)/ig) {  #-- NaN too, sometimes
 	my $name = $1;
-
+	my $val = $3;
+	
 	push @colNames, $name; #-- original name
 
 	$name = &abbreviate($name);

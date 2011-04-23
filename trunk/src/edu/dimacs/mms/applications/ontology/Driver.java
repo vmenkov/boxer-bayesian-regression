@@ -343,8 +343,7 @@ public class Driver {
 	boolean alreadyTrained = false;	
 
 	CMD.setTwoArgCmd(new String[] {CMD.READ, CMD_SYM1, CMD_SYM2,
-				       CMD_VEC_COS, CMD_VEC_JS
-	    });
+				       CMD_VEC_COS, CMD_VEC_JS });
 
 	CmdManager cm  = new CmdManager(argv);
 	CMD q = cm.next();
@@ -489,7 +488,7 @@ public class Driver {
 	int nLearners =  suite.getLearnerCount();
 	if (nLearners != 1) throw new AssertionError("nLearners="+nLearners+" There must be exactly one learner!");
 	Learner algo= suite.getAllLearners().elementAt(0);
-	if (Suite.verbosity>0) {
+	if (Suite.verbosity>=0) {
 	    System.out.println("Describing the learner:");
 	    algo.describe(System.out, false);
 	    System.out.println("-----------------------------------");
@@ -502,6 +501,12 @@ public class Driver {
 	} else 	if (adaptiveSD) {
 	    algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps);
 	} else {	
+	    if (algo instanceof NormalizedKnnLearner) {
+		// speed it up on repetitive data
+		((NormalizedKnnLearner)algo).setPragmaCacheDataPoints(true);
+	    }
+
+
 	    for(int k=0; k<learnRep; k++) {		
 		if (emulateSD) {
 		    algo.absorbExamplesSD(p1.data, 0, p1.data.size());
@@ -579,20 +584,27 @@ public class Driver {
 	// score    
 	Learner algo= p1.suite.getAllLearners().elementAt(0);
 
-	double [][] vprob =  algo.applyModelLog(p2.data, 0, p2.data.size(),did);
-	if (vprob==null) {
-	    throw new BoxerException(" algo.applyModelLog failed");
-	}
+	/*
+		if (algo instanceof PLRMLearner) {
+		    // overcoming underflow...
+		    probLog = algo.applyModelLog(x);
+		    prob = expProb(probLog);
+		} else {
+		    prob = algo.applyModel(x);
+		    probLog = logProb(prob);
+		}
+	*/
+
+
+	double [][][] tmp = probAndLogprob(algo, p2.data,  did);
+	double [][] vprob=tmp[0], vlogprob=tmp[1];
 
 	for(int i=0; i<p2.data.size(); i++) {
 	    DataPoint p = p2.data.elementAt(i);
 	    int newCid = p.getClasses(p2.suite).elementAt(0).getPos();
-	    // overcoming underflow...
-	    double[] logProb = vprob[i];
-	    double[] prob = expProb(logProb);
 	    for(int j=0; j<M1; j++) {
-		sumProb[newCid][j] += prob[j];
-		sumLogProb[newCid][j] += logProb[j];
+		sumProb[newCid][j] += vprob[i][j];
+		sumLogProb[newCid][j] +=  vlogprob[i][j];
 	    }
 	    count[newCid] ++;
 	    
@@ -783,15 +795,14 @@ public class Driver {
 	Learner algo= p1.suite.getAllLearners().elementAt(0);
 	int did = p1.suite.getDid( p1.dis);
 
-	double [][] vprob =  algo.applyModelLog(p1.data, 0, p1.data.size(),did);
+	double [][][] tmp = probAndLogprob(algo, p1.data,  did);
+	double [][] vprob=tmp[0], vlogprob=tmp[1];
+
 
 	for(int i=0; i<p1.data.size(); i++) {
 	    DataPoint p = p1.data.elementAt(i);
 	    int newCid = p.getClasses(p1.suite).elementAt(0).getPos();
-	    // overcoming underflow...
-	    double[] logProb = vprob[i];
-	    double[] prob = expProb(logProb);
-	    r.selfProb[newCid] += prob[newCid];
+	    r.selfProb[newCid] += vprob[i][newCid];
 	    r.count[newCid] ++;
 	}
 
@@ -882,6 +893,37 @@ public class Driver {
     }
 
 
+    /** Computes first  prob and then log prob, or the other way around... depending on how the underlying learner
+	is organized.
+     */
+    static double [][][] probAndLogprob(Learner algo, Vector<DataPoint> data, int did) throws BoxerException {
+	
+	double [][] vprob, vlogprob;
+	if (algo instanceof PLRMLearner) {
+	    // overcoming underflow...
+	    vlogprob =  algo.applyModelLog(data, 0, data.size(),did);
+	    vprob = new double[data.size()][];
+	    if (vlogprob==null) {
+		throw new BoxerException(" algo.applyModelLog failed");
+	    }
+	    for(int i=0; i<data.size(); i++) {
+		vprob[i] = expProb(vlogprob[i]);
+	    }
+	} else {
+	    vprob =  algo.applyModel(data, 0, data.size(),did);	    
+	    vlogprob = new double[data.size()][];
+	    if (vprob==null) {
+		throw new BoxerException(" algo.applyModel failed");
+	    }	
+	    for(int i=0; i<data.size(); i++) {
+		vlogprob[i] = logProb(vprob[i]);
+	    }
+	}
+
+	return new double [][][] { vprob, vlogprob};
+    }
+    
+
     /** Computes exponent of each array element */
     private static double [] expProb(double[] logProb) {
 	double[] prob = new double[logProb.length];
@@ -889,6 +931,15 @@ public class Driver {
 	    prob[k] = Math.exp(logProb[k]);
 	}
 	return prob;
+    }
+
+    /** Computes log of each array element */
+    private static double [] logProb(double[] prob) {
+	double[] logprob = new double[prob.length];
+	for( int k=0; k< prob.length; k++) {
+	    logprob[k] = (prob[k] == 0 ? -1000 : Math.log(prob[k]));
+	}
+	return logprob;
     }
 
 

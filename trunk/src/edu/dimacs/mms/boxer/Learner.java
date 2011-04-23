@@ -211,6 +211,13 @@ public abstract class Learner implements Model {
 	return s;	
     }
 
+    public double [][] applyModel(Vector<DataPoint> v, int i0, int i1, int did) throws BoxerException {
+	double [][] s = new double[i1-i0][];
+	for(int i=i0; i<i1; i++) {
+	    s[i-i0] = blocks[did].applyModel(v.elementAt(i));
+	}
+	return s;	
+    }
 
 
     /** Estimates probabilities of a given data point's belonging to
