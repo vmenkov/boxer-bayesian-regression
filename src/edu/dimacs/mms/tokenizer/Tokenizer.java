@@ -17,8 +17,9 @@ public class Tokenizer {
     }
 
     static void usage(String m) {
+	System.out.println("Usage: java [-Daddto=dataset-in.xml] [-Dout=out.xml] [-Dclasses=dis1^cla1[,dis2^cla2...]] edu.dimacs.mms.tokenizer.Tokenizer file1.html [file2.html ...]");
+	System.out.println("Output goes to out.xml");
 	/*
-	System.out.println("Usage: java [-Dmodel=eg|tg] boxer.Driver train.xml test.xml");
 	System.out.println("Usage: java [-Dmodel=eg|tg] boxer.Driver train:train1.xml train:train2.xml test:test_a.xml train:train3.xml test:test_b.xml");
 	System.out.println(" ... etc.");
 	*/
@@ -34,7 +35,7 @@ public class Tokenizer {
 	String z[] = s.split(",");
 	for(String q: z) {
 	    if (q.equals("")) continue;
-	    String [] pair = q.split(":");
+	    String [] pair = q.split(BXRReader.PAIR_SEPARATOR_REGEX);
 	    if (pair.length != 2 || pair[0].equals("") || pair[1].equals("")) 
 		throw new IllegalArgumentException("Can't parse class list " + q);
 	    clav.add(suite.getClaAlways(pair[0], pair[1], true));
@@ -54,14 +55,17 @@ public class Tokenizer {
 	// dis:class[,dis:class][,...]
 	String classesOpt=ht.getOption("classes", "");	
 	
+
 	Suite suite = new Suite("tmp");
 	Vector<Discrimination.Cla> clav = parseClassesOpt(classesOpt, suite);
 
+	String addto = ht.getOption("addto", null);
+
+	Vector<DataPoint> v = (addto==null) ? new Vector<DataPoint>() :
+	    ParseXML.readDataFileMultiformat(addto, suite, true);
 	
 	Tokenizer t = new Tokenizer();
-	t.dic = new FeatureDictionary();
-
-	Vector<DataPoint> v = new Vector<DataPoint>();
+	t.dic = suite.getDic();
 
 	for(int i=0; i<argv.length; i++) {
 	    DataPoint p = t.tokenizeFile(argv[i]);

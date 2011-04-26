@@ -271,7 +271,7 @@ public class Discrimination {
     
     Calling this method is equivalent to addClass(cname, false).
 
-    <p> This method is NOT public, because it only should be called
+    <p> FIXME: This method shoudl  NOT be public, because it only should be called
     from Suite.addClass(); applications should call the latter.
 
     @param cname The class name. No class with such name should exist in this
@@ -282,7 +282,7 @@ public class Discrimination {
     name already exists in the discrimination, or if a new class
     cannot be added
     */
-    synchronized  Cla addClass(String cname/*, Suite.NC ncMode*/) { 
+    synchronized public  Cla addClass(String cname/*, Suite.NC ncMode*/) { 
 	return addClass(cname, false, Suite.NC.API); 
     }
 
@@ -308,7 +308,7 @@ public class Discrimination {
           <td colspan=2>Add
        </table>
 
-    <p> This method is NOT public, because it only should be called
+    <p> FIXME: This method should  NOT be public, because it only should be called
     from Suite.addClass(); applications should call the latter.
 
      @param cname The class name. If reuse=false, no class with such
@@ -325,7 +325,7 @@ public class Discrimination {
       if it cannot be added
 
   */
-    synchronized  Cla addClass(String cname, boolean reuse, Suite.NC ncMode) { 
+    synchronized  public Cla addClass(String cname, boolean reuse, Suite.NC ncMode) { 
 	if (cname==null || cname.equals("")) throw new IllegalArgumentException("Should not have empty-named classes! cname='"+cname+"'"); 
 	else if (!IDValidation.validateClaName(cname)) {
 	    throw new  IllegalArgumentException("Not a legal class name: '"+cname+"'"); 

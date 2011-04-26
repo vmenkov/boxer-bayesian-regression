@@ -20,9 +20,9 @@ public class BXRReader {
 	compact format.  Originally a colon (inherited from BXR), it
 	was changed to caret since version 0.7
      */
-    static final char PAIR_SEPARATOR = '^';    
-    static final String PAIR_SEPARATOR_STRING = ""+PAIR_SEPARATOR;
-    static final String PAIR_SEPARATOR_REGEX = 
+    static public final char PAIR_SEPARATOR = '^';    
+    static public final String PAIR_SEPARATOR_STRING = ""+PAIR_SEPARATOR;
+    static public final String PAIR_SEPARATOR_REGEX = 
 	(PAIR_SEPARATOR == '^' ? "\\":"") + PAIR_SEPARATOR;
 
     /** To support BMR data, where the separator is still a colon, not
