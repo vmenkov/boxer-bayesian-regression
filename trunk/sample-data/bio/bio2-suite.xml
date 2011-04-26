@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<suite HowToHandleMissingIDs="Error" SupportsSimpleLabels="No"
+    name="Consolidated_PDF_Table_Data" nctest="IGNORE" nctrain="IGNORE" version="0.8.005">
+    <discrimination fallback="true" name="sysdefaults">
+        <classes/>
+    </discrimination>
+    <discrimination name="type">
+        <classes>financial personal bio</classes>
+    </discrimination>
+</suite>

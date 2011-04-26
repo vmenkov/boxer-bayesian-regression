@@ -302,7 +302,7 @@ public class TruncatedGradient extends PLRMLearner {
 	    if (Suite.verbosity>0) {
 		System.out.println("[SD] SD on " + (i2-i1) + " vectors; universal safe eta=" + safeEta);
 		System.out.println("[SD] Among "+(i2-i1)+" data points, found "+
-				   dpa.sumCnt + " labeled ones, " + dpa.points.length + " unique ones");
+				   dpa.sumCnt + " labeled ones, " + dpa.length() + " unique ones");
 	    }
 
 	    if (dpa.sumCnt==0) return; // no labeled points, nothing to optimize
@@ -315,7 +315,7 @@ public class TruncatedGradient extends PLRMLearner {
 	    while(true) {
 
 		// 1. compute probability predictions, and log-likelyhood
-		double [][] zz = new double[dpa.points.length][];
+		double [][] zz = new double[dpa.length()][];
 		double logLik = dpa.logLikelihood(this,zz);
 	
 		// 2. Check termination criterion
@@ -338,9 +338,9 @@ public class TruncatedGradient extends PLRMLearner {
 		// 2. Compute grad L - which is also our increment vector
 		BetaMatrix a = new BetaMatrix(d);
 
-		for(int i=0; i< dpa.points.length; i++) {
+		for(int i=0; i< dpa.length(); i++) {
 		    double [] z = zz[i];
-		    DataPoint x = dpa.points[i];
+		    DataPoint x = dpa.points.elementAt(i);
 		    for(int h=0; h<x.features.length; h++) {
 			int j = x.features[h];	
 			a.addDenseRow(j, z, x.values[h]/dpa.sumCnt);
@@ -352,13 +352,13 @@ public class TruncatedGradient extends PLRMLearner {
 		 */
 		double sumA2 = a.squareOfNorm();
 		double sumQ2 = 0;
-		for(int i=0; i< dpa.points.length; i++) {
-		    DataPoint p = dpa.points[i];
+		for(int i=0; i< dpa.length(); i++) {
+		    DataPoint p = dpa.points.elementAt(i);
 		    double mp = 0;
 		    for(double q: p.dotProducts(a, dis)) {
 			mp = Math.max(mp, Math.abs(q));
 		    }
-		    sumQ2 += mp*mp * dpa.las[i].sumCnt;
+		    sumQ2 += mp*mp * dpa.las.elementAt(i).sumCnt;
 		}
 		double eta = dpa.sumCnt * sumA2 / sumQ2;
 

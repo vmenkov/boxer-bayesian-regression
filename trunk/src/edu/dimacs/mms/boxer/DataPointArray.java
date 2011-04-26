@@ -31,10 +31,15 @@ class DataPointArray {
 
     Vector<DataPoint> points;
     Vector<LabelArray> las;
+    /** number of geometrically distinct points */
+    int length() {
+	return points.size();
+    }
+
     /** Sum of multiplicities, i.e. the number of labeled vectors in
 	the original input arrays
      */
-    private int sumCnt;
+    int sumCnt;
 
     private HashMap<DataPoint, LabelArray> h = new HashMap<DataPoint,LabelArray>();
 
