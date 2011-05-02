@@ -10,10 +10,11 @@ Representation
 #-- Either the underlying learners for classifying cells (in a 2-step method);
 #-- or the global 1-step method, such as Jensen-Shannon
 Learner
+#-- learner parameters, if any
+Parameters
 #-- In a 2-step method, the technique for building the confusion matrix from
 #-- the Bayesian probabilities for individual cells
 Combiner
-Parameters
 Version
 Date
 RunLog

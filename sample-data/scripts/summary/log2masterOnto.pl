@@ -65,6 +65,23 @@ sub processLog($) {
     my ($q) = @_;
     my($logFile,$logDir) = &validateLogFileName( $q );
  	     
+    #-- guess learner name and params from the dire name
+    my $logDirMain = $logDir;
+    $logDirMain =~ s|.*/||;
+
+    #my $learner = undef;
+    #my $params = params;
+    if ($logDirMain =~ /-(asd)-/ ||
+	$logDirMain =~ /-(sd)-/ ||
+	$logDirMain =~ /-(sgd)-/ ||
+	$logDirMain =~ /-(sym1)-/ ||
+	$logDirMain =~ /-(knn)-/ ||
+	$logDirMain =~ /-(bxr)-/ ) {
+	my ($learner, $params) = ($1, $');  # extract learner name and param ');
+	$learner =~ tr/a-z/A-Z/;
+	print "Learner=$learner\n";
+	print "Parameters=$params\n";
+    }
     my $s=undef;
     my $timeIsSet=0;
     
