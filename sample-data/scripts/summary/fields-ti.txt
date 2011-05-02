@@ -1,0 +1,23 @@
+#-- Fields for the Topic Identification task summary CSV files
+CaseName
+Representation
+Learner
+Parameters
+Version
+Date
+RunLog
+Run_Time
+DiscriminationName
+ClassName
+TrainingSetPositive_N
+TrainingSetComplement_N
+TrainingSetTruePos_N
+TrainingSetFalsePos_N
+TrainingSetDetection
+TrainingSetFalseAlarm
+TestSetPositive_N
+TestSetComplement_N
+TestSetTruePos_N
+TestSetFalsePos_N
+TestSetDetection
+TestSetFalseAlarm

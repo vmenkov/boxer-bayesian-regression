@@ -1,0 +1,42 @@
+#-- the two data sources being matched
+DS1
+DS2
+DS1_Rows
+DS1_Columns
+DS2_Rows
+DS2_Columns
+#-- how the text in cells is converted to feature vectors
+Representation
+#-- Either the underlying learners for classifying cells (in a 2-step method);
+#-- or the global 1-step method, such as Jensen-Shannon
+Learner
+#-- In a 2-step method, the technique for building the confusion matrix from
+#-- the Bayesian probabilities for individual cells
+Combiner
+Parameters
+Version
+Date
+RunLog
+#-- CPU time in seconds, if recorded
+Run_Time
+
+#-- how many columns have the diagonal element in the top1/top2/top 3 vals?
+#-- (The numbers may be affected by artefacts of tie-breaking)
+Top1
+Top2
+Top3
+
+#DiscriminationName
+#ClassName
+#TrainingSetPositive_N
+#TrainingSetComplement_N
+#TrainingSetTruePos_N
+#TrainingSetFalsePos_N
+#TrainingSetDetection
+#TrainingSetFalseAlarm
+#TestSetPositive_N
+#TestSetComplement_N
+#TestSetTruePos_N
+#TestSetFalsePos_N
+#TestSetDetection
+#TestSetFalseAlarm
