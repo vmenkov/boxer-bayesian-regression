@@ -96,7 +96,7 @@ sub processLog($) {
 	if ($s =~ /BOXER toolkit \(version ([\d\.]+)\)/i ) {
 	    my $ver = $1;
 	    print "Version=$ver\n";
-	} elsif ($s =~ /^(\S\S\S \d+, \d+) \d\d:\d\d:\d\d \SM edu.dimacs.mms.boxer.Logging info/ && !$timeIsSet) {
+	} elsif ($s =~ /^(\S\S\S \d+, \d+) \d\d?:\d\d:\d\d \SM edu.dimacs.mms.boxer.Logging info/ && !$timeIsSet) {
 	    my $datestring=$1;
 	    print "Date=$datestring\n"; 
 	    $timeIsSet=1;
@@ -108,6 +108,7 @@ sub processLog($) {
 		$dsRows{$path} = &findRowCnt($path);
 	    }
 	    my $rows = $dsRows{$path};
+	    $path =~ s|^.*/(\S)|$1|;
 	    if ($ds eq 'DS1') {
 		print  "$ds=$path\n";
 		if (defined $rows) { 
@@ -194,6 +195,8 @@ sub parseMatrixFile($) {
 #-- row count for a data source
 sub findRowCnt($) {
     my ($f) = @_;
+    my $home = $ENV{'HOME'};
+    $f =~ s|^/home/vmenkov/|$home/|;
     (-f $f && -r $f) or return undef;
     my @res = `wc $f`;
     # print STDERR join(":", @res);

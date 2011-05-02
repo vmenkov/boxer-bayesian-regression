@@ -12,8 +12,23 @@ sub validateLogFileName($) {
 	opendir(my $dh, $logDir) or die "can't open directory $logDir: $!";
 	my @dAll =  readdir($dh);
 	my @dFiles = grep { -f "$logDir/$_" && ($_ =~ /\.log$/ || $_ =~ /\.log\.gz$/)} @dAll;
-	(scalar(@dFiles) == 1) or die "Cannot figure where is the log file in directory $logDir\n";
-	$logFile = "$logDir/" . $dFiles[0];
+	my $n=scalar(@dFiles);
+	if ($n==0) {
+	    die "There is no log file in directory $logDir\n";
+	} elsif ($n==1) {
+	    #-- ok
+	    $logFile = "$logDir/" . $dFiles[0];
+	} elsif ($n==2) {
+	    if ($dFiles[0] eq $dFiles[1].".gz") {
+		 $logFile = "$logDir/" . $dFiles[1];
+	    } elsif  ($dFiles[1] eq $dFiles[0].".gz") {
+		 $logFile = "$logDir/" . $dFiles[0];
+	    } else {
+		die "Cannot figure which of ".join(", ", @dFiles)." is the correct log file in directory $logDir\n";
+	    }
+	} else {
+	    die "Cannot figure where is the log file in directory $logDir\n";
+	}
     } elsif (-f $q || -f "${q}.gz") {
 	$logFile = $q;
 	$logDir = ($logFile =~ /(.*\/)/) ? $1 : ".";
