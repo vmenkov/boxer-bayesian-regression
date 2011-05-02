@@ -31,7 +31,7 @@ use strict;
 
 #require 'abbreviate_sub.pl';
 
-#-- flags controllig how the diagonal blocks of the confusion matrix
+#-- flags controlling how the diagonal blocks of the confusion matrix
 #-- are identified
 my ($diagPos,$diagNames) = (1,0);
 if ($::diag eq 'off') {
