@@ -15,9 +15,11 @@ TrainingSetTruePos_N
 TrainingSetFalsePos_N
 TrainingSetDetection
 TrainingSetFalseAlarm
+TrainingSetROC
 TestSetPositive_N
 TestSetComplement_N
 TestSetTruePos_N
 TestSetFalsePos_N
 TestSetDetection
 TestSetFalseAlarm
+TestSetROC

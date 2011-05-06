@@ -152,8 +152,11 @@ sub doLine($$$) {
 	($dummy == $truePos) or die "TP mismatch: $dummy != $truePos\n";
 	my $dataN = $n - $dataPos;
 	my $falsePos = $systemPos - $truePos;
+	#-- same as recall
 	my $detection = ($dataPos==0) ? 0 : $truePos/$dataPos;
 	my $falseAlarm =  ($dataN==0) ? 0 :$falsePos/$dataN;
+	#-- as per Paul's message, "displaying via ROC", 2011-04-18
+	my $roc = 0.5* (1+$detection - $falseAlarm);
 	my @pairs1 = 
 	    (
 	     "DiscriminationName=$disLabel",
@@ -166,6 +169,7 @@ sub doLine($$$) {
 	     "${setLabel}FalsePos_N=$falsePos",
 	     "${setLabel}Detection=$detection",
 	     "${setLabel}FalseAlarm=$falseAlarm");
+	     "${setLabel}ROC=$roc");
 	return ( join("\n", @pairs1) . "\n",
 		 join("\n", @pairs2) . "\n");
     }
