@@ -145,10 +145,13 @@ public class Repeater {
 	out =ht.getOption("out", ".");	
 	if (out.equals("")) out=".";
 
-	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ "). "+
+	System.out.println("Welcome to the BOXER toolkit (version " + Version.version+ ")");
+	System.out.println("BOXER Repeater: " + 
 			   (cyclic? "Cyclic mode" :
 			    "Random mode with "+nRandom+"repeats")+
-			   ", M="+M +", sd="+emulateSD+", adaptiveSD="+adaptiveSD+", out="+out);
+			   ", M="+M +", sd="+emulateSD+", adaptiveSD="+adaptiveSD+
+			   (adaptiveSD? " with eps=" + eps : "") +
+			   ", out="+out);
 	System.out.println("[VERSION] " + Version.version);
 
 	Suite.verbosity = ht.getOption("verbosity", 1);
