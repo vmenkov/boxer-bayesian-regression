@@ -5,7 +5,6 @@
 echo 0=$0
 
 #-- Setting JVM options (memory used, classpath)
-set conv=edu.dimacs.mms.applications.util.CsvToXml;
 set rep=edu.dimacs.mms.applications.learning.Repeater
 set cp=$HOME/boxer/lib/boxer.jar
 set opt="-Xmx256m -cp ${cp}" 
