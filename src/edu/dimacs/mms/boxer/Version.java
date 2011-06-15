@@ -31,6 +31,7 @@ package edu.dimacs.mms.boxer;
     0.8.007 - 2011-04-04. Beginning- and end-of-word n-grams in util.BagOfWords
     0.8.009 - 2011-04-12. kNN learner added. Tweaking in n-grams: no mere "^", "$" tokens anymore.
     0.8.010 - 2011-04-25. kNN learner updates.
+    0.8.011 - 2011-06-15, reporting issue for LogLik in repeater for kNN; cosmetic changes
 </pre>
  */
 public class Version {

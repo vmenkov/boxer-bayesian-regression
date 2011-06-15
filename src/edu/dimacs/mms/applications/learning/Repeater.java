@@ -584,7 +584,7 @@ public class Repeater {
 		probLog[j][k] = (v[k]==0) ? M : Math.log(v[k]);
 	    }
 	}
-	return prob;
+	return probLog;
     }
 
     /** Returns an array of integers, from 0 to n-1, randomly permuted.
