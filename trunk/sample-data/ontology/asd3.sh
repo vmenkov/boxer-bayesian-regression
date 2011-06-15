@@ -22,15 +22,15 @@ set wits=$HOME/boxer/WITS
 
 set log=asd.log
 
-(/usr/bin/time java $opt -Dverbosity=1  -Dlearn.rep=1 -Dlearner=notg-learner-param-eta=0_001.xml -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8 $onto \
+/usr/bin/time java $opt -Dverbosity=1  -Dlearn.rep=1 -Dlearner=notg-learner-param-eta=0_001.xml -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8 $onto \
  train:$wits/safeWITS_2006_03.1-100.txt \
  test:$wits/safeWITS_2006_03.1-100.txt \
- test:$wits/Sent2010.12.21WITS_2006_04.500-600.txt  >& $log)>& time.txt
+ test:$wits/Sent2010.12.21WITS_2006_04.500-600.txt  >& $log
 
 set dir=matrix-asd-1e-8
 ./matrix2html.pl $log
 mkdir $dir
-mv matrix-?.* $log time.txt $dir
+mv matrix-?.* $log  $dir
 
 
 

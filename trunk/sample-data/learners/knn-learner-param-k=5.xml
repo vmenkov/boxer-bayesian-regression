@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<learner algorithm="boxer.NormalizedKnnLearner" name="Knn5" version="0.8.001">
+   <parameters>
+     <parameter name="k" value="5"/>
+    </parameters>
+</learner>
