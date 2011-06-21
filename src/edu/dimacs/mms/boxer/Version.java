@@ -37,7 +37,7 @@ package edu.dimacs.mms.boxer;
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.8.010";
+    public final static String version = "0.8.012";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.
