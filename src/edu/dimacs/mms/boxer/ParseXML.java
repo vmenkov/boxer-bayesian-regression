@@ -137,6 +137,20 @@ public class ParseXML {
 
     }
 
+    /** Reads a file containing a single DataPoint element as a top
+     * element. (This is not a common format for BOXER, but is used in some applications)
+     */
+    public static DataPoint readSingleDataPointFileXML(String fname,    
+						       Suite suite,
+						       boolean isDefinitional) 
+	throws IOException, SAXException, BoxerXMLException {
+
+	Element e=readFileToElement(fname);
+	DataPoint p = parseDataPoint(e,  suite, isDefinitional); 
+	return p;
+    }
+
+
     /** Builds a vector of DataPoints out of the content of a data
 	file in XML or BMR format. It tries to determine the file type
 	from the extension of the file name, ".xml" being XML and

@@ -73,6 +73,8 @@ public class DataPoint implements Measurable  {
      * other) data points. We use it for printing the content of the
      * vector in the human-readable form. */
     FeatureDictionary dic;
+    public FeatureDictionary getDic() { return dic; }
+
     /** Feature ids, as per the FeatureDictionary, in increasing order */
     int[] features;
     /** List of feature ids */
@@ -173,6 +175,33 @@ public class DataPoint implements Measurable  {
 	    values[i] *= c;
 	}
     }
+
+
+    /** Modifies this vector, multiplying every feature's value by a
+	specified factor, which is stored (as the value of the
+	corresponding feature) in the specified DataPoint
+	objects. Features for which no factor is supplied are not affected.
+
+	@param factors A DataPoint object whose features store factors
+	by which we will multiply features of <tt>this</tt>
+	DataPoint. If zero is stored here for a particular feature, the
+	corresponding feature in "this" DataPoint will indeed by multiplied by zero;
+	but if no value is stored, then the feature will not be affected.
+    */
+
+    public void multiplyFeaturesBy(DataPoint factors) {
+	int i=0, pi=0;
+	while(i < features.length && pi< factors.features.length) {
+	    if (features[i] ==  factors.features[pi]) {
+		values[i++] *= factors.values[pi++];
+	    } else if (features[i] <  factors.features[pi]) { 
+		i++;
+	    } else {
+		pi++;
+	    }
+	}
+    }
+
 
     /** Makes this DataPoint object contain the same labels list as
      * the other object. The list is not copied, just referenced. One may want to use this  method after {@link #plus(DataPoint)} 
@@ -638,6 +667,16 @@ public class DataPoint implements Measurable  {
 	}
 	return b.toString();
     }
+    
+    /** Saves a single DataPoint (this one) as an XML file */ 
+    public void saveAsXML( String fname) {
+	Document xmldoc= new DocumentImpl();
+	Element root = toXML(xmldoc); 
+	root.setAttribute("version", Version.version);	
+	xmldoc.appendChild(root);
+	XMLUtil.writeXML(xmldoc, fname);
+    }
+
 
 
    /** Saves a list of data points as an XML file.

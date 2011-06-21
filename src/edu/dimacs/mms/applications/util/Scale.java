@@ -1,5 +1,6 @@
 package edu.dimacs.mms.applications.util;
 
+
 import java.util.*;
 import java.io.*;
 import java.text.*;
@@ -9,7 +10,7 @@ import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.borj.*;
 
 /**  This is a sample utility tool for "scaling" or "normalizing" a
-     dataset. There are two modes available: 
+     dataset. There are three modes available: 
 
      <ul> 
 
@@ -19,12 +20,48 @@ import edu.dimacs.mms.borj.*;
      <li>"Normalizing" the date, i.e. multiplying each example by an
      appropriate factor to make its 2-norm (not including the dummy
      component)equal to 1).
+
+
+     <li>Scaling coordinates separately. A separate multiplier for
+     each feature should be supplied; this can be done explicitely, in
+     a "datapoint" XML format, or implicitly, be requesting that the
+     max abs value for each feature in the data set be found. The
+     vector of feature multipliers can also be saved, in order to be
+     later applied to other datasets that one wants to scale in the same way.
+
      </ul>
 
-     <p>
-     Usage:<br>
-     java [-Dby=0.01] [-Dnormalize=true] Scale input-data-set.xml output-data-set.xml
+     <h3>Usage<h3>
 
+     <h4>     To scale by the same factor</h4>
+     <pre>
+     java -Dby=0.01 edu.dimacs.mms.applications.util.Scale input-data-set.xml output-data-set.xml
+     </pre>
+
+     Here, "by" is the factor by which all features of all vectors are multiplied.
+
+     <h4>To normalize each vector</h4>
+     <pre>
+     java -Dnormalize=true edu.dimacs.mms.applications.util.Scale input-data-set.xml output-data-set.xml
+     </pre>
+
+     <h4>To scale each feature separately</h4>
+     <pre>
+     java -Dfeaturefactors={scale_factors.xml|max}  [-Dfeaturefactors_out=scale_factors_out.xml]i edu.dimacs.mms.applications.util.Scale nput-data-set.xml output-data-set.xml
+     </pre>
+
+     A possible way of using the feature-specific scaling may be as follows:
+     <pre>
+     java -Dfeaturefactors=max  -Dfeaturefactors_out=save_scale_factors.xml edu.dimacs.mms.applications.util.Scale train.xml train-scaled.xml
+     java -Dfeaturefactors=save_scale_factors.xml edu.dimacs.mms.applications.util.Scale test.xml test-scaled.xml
+     </pre>
+
+     What the above two command will do is the following. First, scale the first data
+     set (e.g., your training set) so that each feature's abs value in
+     the output file won't exceed 1.0; save the the vector of scale
+     factors into a file. Second, scale another data set (e.g., your
+     test set) by the same factors that were applied to the first set,
+     reading them from the file saved on the first run.
 
  */
 public class Scale {
@@ -39,8 +76,22 @@ public class Scale {
 	if (m!=null) {
 	    System.out.println(m);
 	}
+	System.out.println("See the Javadoc API pages for more documentation for this tool.");
 	System.exit(1);
     }
+
+
+    enum Mode {
+	UNDEFINED, NORMALIZE, SCALE, FEATURESCALE;
+    };
+    
+    static private class Option {
+	static final String
+	    NORMALIZE = "normalize",
+	    FEATUREFACTORS = "featurefactors",
+	    FEATUREFACTORS_OUT = "featurefactors_out",
+	    BY = "by";
+    };
 
     static public void main(String argv[]) 
 	throws IOException, org.xml.sax.SAXException, BoxerXMLException {
@@ -48,14 +99,29 @@ public class Scale {
 	if (argv.length!=2) usage();
 	ParseConfig ht = new ParseConfig();
 
-	boolean normalize = ht.getOption("normalize", false);
+	Mode mode = (ht.getOption(Option.NORMALIZE, false))?  Mode.NORMALIZE : Mode.UNDEFINED;
 
-	if (normalize && ht.getOption("by", null)!=null) {
-	    usage( "Cannot use 'normalize=true' and 'by=...' at the same time");
+	if (ht.getOption(Option.BY, null)!=null) {
+	    if (mode == Mode.UNDEFINED) {
+		mode = Mode.SCALE;
+	    } else {
+		usage( "Cannot use options 'normalize=true' and 'by=...' at the same time");
+	    }
 	}
 
-	double by=ht.getOptionDouble("by", 0.0);	
+	String featureFactorFile = ht.getOption(Option.FEATUREFACTORS, null);
+	if ( featureFactorFile != null) {
+	    if (mode == Mode.UNDEFINED) {
+		mode = Mode.FEATURESCALE;
+	    } else {
+		usage( "Cannot combine feature factors with either  'normalize=true' or 'by=...'");
+	    }
+	}
 
+	if (mode == Mode.UNDEFINED) {
+	    usage("Must supply one of the three options: "+Option.NORMALIZE+", " + Option.BY + ", or "+Option.FEATUREFACTORS);
+	}
+	
 
 	DataPoint.setDefaultNameBase("scaled");
 
@@ -68,17 +134,22 @@ public class Scale {
 	String outFile = argv[1];
 
 	Vector<DataPoint> points = ParseXML.readDataFileMultiformat(inFile, suite, true);
-	if (normalize) {
+	if (mode==Mode.NORMALIZE) {
 	    System.out.println("Normalizing...");
 	    normalize(points);
-	} else {
+	} else if (mode==Mode.SCALE) {
+	    double by = ht.getOptionDouble(Option.BY, 0.0);	
 	    System.out.println("Scaling by "+by+"...");
 	    scale(points,by);
+	} else if (mode==Mode.FEATURESCALE) {
+	    String out = ht.getOption(Option.FEATUREFACTORS_OUT, null);
+	    featureScale(points,featureFactorFile, suite, out);
+	} else {
+	    usage("Unknonw mode!");
 	}
 
 	System.out.println("Saving to: " + outFile);
 	DataPoint.saveAsXML(points, "scaled", outFile); 
-
 
     }
 
@@ -90,6 +161,7 @@ public class Scale {
     }
 
     /** Multiplies each vector by the same factor 
+	@param points A vector of DataPoint objects to scale
 	@param by Multiply by this number
      */
     static public void scale(Vector<DataPoint> points, double by) {
@@ -98,6 +170,70 @@ public class Scale {
 	}
     }
 
+    /** Scans a vector of data points and finds the max absolute value for each feature.
+	@return a DataPoint object which contains, for each feature
+	found in at least one of the data points with a non-zero value, the inverse of the max abs value that has been
+	found for this feature.
+     */
+    private static DataPoint inverseAbsMaxValues(Vector<DataPoint> points,
+						 FeatureDictionary dic) throws BoxerXMLException {
+
+	Vector<DataPoint.FVPair> v = new 	Vector<DataPoint.FVPair>();
+	if (points.size()==0) {
+	    return new DataPoint(v, dic, "MaxOfNone");
+	}
+
+	int n = dic.getDimension();
+	double[] absMax = new double[n];
+	for(DataPoint p: points) {
+	    if (p.getDic()!=dic) throw new IllegalArgumentException("DataPoints use different dictionaries");
+	    int features[] =p.getFeatures();
+	    double values[] = p.getValues();
+	    for(int i=0; i<features.length; i++) {
+		absMax[ features[i]] = Math.max( absMax[ features[i]], Math.abs(values[i]));
+	    }
+	}
+	for(int f=0; f<n; f++) {
+	    if (absMax[f]>0) {
+		v.add(new DataPoint.FVPair(f, 1.0/absMax[f]));
+	    }
+	}
+	return new DataPoint(v, dic, "InverseMaxAbsValues");
+    }
+
+    /** Multiplies each feature of each vector by a specified factor. 
+	@param points A vector of DataPoint objects to scale
+	@param featureFactorFile The name of an XML file that contains
+	a single DataPoint, whose features are interpreted as factors
+	to apply to the features of all <tt>points</tt>. If "max" is
+	given as a file name, this routine will find the largest
+	absolute value for each feature in the input data set, and use
+	1/that_value as the factor for that feature.
+
+	@param out If not null, the feature factors will be saved to that file
+	(in a DataPoint XML format).
+     */
+    static public void featureScale(Vector<DataPoint> points, String featureFactorFile, Suite suite,
+				    String out)
+	throws IOException, org.xml.sax.SAXException, BoxerXMLException {
+
+	DataPoint factors = null;
+	if (featureFactorFile.equals("max")) {
+	    // special mode: finding absolute max values for each feature
+	    factors = inverseAbsMaxValues(points, suite.getDic());
+	} else {
+	    // read from a file
+	    factors = ParseXML.readSingleDataPointFileXML( featureFactorFile, suite, false);
+	}
+	for(DataPoint p: points) {
+	    p.multiplyFeaturesBy( factors);
+	}
+
+	// save as the factors, if requested
+	if ( out != null) {
+	    factors.saveAsXML(out);
+	}
+    }
 
     static void memory() {
 	memory("");
@@ -118,7 +254,7 @@ public class Scale {
 }
 
 /*
-Copyright 2009, Rutgers University, New Brunswick, NJ.
+Copyright 2009-2011, Rutgers University, New Brunswick, NJ.
 
 All Rights Reserved
 
