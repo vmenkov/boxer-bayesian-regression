@@ -95,22 +95,34 @@ public class BXRReader {
     }
 
     /** Parses a string in format "a1:b1 a2:b2 a3:b3 ...", where the
-     current PAIR_SEPARATOR is actually used instead of the semicolon.
-     Adds results to v, a vector of String pairs. If v is not
-     supplied, allocates a new vector.*/
+     current PAIR_SEPARATOR (often, "^") is actually used instead of
+     the semicolon.  Adds results to v, a vector of String pairs. If v
+     is not supplied, allocates a new vector.
+
+     In each 'dis^class' pair, we check that both class and dis are
+     non-empty (as per Allen McIntosh' request, 2011-06-27).
+   
+*/
     static Vector<String[]> readPairs(String s, Vector<String[]> v) {
     
 	if (v==null)   v = new Vector<String[]>();
 
-	String tokens[] = s.split("\\s+");
+	// Using negative second arg to retain "" in "foo:" (an illegal input)
+	String tokens[] = s.split("\\s+", -1);
 	for(String token: tokens) {
 	    if (token.equals("")) continue;
 	    String[] pair = token.split(PAIR_SEPARATOR_REGEX);
 	    if (pair.length == 1) {
-		// implicit class
+		// discrimination name is supplied implicitly 
 		pair = new String[] { null, pair[0] };
 	    } else if (pair.length != 2) {
 		throw new IllegalArgumentException("Could not parse string '"+s+"' as a list of dis"+PAIR_SEPARATOR+"class pairs. Too many colons/carets? Unparsable token: " + token);
+	    } else { 
+		// Exactly 2 args, as there should be.
+		// Check that both are non-empty
+		if (pair[0].equals("") || pair[1].equals("")) {
+		    throw new IllegalArgumentException("Could not parse string '"+s+"' as a list of dis"+PAIR_SEPARATOR+"class pairs. Bad token '"+token+"': either class of discrimination name given as empty string");
+		}
 	    }
 	    v.add(pair);
 	}
