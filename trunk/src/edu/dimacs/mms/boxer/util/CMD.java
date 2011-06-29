@@ -1,8 +1,8 @@
-package edu.dimacs.mms.borj;
+package edu.dimacs.mms.boxer.util;
 
 import java.util.*;
 
-/** An auxiliary class used in command line parsing in borj.Driver */
+/** An auxiliary class used in command line parsing in borj.Driver and a few other BOXER applications. */
 public class CMD {
     /** All command-line commands acceptable by the Driver */
     public final static String 
@@ -18,7 +18,7 @@ public class CMD {
 	WRITE="write",
 	DELETE_DISCR="delete-discr";
     /** The command, such as "read" */
-    String cmd;
+    public String cmd;
     /** The command's argument (usually, a file name) */
     final public String f;
     /** The second (optional) argument that may appear after some commands */

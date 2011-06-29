@@ -6,7 +6,7 @@ import java.text.*;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.borj.*;
+import edu.dimacs.mms.boxer.util.Scores;
 
 /**  This application produces a file that shows the values of the
    log-likelyhood at various values of the PLRM matrix. That file

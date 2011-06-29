@@ -7,7 +7,6 @@ import java.text.*;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.borj.*;
 
 /**  This is a sample utility tool for "scaling" or "normalizing" a
      dataset. There are three modes available: 

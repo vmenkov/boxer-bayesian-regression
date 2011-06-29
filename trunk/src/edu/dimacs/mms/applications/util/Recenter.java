@@ -6,7 +6,7 @@ import java.text.*;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.borj.*;
+//import edu.dimacs.mms.boxer.util.Scores;
 
 /**  This is a sample utility tool for "re-centering" a dataset.
 
