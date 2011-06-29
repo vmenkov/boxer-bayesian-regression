@@ -6,7 +6,8 @@ import java.text.*;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.borj.*;
+import edu.dimacs.mms.boxer.util.Scores;
+import edu.dimacs.mms.boxer.util.CMD;
 
 /**  This is a sample application for measuring classifier quality
      after repeatingly feeding the same examples to the learner, in

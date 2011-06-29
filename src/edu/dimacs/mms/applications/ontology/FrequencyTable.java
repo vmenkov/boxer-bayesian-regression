@@ -1,11 +1,8 @@
 package edu.dimacs.mms.applications.ontology;
 
 import java.util.*;
-//import java.io.*;
-//import java.text.*;
 
 import edu.dimacs.mms.boxer.*;
-//import edu.dimacs.mms.borj.*;
 
 /** Used as part of Jensen–Shannon divergence computation.
  */

@@ -34,11 +34,12 @@ package edu.dimacs.mms.boxer;
     0.8.011 - 2011-06-15, reporting issue for LogLik in repeater for kNN; cosmetic changes
     0.8.012 - 2011-06-20, a new mode for the util.Scale tool (feature-specific scaling)
     0.8.013 - 2011-06-28 - minor fixes (DataPoint parsing, LaplacePrior)
+    0.8.014 - 2011-06-29 - moved borj.Scores, borj.ScoreEntry, borj.CMD to boxer/util
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.8.013";
+    public final static String version = "0.8.014";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

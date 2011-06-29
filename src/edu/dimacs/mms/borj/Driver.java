@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
+import edu.dimacs.mms.boxer.util.*;
 
 /**  The main class for a standalone command-line driven Java program
  *  that runs machine learning experiments using BOXER.

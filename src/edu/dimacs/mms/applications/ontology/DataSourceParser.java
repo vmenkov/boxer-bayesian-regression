@@ -6,9 +6,9 @@ import java.text.*;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.borj.*;
 import edu.dimacs.mms.applications.util.TokenizerOptions;
 import edu.dimacs.mms.applications.util.BagOfWords;
+
 /** A DataSourceParser instance is a wrapper for all the data obtained
     from a data soruce description file. This class contains methods
     for converting a data source file into an internal representation

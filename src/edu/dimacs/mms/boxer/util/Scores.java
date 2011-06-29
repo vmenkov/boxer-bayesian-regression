@@ -1,10 +1,12 @@
-package edu.dimacs.mms.borj;
+package edu.dimacs.mms.boxer.util;
 
 import java.util.*;
 import edu.dimacs.mms.boxer.*;
 
 /** A Scores instance contains scoring data (obtained with a
- * particular learner) for the entire suite
+ * particular learner) for the entire suite. This is a handy class in 
+ * applications that keep track on the learner's performance on
+ * a dataset.
  */
 public class Scores extends Vector<ScoreEntry[]> {
 
@@ -174,7 +176,7 @@ public class Scores extends Vector<ScoreEntry[]> {
     }
     */
 
-    void deleteDiscr(int delDid) {
+    public void deleteDiscr(int delDid) {
 	removeElementAt(delDid);
 	logLik = deleteElement(logLik, delDid);
 	linLik = deleteElement(linLik, delDid);

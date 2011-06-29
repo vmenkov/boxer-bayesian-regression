@@ -6,7 +6,7 @@ import java.text.*;
 import org.w3c.dom.Element;
 
 import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.borj.CMD;
+import edu.dimacs.mms.boxer.util.CMD;
 
 /** The main class for the Bayesian Ontology Aligner.
 
