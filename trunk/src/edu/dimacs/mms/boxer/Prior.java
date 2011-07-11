@@ -46,14 +46,13 @@ abstract public class Prior //implements Measurable
     int skew=0;
 
     public static enum Type {
-	/** Laplacian */
+	/** Laplacian (since ver 0.8.001) */
 	 l, 
-	     /** Gaussian (not yet supported as of ver 0.8.001) */
+	     /** Gaussian (since ver 0.8.015) */
 	     g;
     } 
 
-    //Type type;
-
+  
     /** The <em>absolute</em> variance. (If this is an absolute prior,
       this is the same as the stated variance; otherwise, multiplied
       by the base prior's variance). A Double.POSITIVE_INFINITY may be
@@ -198,7 +197,7 @@ abstract public class Prior //implements Measurable
        prior is to be applied. The value may be greater than 1 in
        "lazy truncation" situations.
      */
-    abstract public double apply(double val, Truncation trunc, int mult);
+    abstract public double apply(double val, Truncation trunc, int mult, double eta);
 
 
 }

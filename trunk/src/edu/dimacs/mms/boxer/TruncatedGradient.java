@@ -25,8 +25,12 @@ public class TruncatedGradient extends PLRMLearner {
     static final boolean lazyT = true;
 
     /** Algorithm parameters */
-    /** The learning rate eta. Default (as per paper) is 0.1. It was
-	0.01 in the code used in January-Feb 2009 */
+    /** The fixed learning rate eta. Default (as per paper) is 0.1. It was
+	0.01 in the code used in January-Feb 2009. 
+
+	<p>The parameter is ignored in ASD (adaptive steepest descent), since
+	there eta is computed dynamically at each step.
+   */
     double  eta=0.1;  
     /** The gravity factor for truncation. in Jan-Feb 2009 we had
        g=0.001 and K=1, i.e. truncation was applied at each step, but
@@ -97,7 +101,7 @@ public class TruncatedGradient extends PLRMLearner {
 
 		// 2. truncate (or, actually, request lazy truncation)
 
-		trunc.requestTruncation(d);	    
+		trunc.requestTruncation(d, eta);	    
 
 		// 2(a). Actuate any postponed ("lazy evaluation") truncation that
 		// needs to be done now because if affects the matrix's rows 
@@ -127,7 +131,7 @@ public class TruncatedGradient extends PLRMLearner {
 		    int j = x.features[h];	
 		    w.addDenseRow(j, z, eta * x.values[h]);
 		}
-		// trunc.requestTruncation(d); // moved to bottom
+		// trunc.requestTruncation(d,eta); // moved to bottom
 		//System.out.println(describe());
 	    }
 	    trunc.applyTruncationToAllRows(); 
@@ -157,7 +161,7 @@ public class TruncatedGradient extends PLRMLearner {
 	    // We do it multiple times, since there is no requestTruncation()
 	    // call with a multiplier
 	    for(int i=i1; i<i2; i++) {
-		trunc.requestTruncation(d);	    
+		trunc.requestTruncation(d,eta);	    
 	    }
 
 	    // Actuate all truncations. No need to be "lazy" here, as this
@@ -215,6 +219,45 @@ public class TruncatedGradient extends PLRMLearner {
 		System.out.println("|grad L|=" + Math.sqrt(grad2));
 	    }
 	}
+
+	/** This is an auxiliary subroutine for the Adaptive Steepest
+	    Descent method.  ASD presently does not support any
+	    truncation, and the only kind of priors it supports is the
+	    Gaussian prior with the same sigma for all matrix
+	    elements.  So this method checks if we have one of the two
+	    supported situations. If we do, it returns 1/var of this
+	    Gaussian prior (or 0 if there are no priors); if we don't,
+	    it throws an exception.
+
+	    @return The inverse of the variance of the Gaussian prior,
+	    if there is one, i.e. 1/var=1/sigma^2. This will be 0 if
+	    there is no such prior. This value is used by ASD in
+	    computing the Gaussian penalty.
+	*/
+	private double verifyPriorsAndGetInverseVar() {
+	    if (trunc.getTheta() == 0) {
+		// Truncation (and priors, if any) are disabled
+		return 0;
+	    }
+	    Priors priors = trunc.getPriors();
+	    if (priors==null) {
+		throw new IllegalArgumentException("The learner is configured for truncation with theta="+ trunc.getTheta() + " and no priors, but truncation is presently not supported in Adaptive SD");
+	    } 
+	    Prior onlyPrior = priors.getTheOnlyPrior(dis);
+	    if (onlyPrior==null) {
+		throw new IllegalArgumentException("The learner is configured to use a variaty of priors, but the only type of prior presently supported in Adaptive SD is the uniform Gaussian prior for all matrix elements");
+	    }
+	    if (onlyPrior.getType() != Prior.Type.g) {
+		throw new IllegalArgumentException("Adaptive SD does not presently support any priors other than Gaussian");  
+	    }
+	    double var= onlyPrior.avar;
+	    if (var==0)  {
+		throw new IllegalArgumentException("It makes little sense to use variance=0 in Adaptive SD... it sort of already tells us where to converge to, right away!");
+	    }
+	    return 1/var;
+	}
+
+
 
 	/** Runs Steepest Descent (a batch method) with adaptive
 	    learning rate until it converges.
@@ -287,9 +330,13 @@ public class TruncatedGradient extends PLRMLearner {
 	    the log-lik), but a significant computation cost.
 	 */
 	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
-	    System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
+	    // the inverse of Gaussian variance, if any
+	    double ivar = verifyPriorsAndGetInverseVar();
 
-	    if (trunc.theta != 0) throw new IllegalArgumentException("Presently, no kind of truncation or priors is supported in Adaptive SD");
+
+	    final int n=i2-i1;
+	    System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
+	    System.out.println("[SD] Maximizing f(B)=L-P, with L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n+", P=("+ivar+"/2)*|B|^2 ");
 
 	    // compact format for the data
 	    DataPointArray dpa = new DataPointArray(xvec, i1, i2, dis);
@@ -297,7 +344,7 @@ public class TruncatedGradient extends PLRMLearner {
 	    
 	    // 0. Give the safe eta estimate
 	    double sumX2 = dpa.sumNormSquare();
-	    double safeEta = (i2-i1)/sumX2;
+	    double safeEta = n/(sumX2 + n*ivar);
 
 	    if (Suite.verbosity>0) {
 		System.out.println("[SD] SD on " + (i2-i1) + " vectors; universal safe eta=" + safeEta);
@@ -316,7 +363,7 @@ public class TruncatedGradient extends PLRMLearner {
 
 		// 1. compute probability predictions, and log-likelyhood
 		double [][] zz = new double[dpa.length()][];
-		double logLik = dpa.logLikelihood(this,zz);
+		double logLik = dpa.logLikelihood(this,zz); // zz := Y-P
 	
 		// 2. Check termination criterion
 		double delta = first? 0:  logLik - prevLogLik;
@@ -335,8 +382,16 @@ public class TruncatedGradient extends PLRMLearner {
 		first = false;
 		prevLogLik = logLik;
 
-		// 2. Compute grad L - which is also our increment vector
-		BetaMatrix a = new BetaMatrix(d);
+		// 2. Compute A=grad L, which is also our increment vector
+		BetaMatrix a;
+
+		if (ivar==0) {
+		    a = new BetaMatrix(d);
+		} else {
+		    // gradient of the penalty term
+		    a = new BetaMatrix(w);
+		    a.multiplyBy( -ivar );
+		}
 
 		for(int i=0; i< dpa.length(); i++) {
 		    double [] z = zz[i];
@@ -348,7 +403,9 @@ public class TruncatedGradient extends PLRMLearner {
 		}
 
 		// 3. Adaptive safe Eta
-		/* eta = n ||A||^2 / sum_i { max_j { (alpha_j * x_i)^2 }}
+		/* eta = n ||A||^2 / sum_i { max_j { (alpha_j * x_i)^2 }},
+		   or, if Gaussian penalty is used:
+		   eta = n ||A||^2/((n/var)||A||^2 + sum_i { max_j { (alpha_j * x_i)^2 }})
 		 */
 		double sumA2 = a.squareOfNorm();
 		double sumQ2 = 0;
@@ -360,7 +417,9 @@ public class TruncatedGradient extends PLRMLearner {
 		    }
 		    sumQ2 += mp*mp * dpa.las.elementAt(i).sumCnt;
 		}
-		double eta = dpa.sumCnt * sumA2 / sumQ2;
+		double eta = (ivar==0) ?
+		    dpa.sumCnt * sumA2 / sumQ2 :
+		    dpa.sumCnt * sumA2 / (sumQ2 +   dpa.sumCnt * ivar * sumA2);
 
 		if (Suite.verbosity>0) {
 		    System.out.println("[SD] |grad L|=" + Math.sqrt(sumA2) +", eta := " + eta);	
@@ -496,9 +555,9 @@ public class TruncatedGradient extends PLRMLearner {
     Element saveParamsAsXML(Document xmldoc) {
 	return createParamsElement
 	    (xmldoc, 
-	     new String[] {"theta","eta","g", PARAM.K},
-	     new Object[] {new Double(commonTrunc.theta),new Double(eta),
-			   new Double(g),  new Integer(commonTrunc.K) });
+	     new String[] {PARAM.theta,PARAM.eta,PARAM.g, PARAM.K},
+	     new Object[] {new Double(commonTrunc.getTheta()),new Double(eta),
+			   new Double(commonTrunc.getG()),  new Integer(commonTrunc.getK()) });
     }
 
     void parseParams(Element e) throws BoxerXMLException  {
@@ -508,16 +567,16 @@ public class TruncatedGradient extends PLRMLearner {
 	int t=0; // saved position in the truncation sequence
 
 	HashMap<String,Object> h = makeHashMap
-	    ( new String[] { "theta","eta","g",PARAM.K, PARAM.t},
+	    ( new String[] { PARAM.theta, PARAM.eta, PARAM.g,PARAM.K, PARAM.t},
 	      new Object[] {new Double(theta), new Double(eta), new Double(g), 
 			    new Integer(K),  new Integer(0)});
 	
 	h = parseParamsElement(e,h);
 
-	theta = ((Double)(h.get("theta"))).doubleValue();
+	theta = ((Double)(h.get(PARAM.theta))).doubleValue();
 
-	eta =  ((Double)(h.get("eta"))).doubleValue();
-	g =  ((Double)(h.get("g"))).doubleValue();
+	eta =  ((Double)(h.get(PARAM.eta))).doubleValue();
+	g =  ((Double)(h.get(PARAM.g))).doubleValue();
 	K = ((Number)(h.get(PARAM.K))).intValue();
 	if (K<=0) throw new IllegalArgumentException("K=" + K + " in the XML learner definition. K must be a positive integer");
 	t = ((Number)(h.get(PARAM.t))).intValue();
@@ -530,10 +589,13 @@ public class TruncatedGradient extends PLRMLearner {
     }
 
     /** Creates a truncation object that has correct parameters, but applies
-	truncation to no matrix.
+	truncation to no matrix. 
+
+	<p>If the suite has its priors sets, the Truncation priors-based
+	object will be based on these priors, rather than on g.
      */
     private Truncation defaultCommonTrunc(double theta) {
-	return  new Truncation(theta,  K*g*eta, K, new BetaMatrix[0], lazyT, suite.getPriors(), null); 
+	return  new Truncation(theta, g, K, new BetaMatrix[0], lazyT, suite.getPriors(), null); 
     }
 
        

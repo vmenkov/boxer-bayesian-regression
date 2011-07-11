@@ -96,7 +96,14 @@ class DataPointArray {
 	return sum;
     }
 
-    /**
+    /** Computes the average log-likelihood for the given learner on this data set,
+	<center>
+	(1/n) sum_{j=1..n} sum_{k in AllClasses} y_{jk} log( C_k| x_j)
+	</center>
+
+	@param The learner with whose PLRM matrix we compute the
+	probabilities P(C_k|x_j) that go into the log-likelihood computation.
+
        @param zz Output parameter. If it is not null, it must be
        pre-allocated (as new double[this.points.length][]) before
        calling the method. Upon return, z[j] will contain the vector

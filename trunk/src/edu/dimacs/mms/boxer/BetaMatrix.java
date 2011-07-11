@@ -261,6 +261,7 @@ public class BetaMatrix extends Matrix  {
 	return matrix;
     }
 
+    /** Multiplies this matrix by a specified constant */
     void multiplyBy(double q) {
 	for(Vector<Coef> v: matrix) {
 	    if (v!=null) {

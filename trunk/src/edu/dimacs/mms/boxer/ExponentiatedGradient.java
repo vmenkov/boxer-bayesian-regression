@@ -145,8 +145,8 @@ public class ExponentiatedGradient extends PLRMLearner {
 	}
 
 	/** Sets the block's truncation parameters */
-	public void setTruncation(double theta, double to, int K) {
-	    trunc = new Truncation(theta, to, K, new Matrix[] {vplus, vminus}, lazyT, null /* no individual priors in EG */, dis);
+	public void setTruncation(double theta, double g, int K) {
+	    trunc = new Truncation(theta, g, K, new Matrix[] {vplus, vminus}, lazyT, null /* no individual priors in EG */, dis);
 	}
 
 
@@ -305,7 +305,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	    w = latentToModelAll();
 
 	    for(int i=i1; i<i2; i++) {
-		trunc.requestTruncation(d);//or we can move to bottom
+		trunc.requestTruncation(d, f);//or we can move to bottom
 		trunc.applyTruncationToAllRows(); // nothing is done by this
 		// call (since lazeT==false), but we keep it here for
 		// completeness
@@ -488,8 +488,8 @@ public class ExponentiatedGradient extends PLRMLearner {
 	@param K Truncate after so many steps
 
      */
-    public void setTruncation(double theta, double to, int K) {
-	commonTrunc = new Truncation(theta, to, K, new Matrix[0], lazyT, null /** no individual priors in EG */, null);
+    public void setTruncation(double theta, double g, int K) {
+	commonTrunc = new Truncation(theta, g, K, new Matrix[0], lazyT, null /** no individual priors in EG */, null);
 	//for(LearnerBlock b: blocks)  ((ExponentiatedGradientLearnerBlock)b).setTruncation(otheta, to,  K);
     }
 
@@ -504,10 +504,10 @@ public class ExponentiatedGradient extends PLRMLearner {
     Element saveParamsAsXML(Document xmldoc) {
 	return createParamsElement
 	    (xmldoc, 
-	     new String[] { "theta","to", PARAM.K, PARAM.f, PARAM.U},
+	     new String[] { PARAM.theta, PARAM.g, PARAM.K, PARAM.f, PARAM.U},
 	     new Object[] {commonTrunc.reportTheta(),
-			   new Double(commonTrunc.getBasicTo()),
-			   new Integer(commonTrunc.K), 
+			   new Double(commonTrunc.getG()),
+			   new Integer(commonTrunc.getK()), 
 			   reportAdj(adjustF, commonF),
 			   reportAdj(adjustU, commonU)}
 	     );
@@ -522,16 +522,16 @@ public class ExponentiatedGradient extends PLRMLearner {
 	XMLUtil.assertName(e, Learner.PARAMETERS);
 
 	double theta = 0; // no truncation
-	double to = 0;
+	double g = 0;
 	int K = 1;
 	HashMap<String,Object> h = makeHashMap
-	    (new String[] { "theta","to", PARAM.K,  PARAM.f, PARAM.U},
+	    (new String[] { PARAM.theta, PARAM.g, PARAM.K,  PARAM.f, PARAM.U},
 	     new Object[]{Zero,Zero, new Double(K), reportCommonF(), reportCommonU()});
 	
 	h =  parseParamsElement(e,h);
 
-	theta =  ((Double)(h.get("theta"))).doubleValue();
-	to =  ((Double)(h.get("to"))).doubleValue();
+	theta =  ((Double)(h.get(PARAM.theta))).doubleValue();
+	g =  ((Double)(h.get(PARAM.g))).doubleValue();
 	
 	Object o = h.get(PARAM.f);
 	if (o!=null) adjustF =  o.equals(Param.ADJUST);
@@ -543,7 +543,7 @@ public class ExponentiatedGradient extends PLRMLearner {
 	
 	K = ((Number)(h.get(PARAM.K))).intValue();
 		
-	setTruncation(theta, to, K);
+	setTruncation(theta, g, K);
 
 	//System.out.println("[DEBUG]: EG.parseParams: commonF=" +  reportCommonF()+
 	//			   " commonU=" +  reportCommonU());
