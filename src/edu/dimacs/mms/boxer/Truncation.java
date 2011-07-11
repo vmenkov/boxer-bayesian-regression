@@ -12,11 +12,11 @@ import java.util.Vector;
  directly, Truncation objects; they are created as needed by the
  constructors of {@link Learner} classes.
 */
-public class Truncation /*implements Cloneable*/ {
+public class Truncation  {
 
     /** The discrimination this Truncation object is for. This would
       be null if this is a "common" truncation object; a non-null if 
-      this is a truncaiton object for a particular learning block. The point
+      this is a truncaiton object for a particular learning block. 
      */
     private Discrimination dis=null;
 
@@ -42,16 +42,38 @@ public class Truncation /*implements Cloneable*/ {
 	means "no truncation", and theta=Double.POSITIVE_INFINITY means,
 	"truncate all values".
      */
-    double theta=0;
+    private double theta=0;
+    double getTheta() { return theta;}
    /** An algorithm parameter, basicTo corresponds to eta*g*K in
-      TruncatedGradient writeup  */
-    double basicTo;
+      TruncatedGradient writeup. (Note that storing this product,
+      instead of the "raw" g, is convenient when the Truncation object
+      is used as a component of the standard TruncatedGradient with a fixed 
+      learning rate; however, this representation will become problematic
+      if we want to use it in a more sophisticated algorithm...)
+   */
+    //    double basicTo;
+    /** We store the notional value of g. The value of g*eta*K (or, generally, 
+	g*(sum_{i=1...K} eta_i) is used on every K-th step.
+	
+	<p> If priors are used, then g is disregarded; it is the
+	priors' variances (connected to their lambdas and sigmas) that
+	matter.
+     */
+    private double g;
+
+    double getG() { 
+	return g;
+    }
+    
 
     /** How often is truncation exercised? After every K training
      * vectors. The TG default is 10 (truncate after each 10 vectors),
      * but until Ver 0.4 (Mar 2009) we had 1 (after each vector) */
-    int K=10;
-
+    private int K=10;
+    int  getK() { 
+	return K;
+    }
+ 
     /** Keeps track of how many training vectors have been processed
      (to know when to request truncation the next time) */
     int t=0;
@@ -60,9 +82,19 @@ public class Truncation /*implements Cloneable*/ {
 	using individual priors instead of the usual truncation toward
 	zero */	
     private final Priors priors;
+    Priors getPriors() { return priors; }
    
-    /** Reduce the coefficient value by this much at each truncation  */
-    public double getBasicTo() {return basicTo; }
+    /** Reduce the coefficient value by this much at each
+      truncation. This value corresponds to the product eta*g*K in
+      TruncatedGradient writeup. 
+
+      <p>Note that storing this product,
+      instead of the "raw" g, is convenient when the Truncation object
+      is used as a component of the standard TruncatedGradient with a
+      fixed learning rate; however, this representation will become
+      problematic if we want to use it in a more sophisticated
+      algorithm...)  */
+    /* public */ //double getBasicTo() {return basicTo; }
 
     /** Implementation mode */
     final boolean lazy;
@@ -73,9 +105,24 @@ public class Truncation /*implements Cloneable*/ {
     Matrix matrices[] = null;
      
     /** The count of not-yet-applied truncation operations for each
-	row of the matrix (i.e., for each feature).
+	row of the matrix (i.e., for each feature). This is only used
+	with lazy evaluation.
      */
     private int truncToApply[];
+    /** This flag stays true when there are no not-applied-yet truncations 
+     (i.e., all elements of truncToApply[] are zeros) */
+    private boolean allHasBeenApplied = true;
+
+    /** The value of eta*K associated with all not-yet-applied truncations
+	(those whose counts is in truncToApply[])
+    */
+    private double lastSumEta=0;
+    /** The value of the sums of eta since the last multiple-of-K step.
+	Normally,  recentSumEta should reach the value of eta*K at the (multiple-of-)K-th 
+	step, when the truncation is either done ("non-lazy") or recorded as one to be
+	applied in the future ("lazy"), and  recentSumEta is then reset to 0.
+     */
+    private double recentSumEta=0;
 
     /** No-truncation constructor */
     Truncation( boolean  _lazy) {
@@ -84,27 +131,27 @@ public class Truncation /*implements Cloneable*/ {
 
     /** Creates a truncation object for the truncation of the elements
 	of a single marix. */
-    public Truncation(double  _theta, double to, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
-	this( _theta, to, _K, new Matrix[] {w}, _lazy, _priors, _dis);
+    public Truncation(double  _theta, double _g, int _K, Matrix w, boolean  _lazy, Priors _priors, Discrimination _dis) {
+	this( _theta, _g, _K, new Matrix[] {w}, _lazy, _priors, _dis);
     }
 
     Truncation(Truncation orig, Matrix[] _matrices, Discrimination _dis) {	
-	this( orig.theta, orig.basicTo, orig.K,  _matrices, orig.lazy,
+	this( orig.theta, orig.g, orig.K,  _matrices, orig.lazy,
 	      orig.priors, _dis);
     }
 
     /** Creates a truncation object for the truncation of the elements
 	of one or several specified matrices.
 
-	@param to = K*g*eta
+	@param _g
 	@param _matrices An array of matrices to which this truncation applies
 	@param _lazy If true, use lazy truncation
 	@param _priors The set of individual priors. Usually this is null, meaning that no indiviudual priors will be used.
      */
-    public Truncation(double _theta, double to, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
+    public Truncation(double _theta, double _g, int _K, Matrix[] _matrices, boolean _lazy, Priors _priors, Discrimination _dis) {	
 
 	theta= _theta;
-	basicTo = to;
+	g = _g;
 	K = _K;
 
 	lazy = _lazy;
@@ -158,7 +205,9 @@ public class Truncation /*implements Cloneable*/ {
     }
 
     /** Applies "truncation", by a specified amount, to a particular
-	single value */
+	single value.
+
+         @param to Something like g*K*eta */
     private double truncateValue(double value, double to) {
 	if (withinTheta(value)) {
 	    if (value > to) value -= to;
@@ -169,21 +218,6 @@ public class Truncation /*implements Cloneable*/ {
     }
    
 
-    /** Truncates all matrix elements right now.  
-     */
-    void truncateNow() {
-	if (theta ==0) return;
-	for( Matrix _w : matrices) {
-	    if (_w instanceof BetaMatrix) {
-		for(int j=0; j< _w.getNRows(); j++) {
-		    truncateRow(_w, j, 1);
-		}
-	    }
-	}
-
-    }
-
-
     /** This call is made by the learner before each training vector;
 	only each K-th call if effective. The truncation is only done
 	</em>before</em> each K-th training vector (them numbered with
@@ -191,27 +225,42 @@ public class Truncation /*implements Cloneable*/ {
 	etc. vector.
 	@param d  feature count
     */
-    void requestTruncation(int d) {
+    void requestTruncation(int d, double eta) {
 
 	//System.out.println("Requesting truncation, t=" + t);
 	if (theta == 0) return;
 	t++;
 	//System.out.println("t:=" + t +", basicTo=" + basicTo);
-	if (t%K != 0) return;
 
+	recentSumEta += eta; // sum within this series of K calls
+	if (t%K != 0) {
+	    return;
+	}
+
+	// the K-th call is "real"
 	if (lazy) {
+	    // Check for the unlikely event that eta*K has changed
+	    if (lastSumEta != recentSumEta && !allHasBeenApplied) {
+		// previous requests were with a different learning rate;
+		// so let's apply stored requests right away
+		applyTruncationToAllRows();
+	    }
 	    if (truncToApply.length < d) {
 		truncToApply= Arrays.copyOf( truncToApply, d);
 	    }
 	    for(int i=0; i<truncToApply.length; i++) {
 		truncToApply[i] ++;
 	    }
-	    
+	    allHasBeenApplied = false;
 	    //System.out.print("truncToApply=(");
 	    //for(int x :truncToApply) System.out.print(" "+x);
 	    //System.out.println(")");
+	}  else  {
+	    truncateNow(recentSumEta);
+	}
 
-	}  else  truncateNow();
+	lastSumEta = recentSumEta;
+	recentSumEta=0;
     }
 
     /** Apply truncation immediately to every element of the j-th row of a
@@ -224,8 +273,8 @@ public class Truncation /*implements Cloneable*/ {
 	we are using lazy truncation, and there are several deferred
 	truncations that are finally going to be done now.
      */
-    private void truncateRow(Matrix _w, int j, int mult) {
-	double to = basicTo * mult;
+    private void truncateRow(Matrix _w, int j, int mult, double sumEta) {
+
 	int countNZ = 0;
 
 	if (priors!=null && dis==null) throw new AssertionError("We ought not have created a Truncation instance with priors but without a discrimination link!");
@@ -239,9 +288,9 @@ public class Truncation /*implements Cloneable*/ {
 	    for( BetaMatrix.Coef c: v) {
 		if (priors != null) {
 		    Prior p = priors.get( dis.getClaById(c.icla), j);
-		    c.value = p.apply(c.value, this, mult);
+		    c.value = p.apply(c.value, this, mult, sumEta);
 		} else {
-		    c.value=truncateValue(c.value, to);
+		    c.value=truncateValue(c.value, g*mult*sumEta);
 		}
 		countNZ += ((c.value == 0) ? 0 : 1);
 	    }
@@ -256,9 +305,9 @@ public class Truncation /*implements Cloneable*/ {
 	    for(int i=0;i<v.length; i++) {
 		if (priors != null) {
 		    Prior p = priors.get( dis.getClaById(i), j);
-		    v[i] = p.apply(v[i], this, mult);
+		    v[i] = p.apply(v[i], this, mult, sumEta);
 		} else {
-		    v[i]=truncateValue(v[i], to);
+		    v[i]=truncateValue(v[i], g*mult*sumEta);
 		}
 		countNZ += ((v[i] == 0) ? 0 : 1);
 	    }
@@ -275,7 +324,12 @@ public class Truncation /*implements Cloneable*/ {
 	row of the matrix(es), and if it's non-zero, applies it
 	now. If one uses lazy truncation, it is necessary to call this
 	method on the j-th row of the matrix before it is used (e.g.,
-	to score a vector with a non-zero j-th component)
+	to score a vector with a non-zero j-th component).
+
+	<p>
+	This operates based on the "lastSumEta" (i.e., the requests through the
+	last K-th time point), rather than "recentSumEta" (i.e, the requests 
+	since the last K-th time point).
      */
     void applyTruncation(int j) {
 	//System.out.println("call apply Truncation(row "+j+")" + t);
@@ -286,7 +340,7 @@ public class Truncation /*implements Cloneable*/ {
 	if ( mult == 0) return;
 	truncToApply[j] = 0;
 	for( Matrix _w : matrices) {
-	    truncateRow(_w, j, mult);
+	    truncateRow(_w, j, mult, lastSumEta);
 	}
     }
 
@@ -295,21 +349,37 @@ public class Truncation /*implements Cloneable*/ {
 	if (theta == 0) return;
 	if (!lazy) return;
 	for(int j=0; j<	truncToApply.length; j++)  applyTruncation(j);
+	allHasBeenApplied = true;
+    }
+
+    /** Truncates all matrix elements right now, once.  This is only done in the
+	non-lazy mode, so there is no need to check not-applied-yet truncations.
+     */
+    private void truncateNow(double sumEta) {
+	if (theta ==0) return;
+	for( Matrix _w : matrices) {
+	    if (_w instanceof BetaMatrix) {
+		for(int j=0; j< _w.getNRows(); j++) {
+		    truncateRow(_w, j, 1, sumEta);
+		}
+	    }
+	}
+
     }
 
 
     String describe() {
 	return theta==0 ? 
 	    "No truncation" :
-	    "Truncation every "+K+" steps (done "+t+" steps so far) by "+
-	    basicTo+" with theta="+ reportTheta() + "\n" +
-	    (priors == null? "No priors" : "Priors:\n" + priors.reportSize());
+	    "Truncation every K="+K+" steps (done "+t+" steps so far) by "+
+	    K + "*" + g + "*eta, with theta="+ reportTheta() + "\n" +
+	    (priors == null? "No priors" : "Overridden by priors:\n" + priors.reportSize());
 	
     }
 }
 
 /*
-Copyright 2009, Rutgers University, New Brunswick, NJ.
+Copyright 2009-2011, Rutgers University, New Brunswick, NJ.
 
 All Rights Reserved
 

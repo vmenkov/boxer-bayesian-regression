@@ -60,8 +60,6 @@ import org.xml.sax.SAXException;
 public class Priors {
     /** The suite for which these priors are */
     private Suite suite;
-    /** Used to look up feature IDs during initialization */
-    //private FeatureDictionary dic;
 
     final String name;
 
@@ -85,8 +83,9 @@ public class Priors {
         key, rather than the numberic discrimination ID, because the
         latter is not guaranteed to be constant (and we don't want to
         bother modifying this data structure whenever a discrimination
-        gets deleted. */
+        gets deleted). */
     HashMap<String,DiscPriorSet> discPriors = new HashMap<String,DiscPriorSet>();
+
 
     /** Stores a prior for a particular discrimination (or
       a cross-discrimination one)
@@ -96,8 +95,8 @@ public class Priors {
       @param key Encodes the class id (within the discrimination) and/or the feature id
      */ 
     void storePrior(Discrimination dis, 
-		  CFKey key, 		  //int fid
-		  Prior p		  ) {	
+		    CFKey key, 		  //int fid
+		    Prior p		  ) {	
 
 	if (dis==null) {
 	    //System.out.println("store CD(" + key + ", " + p+")");
@@ -120,6 +119,19 @@ public class Priors {
 	dps.L_overall=p; 
     }
 
+
+    /** Verifies whether all matrix coefficients for a given discrimination are
+	controlled by the same prior, or there are any other
+	(class-specific, feature-specific, or element-specific) priors.
+
+	@return The only prior that applies to all elements, if such a
+	thing exists; null otherwise.
+     */
+    Prior getTheOnlyPrior(Discrimination dis) {
+	DiscPriorSet dps =  discPriors.get( dis.getName());
+	return (dps!=null) ?
+	    dps.getTheOnlyPrior() : crossDisc.getTheOnlyPrior();
+    }
 
     /** Looks up the applicable prior for the specified
 	(disc.class,feature) ID combination.

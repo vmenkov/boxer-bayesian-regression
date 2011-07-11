@@ -6,8 +6,6 @@ import java.util.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-//import org.w3c.dom.Node;
-//import org.xml.sax.SAXException;
 
 
 /** An auxiliary class for {@link Priors}: stores cross-discrimination
@@ -36,6 +34,6 @@ class CrossDiscPriorSet extends DiscPriorSet {
 	if (p!=null) return p;
 	return L_overall;
     }
-
+ 
 }
 

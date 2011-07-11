@@ -6,9 +6,6 @@ import java.util.*;
 import org.apache.xerces.dom.DocumentImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-//import org.w3c.dom.Node;
-//import org.xml.sax.SAXException;
-
 
 /** An auxiliary class for {@link Priors}: stores Priors of several levels for one
     discrimination, or the defaults for all discriminations. */
@@ -120,6 +117,18 @@ class DiscPriorSet {
 	}
 	return s +"\n";
   	
+    }
+
+   /** Checks if there is only prior in this set (common for all
+       classes and features), or there are others (class- or
+       feature-specific) ones. 
+       
+       @return The overall (L1 or L4) prior if it is available and
+       there are no other priors; null otherwise (i.e. if there is no
+       overall prior, and/or there are specific priors).
+   */
+    Prior getTheOnlyPrior() {
+	return L567.size() == 0 ?  L_overall : null;
     }
 
 

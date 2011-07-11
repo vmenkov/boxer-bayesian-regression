@@ -38,16 +38,14 @@ public class LaplacePrior extends Prior {
 	    Math.sqrt(2.0/avar);
     }
 
-
-
-    public double apply(double val, Truncation trunc, int mult) {
+    public double apply(double val, Truncation trunc, int mult, double eta) {
 	if (!completed) throw new AssertionError("LaplacePrior not properly initialized");
 	final double diff = val - mode;
 	if (skew * diff < 0) val = mode;
 	else if (trunc==null || trunc.withinTheta(diff)) {
 	    if (Double.isInfinite(lambda)) val = mode;
 	    else {
-		double to = lambda * mult;
+		double to = lambda * mult * eta;
 		if (diff > to) val -= to;
 		else if (diff < -to) val += to;
 		else val=mode;

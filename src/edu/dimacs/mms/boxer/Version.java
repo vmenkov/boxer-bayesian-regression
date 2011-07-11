@@ -31,15 +31,17 @@ package edu.dimacs.mms.boxer;
     0.8.007 - 2011-04-04. Beginning- and end-of-word n-grams in util.BagOfWords
     0.8.009 - 2011-04-12. kNN learner added. Tweaking in n-grams: no mere "^", "$" tokens anymore.
     0.8.010 - 2011-04-25. kNN learner updates.
-    0.8.011 - 2011-06-15, reporting issue for LogLik in repeater for kNN; cosmetic changes
-    0.8.012 - 2011-06-20, a new mode for the util.Scale tool (feature-specific scaling)
-    0.8.013 - 2011-06-28 - minor fixes (DataPoint parsing, LaplacePrior)
-    0.8.014 - 2011-06-29 - moved borj.Scores, borj.ScoreEntry, borj.CMD to boxer/util
+    0.8.011 - 2011-06-15, Reporting issue for LogLik in repeater for kNN; cosmetic changes
+    0.8.012 - 2011-06-20, A new mode for the util.Scale tool (feature-specific scaling)
+    0.8.013 - 2011-06-28  Minor fixes (DataPoint parsing, LaplacePrior)
+    0.8.014 - 2011-06-29  Moved borj.Scores, borj.ScoreEntry, borj.CMD to boxer/util
+
+    0.9.001 - 2011-07-11  A major reorg for Truncation and Priors; added Gaussian priors. Not tested yet.
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.8.014";
+    public final static String version = "0.9.001";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

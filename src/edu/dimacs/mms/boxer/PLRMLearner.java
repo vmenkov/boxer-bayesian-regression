@@ -345,6 +345,8 @@ public abstract class PLRMLearner extends Learner {
     static class PARAM {
 	final static String f = "f", U = "u" , maxInfNorm = "maxInfNorm",
 	    classSizes = "classSizes",
+	    eta = "eta", 
+	    theta = "theta", 	    g = "g", 
 	    K = "k", t = "t";
     }
 

@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
     number of the given discrimination in the array of all
     dscriminations of the suite; and since discriminations can be
     deleted, the "IDs" of the remaining discriminations will change!
-    On the other hand, the stirng "discrimination name" is both unique
+    On the other hand, the string "discrimination name" is both unique
     within the suite and is guaranteed to remain constant.
 
  */
@@ -54,8 +54,8 @@ public class Suite {
 
     /** The name of this suite (for reporting purposes) */
     final String name;
-    /** Returns the name of this suite. The name is set at creation,
-     * and never canges. */
+    /** Returns the name of this suite. The name is set at the suite's
+     * creation, and never changes. */
     public String getName() { return name; }
 
     /** The feature dictionary associated with this suite */
@@ -69,7 +69,8 @@ public class Suite {
     /** Associates a set of priors with the suite. This method should
 	be called before any learners are created on this suite. The priors will
 	affect all {@link TruncatedGradient} learners that will be
-	later created in this suite. 
+	later created in this suite. Learners of other types (e.g. EG or kNN) won't be
+	affected.
 
 	@param p A Priors object; typically, it has been created with
 	a Priors constructor using this suite.
