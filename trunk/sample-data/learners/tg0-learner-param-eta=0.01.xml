@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?> <!-- this describes "truncated"
+gradient with theta=infty (i.e., truncate always) and g=0 (that is
+truncate by 0, i.e. without effect). This is meant to use with an
+individual priors file, because priors override g but make use of
+theta. -->
+<learner algorithm="boxer.TruncatedGradient" name="Simple_SGD_learner" version="0.9.001">
+   <parameters>
+                <parameter name="theta" value="Infinity"/>
+                <parameter name="eta" value="0.01"/>
+                <parameter name="g" value="0"/>
+                <parameter name="k" value="1"/>
+    </parameters>
+</learner>

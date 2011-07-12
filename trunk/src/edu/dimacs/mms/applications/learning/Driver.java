@@ -315,7 +315,7 @@ public class Driver {
 		algo.describe(System.out, false);
 		System.out.println("-----------------------------------");
 	    } else if (Suite.verbosity>0){
-		System.out.println("[NET] Leaner after " + (i2)+ " examples: net memory use=" + algo.memoryEstimate());
+		System.out.println("[NET] Learner after " + (i2)+ " examples: net memory use=" + algo.memoryEstimate());
 	    }
 	    // In verbose mode, write out the model after every training file
 	    if (verbose) algo.saveAsXML(algo.algoName() + "-out" + trainCnt + ".xml");

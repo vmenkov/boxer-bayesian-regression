@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This priors definition file specifies only one prior: Gaussian prior with var=1, to be used for all PLRM matrix elements.  -->
+<priors name="UniformGaussian" version="0.9.001">
+    <cross-discrimination>
+      <!--   The "cross-discrimination" section contains priors that apply
+	     in all discriminations -->
+        <overall>
+	  <!-- The one Level-1 prior can be located here. If it is absent,
+	       the built-in Level-0 prior will be used by BOXER in lieue of 
+	       the Level-1 prior
+	    -->
+            <prior absolute="true" mode="0.0" skew="0" type="g" var="1.0"/>
+        </overall>
+    </cross-discrimination>
+</priors>
