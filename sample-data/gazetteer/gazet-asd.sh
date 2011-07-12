@@ -19,7 +19,7 @@ else
   set wx=0
 endif
 
-set db=../gazetteer-out
+set db=$home/boxer/out/gazetteer
 set d=$db/asd-w${wx}-g${g}
 echo Directory $d
 mkdir $d

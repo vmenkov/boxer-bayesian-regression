@@ -15,7 +15,7 @@ import edu.dimacs.mms.boxer.util.CMD;
 
      <p>
      Usage:<br>
-     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-learner:learner-param.xml] train:train-set.xml[:train-scores.dat] test:test-set.xml[:test-scores.dat]
+     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-priors:priors.xml] [read-learner:learner-param.xml] train:train-set.xml[:train-scores.dat] test:test-set.xml[:test-scores.dat]
 
      <p>
      Sample usage:
@@ -385,7 +385,7 @@ public class Repeater {
 		algo.describe(System.out, false);
 		System.out.println("-----------------------------------");
 	    } else if (Suite.verbosity>0){
-		System.out.println("[NET] Leaner after " + (i2)+ " examples: net memory use=" + algo.memoryEstimate());
+		System.out.println("[NET] Learner after " + (i2)+ " examples: net memory use=" + algo.memoryEstimate());
 	    }
 	    // In verbose mode, write out the model at each checkpoint
 	    if (verbose) algo.saveAsXML(algo.algoName() + "-out" + trainCnt + ".xml");

@@ -140,6 +140,8 @@ abstract public class Prior //implements Measurable
 	Prior p;
 	if (_type == Type.l) {
 	    p = new LaplacePrior();
+	} else if (_type == Type.g) {
+	    p = new GaussianPrior();
 	} else {
 	    throw new BoxerXMLException("Prior type " + _type + " is not currently supported");
 	}

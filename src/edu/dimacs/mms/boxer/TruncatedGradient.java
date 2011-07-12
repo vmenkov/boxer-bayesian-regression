@@ -247,8 +247,8 @@ public class TruncatedGradient extends PLRMLearner {
 	    if (onlyPrior==null) {
 		throw new IllegalArgumentException("The learner is configured to use a variaty of priors, but the only type of prior presently supported in Adaptive SD is the uniform Gaussian prior for all matrix elements");
 	    }
-	    if (onlyPrior.getType() != Prior.Type.g) {
-		throw new IllegalArgumentException("Adaptive SD does not presently support any priors other than Gaussian");  
+	    if (onlyPrior.getType() != Prior.Type.g || onlyPrior.skew!=0) {
+		throw new IllegalArgumentException("Adaptive SD does not presently support any priors other than Gaussian non-skewed");  
 	    }
 	    double var= onlyPrior.avar;
 	    if (var==0)  {
@@ -364,7 +364,11 @@ public class TruncatedGradient extends PLRMLearner {
 		// 1. compute probability predictions, and log-likelyhood
 		double [][] zz = new double[dpa.length()][];
 		double logLik = dpa.logLikelihood(this,zz); // zz := Y-P
-	
+		if (ivar!=0) {
+		    double sumB2 = w.squareOfNorm();
+		    logLik -= ivar/2*sumB2;
+		}
+
 		// 2. Check termination criterion
 		double delta = first? 0:  logLik - prevLogLik;
 		if (Suite.verbosity>0) {
@@ -434,6 +438,11 @@ public class TruncatedGradient extends PLRMLearner {
 		// as log-lik keeps increasing
 
 		double savedLogLik = dpa.logLikelihood(this, null);
+		if (ivar!=0) {
+		    double sumB2 = w.squareOfNorm();
+		    savedLogLik -= ivar/2*sumB2;
+		}
+
 		while(true) {
 		    BetaMatrix savedW = new BetaMatrix(w);
 		    final double f = 2;
@@ -441,6 +450,10 @@ public class TruncatedGradient extends PLRMLearner {
 		    a.multiplyBy(f);
 		    w.add(a);
 		    double newLogLik =  dpa.logLikelihood(this, null);
+		    if (ivar!=0) {
+			double sumB2 = w.squareOfNorm();
+			newLogLik -= ivar/2*sumB2;
+		    }
 		    double bonusDelta = newLogLik - savedLogLik;
 		    if (bonusDelta>0) {
 			savedLogLik = newLogLik;
