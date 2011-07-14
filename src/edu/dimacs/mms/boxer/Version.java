@@ -37,6 +37,7 @@ package edu.dimacs.mms.boxer;
     0.8.014 - 2011-06-29  Moved borj.Scores, borj.ScoreEntry, borj.CMD to boxer/util
 
     0.9.001 - 2011-07-11  A major reorg for Truncation and Priors; added Gaussian priors. Not tested yet.
+    0.9.002 - 2011-07-13  Gaussian priors etc., all tested
 </pre>
  */
 public class Version {
