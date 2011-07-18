@@ -10,9 +10,7 @@ public class LaplacePrior extends Prior {
 
     /** Constructs the built-in default prior.  */
     LaplacePrior () {
-	try {
-	    complete(null);
-	} catch (BoxerXMLException ex) { throw new AssertionError(); }
+	complete(null);
     }
 
     /** Returns the type of this prior, i.e Type.l
@@ -20,10 +18,12 @@ public class LaplacePrior extends Prior {
     public Type getType() { return Type.l; }
 
 
-    /** This is like the gravity parameter in plain truncation. It
-      is based on the variance. The value can hold a "real" number, or
-      Double.POSITIVE_INFINITY */
-    double lambda=0;
+    /** This is like the gravity parameter in plain truncation. It is
+      based on the (absolute) variance. The value can hold a "real"
+      number, or Double.POSITIVE_INFINITY */
+    double getLambda() { return lambda; }
+    private double lambda=0;
+    
 
     /** Sets all necessary parameters not set in the parent's
       construction phase. In particularly, computes the Lambda from
@@ -31,7 +31,7 @@ public class LaplacePrior extends Prior {
       comes from D.Lewis' 2010-07-08 message, corrected 2011-06-23. The special cases of 0
       and Double.POSITIVE_INFINITY are handled as appropriate.
     */
-    void complete(Prior base) throws BoxerXMLException {
+    void complete(Prior base)  {
 	super.complete(base);
 	lambda =  Double.isInfinite(avar)? 0:
 	    (avar == 0) ? Double.POSITIVE_INFINITY :   

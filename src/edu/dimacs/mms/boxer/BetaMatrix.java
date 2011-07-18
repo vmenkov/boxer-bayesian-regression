@@ -158,13 +158,30 @@ public class BetaMatrix extends Matrix  {
 	return sum;
     }
 
-
+    /** Compute the square of the 2-norm of the matrix (as a vector),
+     * i.e. the sum of squares of the matrix elements
+     */
     public double squareOfNorm() {
 	double sum = 0;
 	for(Vector<Coef> v: matrix) {
 	    if (v != null) {
 		for(Coef q: v) { 
 		    sum+= q.value * q.value;
+		}
+	    }
+	}
+	return sum;
+    }
+
+    /** Computes the 1-norm of the matrix (as a vector),
+     * i.e. the sum of the absolute values of the matrix elements
+     */
+    public double L1Norm() {
+	double sum = 0;
+	for(Vector<Coef> v: matrix) {
+	    if (v != null) {
+		for(Coef q: v) { 
+		    sum+= Math.abs(q.value);
 		}
 	    }
 	}
@@ -211,7 +228,7 @@ public class BetaMatrix extends Matrix  {
     /* Converts to (sparse) array of dense rows. Each row in the
      * return array will be a double[] of the length just enough for
      * all non-zero elements of this row to fit; thus rows may be of
-     * different length.
+     * different length. A null may be stored instead of a zero-length row.
      */
     public double [][] toArray() {
 	double w[][] = new double[matrix.size()][];
@@ -261,13 +278,16 @@ public class BetaMatrix extends Matrix  {
 	return matrix;
     }
 
-    /** Multiplies this matrix by a specified constant */
-    void multiplyBy(double q) {
+    /** Multiplies this matrix by a specified constant.
+     @return This matrix (for the convenience of chained calls)
+    */
+    BetaMatrix multiplyBy(double q) {
 	for(Vector<Coef> v: matrix) {
 	    if (v!=null) {
 		for(Coef c: v) c.value *= q;
 	    }
 	}
+	return this;
     }
 
     /** this += b. The matrix b is not affected.

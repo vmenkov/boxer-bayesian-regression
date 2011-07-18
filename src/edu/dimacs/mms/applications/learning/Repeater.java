@@ -365,7 +365,9 @@ public class Repeater {
 		if (!(algo instanceof TruncatedGradient)) throw new  IllegalArgumentException("In the 'emulate SD' mode only TG is supported");
 
 		if (adaptiveSD) {
-		    algo.runAdaptiveSD(train, 0, train.size(), eps);
+		    boolean doAdaptive=false;
+		    boolean doBonus=false;
+		    algo.runAdaptiveSD(train, 0, train.size(), eps, doAdaptive, doBonus);
 		} else {
 		    if (i1 % train.size() != 0 ||i2 % train.size() != 0) throw new AssertionError("emulateSD: i1, i2 not multiple of the train set size");
 		    int repeat = (i2-i1) / train.size();

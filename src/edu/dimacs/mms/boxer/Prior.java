@@ -75,25 +75,19 @@ abstract public class Prior //implements Measurable
      
 
     */
-    void complete(Prior base) throws BoxerXMLException {
+    void complete(Prior base) throws IllegalArgumentException {
 	if (absolute) {
 	    avar = var;
 	} else if (base==null) {
-	    throw new BoxerXMLException("The top-level prior must be absolute; it cannot be specified as 'relative' to any other prior");
+	    throw new IllegalArgumentException("The top-level prior must be absolute; it cannot be specified as 'relative' to any other prior");
 	} else {
 	    avar = var * base.avar;
 	    // 0*Infinity or Infinity*0 will give NaN here (as per the IEEE
 	    // standard), and we throw an exception
-	    if (Double.isNaN(avar)) throw new  BoxerXMLException("Base variance=" + base.avar + " cannot be combined with the relative variance=" + var +", because the product=" + avar);
+	    if (Double.isNaN(avar)) throw new  IllegalArgumentException("Base variance=" + base.avar + " cannot be combined with the relative variance=" + var +", because the product=" + avar);
 	}
 	completed = true;
     }
-
-    /*
-    void setType(String s) {
-	if (s.equals(Type.L))
-    }
-    */
 
     /** This method is overridden by derived types (such as
      * LaplacePrior) to return the Type of this prior. */
@@ -136,21 +130,26 @@ abstract public class Prior //implements Measurable
 
     }
 
-    public static Prior mkPrior( Type _type, double _mode, double _var, boolean _absolute, int _skew, Prior base) throws BoxerXMLException {
+    /** Constructs a new prior (of the L or G type) as per the specifications.
+	@param _mode The mode of the distribution (e.g, the position of the center of the bell curve for the Gaussian prior)
+	@param _var Absolute or relative variance (see "base", below).
+	@param base The "base" prior. If this is not null, _var is treated as relative, rather than absolute, variance.
+     */
+    public static Prior mkPrior( Type _type, double _mode, double _var, boolean _absolute, int _skew, Prior base) throws IllegalArgumentException {
 	Prior p;
 	if (_type == Type.l) {
 	    p = new LaplacePrior();
 	} else if (_type == Type.g) {
 	    p = new GaussianPrior();
 	} else {
-	    throw new BoxerXMLException("Prior type " + _type + " is not currently supported");
+	    throw new IllegalArgumentException("Prior type " + _type + " is not currently supported");
 	}
 
 	p.mode = _mode;
 	p.var = _var;
 	p.absolute = _absolute;
 	p.skew = _skew;
-	if (p.skew<-1 || p.skew>1) throw new BoxerXMLException("Invalid value of skew: " + p.skew);
+	if (p.skew<-1 || p.skew>1) throw new IllegalArgumentException("Invalid value of skew: " + p.skew);
 	p.complete(base);
 	return p;
     }

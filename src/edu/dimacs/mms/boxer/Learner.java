@@ -306,15 +306,22 @@ public abstract class Learner implements Model {
 	resulting model closer to the ideal Bayesian model (optimizing
 	the log-lik), but a significant computation cost.
     */
-    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
+    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, 
+			      boolean doAdaptive, boolean doBonus) {
 	if (!(this instanceof TruncatedGradient)) throw new UnsupportedOperationException("Only TG can emulate SD");
 	createMissingBlocks();
 	for(LearnerBlock block: blocks) {
 	    block.dis.ensureCommitted();
 	    block.validateExamples(xvec, i1,i2);
-	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2, eps);
+	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2, eps, doAdaptive, doBonus);
 	}
     }
+
+    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
+	runAdaptiveSD(xvec, i1, i2, eps, true, true);
+    }
+
+
 
 
 
