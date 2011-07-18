@@ -64,7 +64,7 @@ public class Truncation  {
     double getG() { 
 	return g;
     }
-    
+
 
     /** How often is truncation exercised? After every K training
      * vectors. The TG default is 10 (truncate after each 10 vectors),

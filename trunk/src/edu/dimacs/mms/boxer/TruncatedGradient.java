@@ -220,45 +220,6 @@ public class TruncatedGradient extends PLRMLearner {
 	    }
 	}
 
-	/** This is an auxiliary subroutine for the Adaptive Steepest
-	    Descent method.  ASD presently does not support any
-	    truncation, and the only kind of priors it supports is the
-	    Gaussian prior with the same sigma for all matrix
-	    elements.  So this method checks if we have one of the two
-	    supported situations. If we do, it returns 1/var of this
-	    Gaussian prior (or 0 if there are no priors); if we don't,
-	    it throws an exception.
-
-	    @return The inverse of the variance of the Gaussian prior,
-	    if there is one, i.e. 1/var=1/sigma^2. This will be 0 if
-	    there is no such prior. This value is used by ASD in
-	    computing the Gaussian penalty.
-	*/
-	private double verifyPriorsAndGetInverseVar() {
-	    if (trunc.getTheta() == 0) {
-		// Truncation (and priors, if any) are disabled
-		return 0;
-	    }
-	    Priors priors = trunc.getPriors();
-	    if (priors==null) {
-		throw new IllegalArgumentException("The learner is configured for truncation with theta="+ trunc.getTheta() + " and no priors, but truncation is presently not supported in Adaptive SD");
-	    } 
-	    Prior onlyPrior = priors.getTheOnlyPrior(dis);
-	    if (onlyPrior==null) {
-		throw new IllegalArgumentException("The learner is configured to use a variaty of priors, but the only type of prior presently supported in Adaptive SD is the uniform Gaussian prior for all matrix elements");
-	    }
-	    if (onlyPrior.getType() != Prior.Type.g || onlyPrior.skew!=0) {
-		throw new IllegalArgumentException("Adaptive SD does not presently support any priors other than Gaussian non-skewed");  
-	    }
-	    double var= onlyPrior.avar;
-	    if (var==0)  {
-		throw new IllegalArgumentException("It makes little sense to use variance=0 in Adaptive SD... it sort of already tells us where to converge to, right away!");
-	    }
-	    return 1/var;
-	}
-
-
-
 	/** Runs Steepest Descent (a batch method) with adaptive
 	    learning rate until it converges.
 
@@ -328,16 +289,39 @@ public class TruncatedGradient extends PLRMLearner {
 	    features each. A smaller value will, of course, make the
 	    resulting model closer to the ideal Bayesian model (optimizing
 	    the log-lik), but a significant computation cost.
-	 */
-	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
-	    // the inverse of Gaussian variance, if any
-	    double ivar = verifyPriorsAndGetInverseVar();
 
+	    @param doAdaptive If true, the learning rate will be
+	    computed at each step (truly adaptive SD); otherwise, "safe learning rate" will
+	    be computed once and used at each step.
+	 */
+	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, 
+				  boolean doAdaptive, boolean doBonus) {
+
+	    new AdaptiveSteepestDescent(this, xvec, i1, i2, eps, doAdaptive,  doBonus); 
+	    
+	    /*
+
+	    // the inverse of Gaussian variance, if any
+	    final Prior prior  = verifyPriorsAndGetInverseVar();
+	    
 
 	    final int n=i2-i1;
 	    System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
-	    System.out.println("[SD] Maximizing f(B)=L-P, with L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n+", P=("+ivar+"/2)*|B|^2 ");
+	    System.out.println("[SD] Adaptive="+doAdaptive+", bonus=" + doBonus);
+	    System.out.println("[SD] Maximizing f(B)=L-P, with L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n);
 
+	    // The inverse of the Gaussian prior's variance (if applicable)
+	    final double ivar = (prior instanceof GaussianPrior) ? 1/prior.avar : 0;
+
+
+	    if (prior instanceof GaussianPrior) {
+		System.out.println("[SD] Gaussian penalty, P=("+ivar+"/2)*|B|_2^2 ");
+	    } else 	if (prior  instanceof LaplacePrior) {
+		System.out.println("[SD] Laplacian penalty, P="+((LaplacePrior)prior).getLambda() +"*|B|_1 ");
+	    } else {
+		throw new IllegalArgumentException("Unsupported prior type: " + prior.getType() );
+	    }
+	    
 	    // compact format for the data
 	    DataPointArray dpa = new DataPointArray(xvec, i1, i2, dis);
 	    int d =  suite.getDic().getDimension(); // feature count
@@ -363,11 +347,7 @@ public class TruncatedGradient extends PLRMLearner {
 
 		// 1. compute probability predictions, and log-likelyhood
 		double [][] zz = new double[dpa.length()][];
-		double logLik = dpa.logLikelihood(this,zz); // zz := Y-P
-		if (ivar!=0) {
-		    double sumB2 = w.squareOfNorm();
-		    logLik -= ivar/2*sumB2;
-		}
+		double logLik = penalizedLogLik(dpa, zz, prior); // zz := Y-P
 
 		// 2. Check termination criterion
 		double delta = first? 0:  logLik - prevLogLik;
@@ -392,7 +372,7 @@ public class TruncatedGradient extends PLRMLearner {
 		if (ivar==0) {
 		    a = new BetaMatrix(d);
 		} else {
-		    // gradient of the penalty term
+		    // gradient of the Gaussian penalty term
 		    a = new BetaMatrix(w);
 		    a.multiplyBy( -ivar );
 		}
@@ -407,23 +387,27 @@ public class TruncatedGradient extends PLRMLearner {
 		}
 
 		// 3. Adaptive safe Eta
-		/* eta = n ||A||^2 / sum_i { max_j { (alpha_j * x_i)^2 }},
-		   or, if Gaussian penalty is used:
-		   eta = n ||A||^2/((n/var)||A||^2 + sum_i { max_j { (alpha_j * x_i)^2 }})
-		 */
+		// eta = n ||A||^2 / sum_i { max_j { (alpha_j * x_i)^2 }},
+		//   or, if Gaussian penalty is used:
+		//   eta = n ||A||^2/((n/var)||A||^2 + sum_i { max_j { (alpha_j * x_i)^2 }})
+
+
 		double sumA2 = a.squareOfNorm();
-		double sumQ2 = 0;
-		for(int i=0; i< dpa.length(); i++) {
-		    DataPoint p = dpa.points.elementAt(i);
-		    double mp = 0;
-		    for(double q: p.dotProducts(a, dis)) {
-			mp = Math.max(mp, Math.abs(q));
+		double eta=safeEta;
+		if (doAdaptive) {
+		    double sumQ2 = 0;
+		    for(int i=0; i< dpa.length(); i++) {
+			DataPoint p = dpa.points.elementAt(i);
+			double mp = 0;
+			for(double q: p.dotProducts(a, dis)) {
+			    mp = Math.max(mp, Math.abs(q));
+			}
+			sumQ2 += mp*mp * dpa.las.elementAt(i).sumCnt;
 		    }
-		    sumQ2 += mp*mp * dpa.las.elementAt(i).sumCnt;
+		    eta =  (ivar==0) ?
+			dpa.sumCnt * sumA2 / sumQ2 :
+			dpa.sumCnt * sumA2 / (sumQ2 +   dpa.sumCnt * ivar * sumA2);
 		}
-		double eta = (ivar==0) ?
-		    dpa.sumCnt * sumA2 / sumQ2 :
-		    dpa.sumCnt * sumA2 / (sumQ2 +   dpa.sumCnt * ivar * sumA2);
 
 		if (Suite.verbosity>0) {
 		    System.out.println("[SD] |grad L|=" + Math.sqrt(sumA2) +", eta := " + eta);	
@@ -433,15 +417,13 @@ public class TruncatedGradient extends PLRMLearner {
 		t++;
 		sumEta+=eta;
 
+		if (!doBonus) continue;
+
 		// "bonus" steps - try to keep going in the same
 		// direction, with increasingly longer steps, as long
 		// as log-lik keeps increasing
 
-		double savedLogLik = dpa.logLikelihood(this, null);
-		if (ivar!=0) {
-		    double sumB2 = w.squareOfNorm();
-		    savedLogLik -= ivar/2*sumB2;
-		}
+		double savedLogLik = penalizedLogLik(dpa, null, prior);
 
 		while(true) {
 		    BetaMatrix savedW = new BetaMatrix(w);
@@ -449,11 +431,7 @@ public class TruncatedGradient extends PLRMLearner {
 		    eta *= f ;
 		    a.multiplyBy(f);
 		    w.add(a);
-		    double newLogLik =  dpa.logLikelihood(this, null);
-		    if (ivar!=0) {
-			double sumB2 = w.squareOfNorm();
-			newLogLik -= ivar/2*sumB2;
-		    }
+		    double newLogLik =  penalizedLogLik(dpa, null, prior);
 		    double bonusDelta = newLogLik - savedLogLik;
 		    if (bonusDelta>0) {
 			savedLogLik = newLogLik;
@@ -475,6 +453,7 @@ public class TruncatedGradient extends PLRMLearner {
 		    }
 		}
 	    }
+	    */
 	}
 
 
