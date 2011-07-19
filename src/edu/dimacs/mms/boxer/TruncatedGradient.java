@@ -227,7 +227,7 @@ public class TruncatedGradient extends PLRMLearner {
 	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, 
 				  boolean doAdaptive, boolean doBonus) {
 
-	    new AdaptiveSteepestDescent(this, xvec, i1, i2, eps, doAdaptive,  doBonus); 
+	    new AdaptiveSteepestDescent(this, xvec, i1, i2, eps, 0, doAdaptive,  doBonus); 
 	}
 
 
