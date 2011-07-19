@@ -38,7 +38,7 @@ package edu.dimacs.mms.boxer;
 
     0.9.001 - 2011-07-11  A major reorg for Truncation and Priors; added Gaussian priors. Not tested yet.
     0.9.002 - 2011-07-13  Gaussian priors etc., all tested
-    0.9.003 - 2011-07-18  Trying to integrate Laplacian prior into ASD
+    0.9.003 - 2011-07-19  Laplacian prior integrated into ASD
 </pre>
  */
 public class Version {

@@ -290,6 +290,14 @@ public class BetaMatrix extends Matrix  {
 	return this;
     }
 
+
+    private Vector<Coef>  copyRow(Vector<Coef> a) {
+	if (a==null) return null;
+	Vector<Coef> b = new  Vector<Coef>(a.size());
+	for(Coef q: a) b.add( new Coef(q));
+	return b;
+    }
+
     /** this += b. The matrix b is not affected.
      */
     void add(BetaMatrix b) {
@@ -299,7 +307,7 @@ public class BetaMatrix extends Matrix  {
 	    if (matrix.elementAt(j)==null) {
 		// simply copy the row from b
 		if (b.matrix.elementAt(j)!=null) {
-		    matrix.set(j, new Vector<Coef>( b.matrix.elementAt(j)));
+		    matrix.set(j, copyRow(b.matrix.elementAt(j)));
 		}
 	    } else if (b.matrix.elementAt(j)!=null) {
 		// add the stuff from b
@@ -360,7 +368,7 @@ public class BetaMatrix extends Matrix  {
 	    if (matrix.elementAt(j)==null) {
 		// simply copy the row from b
 		if (b.matrix.elementAt(j)!=null) {
-		    matrix.set(j, new Vector<Coef>( b.matrix.elementAt(j)));
+		    matrix.set(j, copyRow( b.matrix.elementAt(j)));
 		}
 	    } else if (b.matrix.elementAt(j)!=null) {
 		// add the stuff from b
@@ -379,7 +387,7 @@ public class BetaMatrix extends Matrix  {
 			    res = 0;
 			    ey.value = 0; // modify the element of B
 			}
-			ex.value += res;
+			ex.value = res;
 			sum.add(ex);
 		    } else {
 			sum.add( new Coef(ey));

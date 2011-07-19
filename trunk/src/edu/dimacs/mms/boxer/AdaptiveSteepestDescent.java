@@ -87,13 +87,17 @@ class AdaptiveSteepestDescent  {
 	    resulting model closer to the ideal Bayesian model (optimizing
 	    the log-lik), but a significant computation cost.
 
+	    @param gradEps another convergence criterion: abs value of the
+	    gradient vector.
+
 	    @param doAdaptive If true, the learning rate will be
 	    computed at each step (truly adaptive SD); otherwise, "safe learning rate" will
 	    be computed once and used at each step.
 	 */
 
     AdaptiveSteepestDescent(TruncatedGradient.TruncatedGradientLearnerBlock _block,
-			    Vector<DataPoint> xvec, int i1, int i2, double eps, 
+			    Vector<DataPoint> xvec, int i1, int i2, 
+			    double eps, double gradEps, 
 			    boolean doAdaptive, boolean doBonus)    {
 	prior = verifyPriors( _block.trunc);
 	block = _block;
@@ -106,10 +110,10 @@ class AdaptiveSteepestDescent  {
 	// because otherwise the convergence guarantee won't work.
 	if (prior !=null && prior instanceof LaplacePrior) doAdaptive=false;
 
-	doBonus=false; // test
+	gradEps=eps;
+	eps=0;
 
-
-	System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
+	System.out.println("[SD] Adaptive SD with convergence criteria: |delta L|<=eps=" + eps+", |grad L|<=geps=" + gradEps);
 	System.out.println("[SD] Adaptive="+doAdaptive+", bonus=" + doBonus);
 	System.out.println("[SD] Maximizing f(B)=L-P, with L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n);
 
@@ -163,7 +167,7 @@ class AdaptiveSteepestDescent  {
 
 	    if (!first) {
 		// Converged (within eps)?
-		if (delta < eps) return;
+		if (delta < eps) break;
 	    }
 	    
 	    first = false;
@@ -198,9 +202,10 @@ class AdaptiveSteepestDescent  {
 	    if (Suite.verbosity>0) {
 		System.out.println("[SD] |grad L|=" + Math.sqrt(sumA2) +", eta := " + eta);	
 	    }
-	    // Zero gradient (may happen with Laplacean prior) also means convergence
-	    if (sumA2==0) {
-		return;
+	    // Convegence criterion based on the abs value of the grad
+	    // L vector. (Zero gradient may also happen, with Laplacean prior) 
+	    if (sumA2 <= gradEps*gradEps) {
+		break;
 	    }
 
 
@@ -244,6 +249,7 @@ class AdaptiveSteepestDescent  {
 		}
 	    }
 	}
+	System.out.println("[SD] Final PLRM matrix: features="+w.getNRows() + ", nzCount="+w.nzCount());
     }
 
     /** This is an auxiliary subroutine for the Adaptive Steepest
