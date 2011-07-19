@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<learner name="TG_with_truncation_on_every_step" algorithm="boxer.TruncatedGradient" version="0.8.001">
+   <parameters>
+                <parameter name="theta" value="INF"/>
+                <parameter name="eta" value="0.1"/>
+                <parameter name="g" value="0.1"/>
+                <parameter name="k" value="1"/>
+    </parameters>
+</learner>

@@ -327,6 +327,73 @@ public class BetaMatrix extends Matrix  {
 	}
     }
 
+    /** This is an auxiliary for AdaptiveSteepestDescent, and is used
+	to add a certain increment to a vector in the matrix space,
+	but without any matrix element changing sign. The method is
+	like the regular add(BetaMatrix), with two important
+	differences. Namely, an "addition" of this kind can't take a
+	value beyond zero. That is, if x&lt;0 and (x+y)&ge;0, then we
+	set the result to 0 (instead of x+y), <em>and</em> we modify y
+	to be 0 (so that it would cause no effect on future
+	additions).
+
+	<p>Technically speaking: <ul> 
+
+	<li> if a[i,j] &lt; 0, then 
+	 a'[i,j] := min( a[i,j] + b[i,j], 0); 
+	 b'[i,j] := 0 if (a[i,j]+b[i,j]&ge;0) or b[i,j] otherwise.
+
+	<li> if a[i,j] &gt; 0, then 
+	 a'[i,j] := max( a[i,j] + b[i,j], 0); 
+	 b'[i,j] := 0 if (a[i,j]+b[i,j]&le;0) or b[i,j] otherwise.
+
+	 <li>if a[i,j] == 0, then
+	 a'[i,j] := a[i,j] + b[i,j];
+ 	 b'[i,j] := b[i,j]
+
+	</ul>
+     */
+    void addAndCap(BetaMatrix b) {
+	if ( matrix.size() < b.matrix.size() ) matrix.setSize(b.matrix.size());
+	for(int j=0; j<matrix.size(); j++) {
+
+	    if (matrix.elementAt(j)==null) {
+		// simply copy the row from b
+		if (b.matrix.elementAt(j)!=null) {
+		    matrix.set(j, new Vector<Coef>( b.matrix.elementAt(j)));
+		}
+	    } else if (b.matrix.elementAt(j)!=null) {
+		// add the stuff from b
+		int ix=0;
+		Vector<Coef> sum = new Vector<Coef>();
+		Vector<Coef> x = matrix.elementAt(j);
+		
+		for(Coef ey:  b.matrix.elementAt(j)) {
+		    while(ix < x.size() && x.elementAt(ix).icla < ey.icla) {
+			sum.add(  x.elementAt( ix++));
+		    }
+		    if (ix < x.size() && x.elementAt(ix).icla == ey.icla) {
+			Coef ex = x.elementAt(ix++);
+			double res = ex.value + ey.value;
+			if (ex.value < 0 && res >= 0 || ex.value > 0 && res <= 0) {
+			    res = 0;
+			    ey.value = 0; // modify the element of B
+			}
+			ex.value += res;
+			sum.add(ex);
+		    } else {
+			sum.add( new Coef(ey));
+		    }
+		}
+		while(ix < x.size()) {
+		    sum.add(  x.elementAt( ix++));
+		}		 
+		matrix.set( j, sum);
+	    }
+	}
+    }
+
+
     /** Adds all values from a dense vector (array) to a given row of this 
 	matrix. As a result, that row of the matrix will in fact become
 	dense itself (alhough will still be represented as a Vector<Coef>)

@@ -1,16 +1,14 @@
 package edu.dimacs.mms.boxer;
 
 import java.io.PrintWriter;
-//import java.util.HashMap;
 import java.util.Vector;
 
-//import org.w3c.dom.Document;
-//import org.w3c.dom.Element;
 
+/** An instance of this class is created to run one Adaptive Steepest
+ Descent (ASD) process, which is invoked as a special mode for the
+ TruncatedGradient class.
+*/
 
-/** Adaptive Steepest Descent is invoked as a special mode for the TruncatedGradient class.
-    An instance of this class is created to run one ASD process.
- */
 class AdaptiveSteepestDescent  {
 
     Prior prior=null;
@@ -19,15 +17,98 @@ class AdaptiveSteepestDescent  {
     final Discrimination dis;
     final TruncatedGradient.TruncatedGradientLearnerBlock block;
 
+	/** Runs Steepest Descent (a batch method) with adaptive
+	    learning rate until it converges.
+
+	    <p>The value of {@link Suite#verbosity} is used to control
+	    what, if anything, is reported during the iterative process.
+
+	    <p>The process optimizes the works lof-likelihood (L) as a
+	    function of the PLRM model matrix B. Conceptually, it
+	    proceeds as follows:
+
+	    <ul> 
+
+	    <li>1. Start with B=0.
+
+	    <li>2. Compute A as the gradient of L as a function B.
+	    
+	    <li>3. Compute the theoretically known upper bound M of
+	    the absolute value of the second derivative of L along the
+	    direction A. (That is, a second derivative f''(t) of the
+	    scalar function <em>f(t) = L(B + A*t)</em>. (The actual
+	    second derivative is always negative, due to the known
+	    convexity of -L; that is, we know that for any <em>t</em>,
+	    <center>
+	    <em> -M &le; f''(t) &lt; 0</em>
+	    </center>
+
+	    <li>4. Set the learning rate <em>&eta;</em> for the next
+	    step as <em>&eta; = f'(t=0)/M</em>. This will mean that if
+	    <em>f''(t)</em> were actually equal to <em>-M</em> at all
+	    <em>t</em>, we would converge to the max<em>L</em> for
+	    this one-dimensional problem in one step. In reality we
+	    are simply guaranteed not to over-shoot the max.
+
+	    <li>5. Perform one step along the direction <em>A</em>
+	    with the learning rate <em>&eta;</em> as computed at the
+	    previous step.
+
+	    <li>6. Perform one or more "bonus steps" along the same
+	    direction <em>A</em>, increasing the learning rate by a
+	    factor of 2 at every step. Stop when <em>L</em> stops
+	    increasing, undoing the last bonus step if it has been
+	    counter-productive. One can show that e.g. on a simple
+	    model, where <em>f(t)</em> were a quadratic polynomial,
+	    steps 5 and 6 together allow one to obtain at least 3/4 of
+	    the maximum possible increase that can be obtained with the
+	    one-dimensional optimization.
+
+	    <li>7. If the cumulative change to <em>L</em> since we
+	    last were at step 2 step is less than &eps;, assume that
+	    the process has converged, and return the answer 
+
+	    <li>8. Go back to step 2, with the current <em>B</em>.
+
+	    </ul>
+
+	    <p>The above process, of course, is quite expensive, since
+	    it requires re-computing log-likelihood (a very expensive
+	    function!) at every step.
+
+	    @param xvec xvec[i1:i2-1] is interpreted as the training
+	    set over which the log-likelihood is maximized.
+
+	    @param eps The convergence criterion. The iterations will
+	    stop when the log-likelihood increment will be smaller
+	    than this value. Something like 1e-8 is a reasonable value
+	    on a data set of a few hundreds data points with a dozen
+	    features each. A smaller value will, of course, make the
+	    resulting model closer to the ideal Bayesian model (optimizing
+	    the log-lik), but a significant computation cost.
+
+	    @param doAdaptive If true, the learning rate will be
+	    computed at each step (truly adaptive SD); otherwise, "safe learning rate" will
+	    be computed once and used at each step.
+	 */
+
     AdaptiveSteepestDescent(TruncatedGradient.TruncatedGradientLearnerBlock _block,
 			    Vector<DataPoint> xvec, int i1, int i2, double eps, 
 			    boolean doAdaptive, boolean doBonus)    {
-	verifyPriors( _block.trunc);
+	prior = verifyPriors( _block.trunc);
 	block = _block;
 	w = block.w;
 	dis = block.dis;
     
 	final int n=i2-i1;
+
+	// With Laplacian priors, we must use "safe eta"  as the initial eta for each direction,
+	// because otherwise the convergence guarantee won't work.
+	if (prior !=null && prior instanceof LaplacePrior) doAdaptive=false;
+
+	doBonus=false; // test
+
+
 	System.out.println("[SD] Adaptive SD with L-based eps=" + eps);
 	System.out.println("[SD] Adaptive="+doAdaptive+", bonus=" + doBonus);
 	System.out.println("[SD] Maximizing f(B)=L-P, with L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n);
@@ -76,8 +157,7 @@ class AdaptiveSteepestDescent  {
 	    double delta = first? 0:  logLik - prevLogLik;
 	    if (Suite.verbosity>0) {
 		System.out.println("[SD] t="+t+", sumEta="+sumEta+", L="+logLik +
-				   (first? "" :
-				    " (delta L=" + delta + ")" +
+				   (first? "" : " (delta L=" + delta + ")" +
 				    (delta<0? " [NEGATIVE delta L?]":"")));
 	    }
 
@@ -118,8 +198,14 @@ class AdaptiveSteepestDescent  {
 	    if (Suite.verbosity>0) {
 		System.out.println("[SD] |grad L|=" + Math.sqrt(sumA2) +", eta := " + eta);	
 	    }
+	    // Zero gradient (may happen with Laplacean prior) also means convergence
+	    if (sumA2==0) {
+		return;
+	    }
+
+
 	    a.multiplyBy(eta);
-	    w.add(a);
+	    addAndCap(a);
 	    t++;
 	    sumEta+=eta;
 	    
@@ -135,7 +221,7 @@ class AdaptiveSteepestDescent  {
 		final double f = 2;
 		eta *= f ;
 		a.multiplyBy(f);
-		w.add(a);
+		addAndCap(a);
 		double newLogLik =  penalizedLogLik();
 		double bonusDelta = newLogLik - savedLogLik;
 		if (bonusDelta>0) {
@@ -177,6 +263,7 @@ class AdaptiveSteepestDescent  {
     private Prior verifyPriors(Truncation trunc) {
 	if (trunc.getTheta() == 0) {
 	    // Truncation (and priors, if any) are disabled
+	    System.out.println("[SD][VP] No truncation of any kind");
 	    return null;
 	} else if (trunc.getTheta() != Double.POSITIVE_INFINITY) {
 	    throw new IllegalArgumentException("ASD is supported only for theta=0 (no truncation) or theta=" + Double.POSITIVE_INFINITY + " (truncation always), and not for any intermediate values");
@@ -190,6 +277,7 @@ class AdaptiveSteepestDescent  {
 	    // mode=0, skew=0, g=lambda = sqrt(2/var), i,e,
 	    // var=2/lambda^2)
 	    double g = trunc.getG();
+	    System.out.println("[SD][VP] Converting truncation with g="+g+" to a Laplace prior");
 	    return Prior.mkPrior( Prior.Type.l, 0, 2.0/(g*g), true, 0, null);
 	    //throw new IllegalArgumentException("The learner is configured for truncation with theta="+ trunc.getTheta() + " and no priors, but truncation is presently not supported in Adaptive SD");
 	} 
@@ -281,6 +369,24 @@ class AdaptiveSteepestDescent  {
 	    a = new BetaMatrix(qa);
 	}
 	return a;
+    }
+
+    /** Increments w by a. Special treatment is provided in the
+	Laplacian case, when the derivative is not continuous, and
+	"steepest descent" beyond a crease makes no sense. There, if,
+	for a particular coordinate we hit zero (or would have jumped
+	beyond the zero), both the element of w and the corresponding
+	element of a are zeroed. */ 
+    private void addAndCap( BetaMatrix a) {
+	if (prior != null && prior instanceof LaplacePrior) {
+	    // addition that can't take a value beyond zero. When that would happen in normal addition,
+	    // we instead set the element to w to zero AND the corresponding element of a to zero as well
+	    // (to prevent crossing the "crease" on any "bonus" steps)
+	    w.addAndCap(a);
+	} else {
+	    // simple addition
+	    w.add(a);
+	}
     }
 
 }

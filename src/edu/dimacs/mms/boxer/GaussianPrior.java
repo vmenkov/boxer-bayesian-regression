@@ -13,9 +13,7 @@ public class GaussianPrior extends Prior {
 
     /** Constructs the built-in default prior.  */
     GaussianPrior () {
-	try {
-	    complete(null);
-	} catch (BoxerXMLException ex) { throw new AssertionError(); }
+	complete(null);
     }
 
     /** Returns the type of this prior, i.e Type.l
@@ -33,7 +31,7 @@ public class GaussianPrior extends Prior {
     /** Sets all necessary parameters not set in the parent's
       construction phase. 
     */
-    void complete(Prior base) throws BoxerXMLException {
+    void complete(Prior base) {
 	super.complete(base);
     }
 
