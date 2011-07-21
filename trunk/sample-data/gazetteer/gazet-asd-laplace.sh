@@ -12,11 +12,11 @@ set cp=$HOME/boxer/lib/boxer.jar
 set opt="-Xmx256m -cp ${cp}" 
 
 #-- Gaussian priors' variance. This is used in the priors file name and the out dir name
-set lambda=0.001
-set eps=0.0001
+set lambda=0.01
+set eps=0.001
 
-foreach w (true) # false)
-foreach g (4) # (0 1 2 3 4) 
+foreach w (true false)
+foreach g (0 1 2 3 4) 
 
 if ($w == "true") then
   set wx=1

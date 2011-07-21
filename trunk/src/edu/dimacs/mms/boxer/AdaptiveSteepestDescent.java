@@ -249,7 +249,7 @@ class AdaptiveSteepestDescent  {
 		}
 	    }
 	}
-	System.out.println("[SD] Final PLRM matrix: features="+w.getNRows() + ", nzCount="+w.nzCount());
+	System.out.println("[SD] Final PLRM matrix: #features="+w.getNRows() + ", #classes="+dis.claCount()+", nzCount="+w.nzCount());
     }
 
     /** This is an auxiliary subroutine for the Adaptive Steepest

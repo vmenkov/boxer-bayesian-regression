@@ -360,6 +360,8 @@ public class BetaMatrix extends Matrix  {
  	 b'[i,j] := b[i,j]
 
 	</ul>
+
+	<p> The updated b is made to have a sparse stored structure, i.e. zero values are dropped.
      */
     void addAndCap(BetaMatrix b) {
 	if ( matrix.size() < b.matrix.size() ) matrix.setSize(b.matrix.size());
@@ -378,7 +380,8 @@ public class BetaMatrix extends Matrix  {
 		
 		for(Coef ey:  b.matrix.elementAt(j)) {
 		    while(ix < x.size() && x.elementAt(ix).icla < ey.icla) {
-			sum.add(  x.elementAt( ix++));
+			Coef ex = x.elementAt(ix++);
+			if (ex.value!=0) sum.add(ex);
 		    }
 		    if (ix < x.size() && x.elementAt(ix).icla == ey.icla) {
 			Coef ex = x.elementAt(ix++);
@@ -387,14 +390,17 @@ public class BetaMatrix extends Matrix  {
 			    res = 0;
 			    ey.value = 0; // modify the element of B
 			}
-			ex.value = res;
-			sum.add(ex);
+			if (res!=0) {
+			    ex.value = res;
+			    sum.add(ex);
+			}
 		    } else {
-			sum.add( new Coef(ey));
+			if (ey.value!=0) 		sum.add( new Coef(ey));
 		    }
 		}
 		while(ix < x.size()) {
-		    sum.add(  x.elementAt( ix++));
+		    Coef ex = x.elementAt(ix++);
+		    if (ex.value!=0) sum.add(ex);
 		}		 
 		matrix.set( j, sum);
 	    }
