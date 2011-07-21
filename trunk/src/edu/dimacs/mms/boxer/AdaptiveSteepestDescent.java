@@ -23,9 +23,30 @@ class AdaptiveSteepestDescent  {
 	    <p>The value of {@link Suite#verbosity} is used to control
 	    what, if anything, is reported during the iterative process.
 
-	    <p>The process optimizes the works lof-likelihood (L) as a
-	    function of the PLRM model matrix B. Conceptually, it
-	    proceeds as follows:
+	    <p>The process optimizes the (possibly penalized)
+	    log-likelihood as a function of the PLRM model matrix  B,  
+
+	    <center>
+	    L(B)=L_log(B)-P(B). 
+	    </center>
+
+	    The optional penalty P(B), may be either  Laplacian,  
+
+	    <center>
+	    P(B)=L_Lap = lambda*|B|_1,  
+	    </center>
+
+	    or Gaussian,
+
+	    <center>
+	    P(B)=L_G = (0.5/sigma^2)*|B|_2^2,  
+	    </center>
+
+	    where |B|_1 and |B|_2, respectively, are the 1-norm and
+	    2-norm of the matrix B.
+
+	    <p>
+	    Conceptually, the method proceeds as follows:
 
 	    <ul> 
 
@@ -87,12 +108,16 @@ class AdaptiveSteepestDescent  {
 	    resulting model closer to the ideal Bayesian model (optimizing
 	    the log-lik), but a significant computation cost.
 
-	    @param gradEps another convergence criterion: abs value of the
-	    gradient vector.
+	    @param gradEps another convergence criterion: abs value of
+	    the gradient vector.  The two convergence criteria, eps
+	    and gradEps, operate in the "OR" mode; which means that
+	    when you want only one criterion to apply, you just set the
+	    other's value to 0. 
 
 	    @param doAdaptive If true, the learning rate will be
-	    computed at each step (truly adaptive SD); otherwise, "safe learning rate" will
-	    be computed once and used at each step.
+	    computed at each step (truly adaptive SD); otherwise,
+	    "safe learning rate" will be computed once and used at
+	    each step. 
 	 */
 
     AdaptiveSteepestDescent(TruncatedGradient.TruncatedGradientLearnerBlock _block,
