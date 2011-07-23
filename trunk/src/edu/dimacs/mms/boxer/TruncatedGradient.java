@@ -222,12 +222,111 @@ public class TruncatedGradient extends PLRMLearner {
 
 	/** Runs Steepest Descent (a batch method) with adaptive
 	    learning rate until it converges.
+
+
+	    <p>The value of {@link Suite#verbosity} is used to control
+	    what, if anything, is reported during the iterative process.
+
+	    <p>The process optimizes the (possibly penalized)
+	    log-likelihood as a function of the PLRM model matrix  B,  
+
+	    <center>
+	    L(B)=L_log(B)-P(B). 
+	    </center>
+
+	    The optional penalty P(B), may be either  Laplacian,  
+
+	    <center>
+	    P(B)=L_Lap = lambda*|B|_1,  
+	    </center>
+
+	    or Gaussian,
+
+	    <center>
+	    P(B)=L_G = (0.5/sigma^2)*|B|_2^2,  
+	    </center>
+
+	    where |B|_1 and |B|_2, respectively, are the 1-norm and
+	    2-norm of the matrix B.
+
+	    <p>
+	    Conceptually, the method proceeds as follows:
+
+	    <ul> 
+
+	    <li>1. Start with B=0.
+
+	    <li>2. Compute A as the gradient of L as a function B.
+	    
+	    <li>3. Compute the theoretically known upper bound M of
+	    the absolute value of the second derivative of L along the
+	    direction A. (That is, a second derivative f''(t) of the
+	    scalar function <em>f(t) = L(B + A*t)</em>. (The actual
+	    second derivative is always negative, due to the known
+	    convexity of -L; that is, we know that for any <em>t</em>,
+	    <center>
+	    <em> -M &le; f''(t) &lt; 0</em>
+	    </center>
+
+	    <li>4. Set the learning rate <em>&eta;</em> for the next
+	    step as <em>&eta; = f'(t=0)/M</em>. This will mean that if
+	    <em>f''(t)</em> were actually equal to <em>-M</em> at all
+	    <em>t</em>, we would converge to the max<em>L</em> for
+	    this one-dimensional problem in one step. In reality we
+	    are simply guaranteed not to over-shoot the max.
+
+	    <li>5. Perform one step along the direction <em>A</em>
+	    with the learning rate <em>&eta;</em> as computed at the
+	    previous step.
+
+	    <li>6. Perform one or more "bonus steps" along the same
+	    direction <em>A</em>, increasing the learning rate by a
+	    factor of 2 at every step. Stop when <em>L</em> stops
+	    increasing, undoing the last bonus step if it has been
+	    counter-productive. One can show that e.g. on a simple
+	    model, where <em>f(t)</em> were a quadratic polynomial,
+	    steps 5 and 6 together allow one to obtain at least 3/4 of
+	    the maximum possible increase that can be obtained with the
+	    one-dimensional optimization.
+
+	    <li>7. If the cumulative change to <em>L</em> since we
+	    last were at step 2 step is less than &eps;, assume that
+	    the process has converged, and return the answer 
+
+	    <li>8. Go back to step 2, with the current <em>B</em>.
+
+	    </ul>
+
+	    <p>The above process, of course, is quite expensive, since
+	    it requires re-computing log-likelihood (a very expensive
+	    function!) at every step.
+
+	    @param xvec xvec[i1:i2-1] is interpreted as the training
+	    set over which the log-likelihood is maximized.
+
+	    @param eps The (original) convergence criterion. The iterations will
+	    stop when the log-likelihood increment will be smaller
+	    than this value. Something like 1e-8 is a reasonable value
+	    on a data set of a few hundreds data points with a dozen
+	    features each. A smaller value will, of course, make the
+	    resulting model closer to the ideal Bayesian model (optimizing
+	    the log-lik), but a significant computation cost.
+
+	    @param gradEps Another (alternative) convergence
+	    criterion: the absolute value of the gradient vector.  The
+	    two convergence criteria, eps and gradEps, operate in the
+	    "OR" mode; which means that when you want only one
+	    criterion to apply, you just set the other's value to 0.
+
+
 	*/
 
-	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, 
-				  boolean doAdaptive, boolean doBonus) {
+	public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, double gradEps) {
+	    // suitable default values for these params
+	    final boolean doAdaptive=true;
+	    final boolean doBonus=true;
 
-	    new AdaptiveSteepestDescent(this, xvec, i1, i2, eps, 0, doAdaptive,  doBonus); 
+	    new AdaptiveSteepestDescent(this, xvec, i1, i2, eps, gradEps, doAdaptive,  doBonus); 
 	}
 
 

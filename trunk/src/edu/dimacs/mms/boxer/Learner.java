@@ -298,32 +298,26 @@ public abstract class Learner implements Model {
        
 
 	@param xvec xvec[i1:i2-1] is interpreted as the training set
-	@param eps The convergence criterion. The iterations will
+	@param eps The (original) convergence criterion. The iterations will
 	stop when the log-likelihood increment will be smaller
 	than this value. Something like 1e-8 is a reasonable value
 	on a data set of a few hundreds data points with a dozen
 	features each. A smaller value will, of course, make the
 	resulting model closer to the ideal Bayesian model (optimizing
 	the log-lik), but a significant computation cost.
+
+	@param gradEps The alternative convergence criterion: |grad L|.
+
     */
-    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, 
-			      boolean doAdaptive, boolean doBonus) {
+    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps, double gradEps) {
 	if (!(this instanceof TruncatedGradient)) throw new UnsupportedOperationException("Only TG can emulate SD");
 	createMissingBlocks();
 	for(LearnerBlock block: blocks) {
 	    block.dis.ensureCommitted();
 	    block.validateExamples(xvec, i1,i2);
-	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2, eps, doAdaptive, doBonus);
+	    ((  TruncatedGradient.TruncatedGradientLearnerBlock)block).runAdaptiveSD(xvec, i1, i2, eps, gradEps);
 	}
     }
-
-    public void runAdaptiveSD(Vector<DataPoint> xvec, int i1, int i2, double eps) {
-	runAdaptiveSD(xvec, i1, i2, eps, true, true);
-    }
-
-
-
-
 
     /**  Ensures that a "learner block" (classifier object) is provided
 	 for each discriminations in the current suite. This method is
