@@ -475,17 +475,18 @@ public class ExponentiatedGradient extends PLRMLearner {
 	each K-th call to absorbExample, before the latentToModel
 	procedure.
 
-	@param theta Theta; a negative value means "infinity",
-	i.e. "always"; 0 means "never"
+	@param theta Theta; can be "Infinity" (or a negative value, which also  means "infinity"),
+	it means "always"; 0 means "never"
 
-	@param to Truncate the elements of V by this much every on
-	every K-th step (so this is equivalent to g*K in the
-	TruncatedGriadient write-up). More precisely, Truncation will
-	be carried out in the t-th call to absorbExample (before
+	@param g Truncate the elements of V by g*K on every K-th
+	step. (So this is meant to approximate, in a way, truncating
+	them by g at each step; this is meant to be equivalent to g in
+	the TruncatedGriadient write-up). More precisely, Truncation
+	will be carried out in the t-th call to absorbExample (before
 	latentToModel is called) if t is divisible by K; t starts from
 	one.
 
-	@param K Truncate after so many steps
+	@param K Truncation frequency: truncate after so many steps
 
      */
     public void setTruncation(double theta, double g, int K) {

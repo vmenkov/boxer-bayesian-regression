@@ -52,9 +52,15 @@ import org.xml.sax.SAXException;
     found in <a
     href="../../../../../sample-priors.xml">sample-priors.xml</a>
 
-    <p>As of ver. 0.8.001, the only type of priors we have are
+    <p>As of ver. 0.8.*, the only type of priors we had was the 
     Laplacian ones, and the only learning algorithm that uses priors
-    is {@link TruncatedGradient}.
+    was {@link TruncatedGradient}.
+
+    <p>Since version 0.9.0, Gaussian priors are supported as well. The
+    Adpative Steepest Descent method (which happens to be packaged with the
+    Truncated Gradient) can use priors of both types; however, only a Level-1
+    prior (an overall prior) may be supplied. You can only control its variance, 
+    but not skew and mode (those both must be 0).
 
 */
 public class Priors {

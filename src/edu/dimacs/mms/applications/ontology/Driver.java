@@ -108,7 +108,7 @@ vectors. Sample commands are as follows:
 
 <p>A particularly recommended set of options for training Bayesian learners is 
 <pre>
-   -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8
+   -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=1e-8 -Dlearn.geps=0
 </pre> 
 This will run steepest descent with the adaptive-learning rate  on the training set, to a fairly high degree of convergence. Although slow, it should produce a model that's fairly close to  optimal, with respect to log-likelihood on the training set. In practice, the precision 1e-6 or even 1e-4 is sufficient on many tasks; so one may want to start with  -Dlearn.eps=1e-4, and then reduce eps if needed.
 
@@ -248,7 +248,9 @@ TG with theta=0, i.e. SGD).
 <li>
      -Dlearn.priors=priors.xml : An optional priors file (modifies the penalty term for the function being optimized)
 <li>
-     -Dlearn.eps=1e-8 : The convergence criterion for adaptive SD (in terms of log-likelihood).
+     -Dlearn.eps=1e-8 : The convergence criterion for adaptive SD (in terms of delta L).
+<li>
+     -Dlearn.geps=0 : The convergence criterion for adaptive SD (in terms of |grad L|).
 <li>
      -Dlearn.bxr=true|false : If true, BOA piggybacks on BXR, instead of using BOXER's built-in learning methods. If this option is used, the only other learning option that should be supplied is -Dlearn.eps (typically, -Dlearn.eps=0.01 or thereabout); this is interpreted as BXR's eps. Please see {@link edu.dimacs.mms.boxer.BXRLearner} for additional important details on using this option.
 </ul>
@@ -291,7 +293,7 @@ public class Driver {
 
     /** Learning options (initialized in main()) */
     static private boolean emulateSD = false, adaptiveSD=false, useBXR=false;
-    static double eps;
+    static double eps, geps;
     static int learnRep;
 
     static private ParseConfig ht = null;
@@ -306,7 +308,7 @@ public class Driver {
 	emulateSD = ht.getOption("learn.sd", false);
 	adaptiveSD = ht.getOption("learn.adaptive", false);
 	eps = ht.getOptionDouble("learn.eps", 1e-8);
-	eps = ht.getOptionDouble("learn.eps", 1e-8);
+	eps = ht.getOptionDouble("learn.geps", 0);
 
 	if (useBXR && (emulateSD || adaptiveSD)) usage("SD options, or priors, are not compatible with BXR");
 
@@ -328,7 +330,7 @@ public class Driver {
 	System.out.println("Verbosity="+Suite.verbosity);
 	System.out.println("Input options: " + DataSourceParser.inputOptions.describe());
 	System.out.print("Learner options: BXR="+useBXR+", SD=" + emulateSD + ", adaptiveSD="+adaptiveSD);
-	if (adaptiveSD) System.out.print(" with eps=" + eps);
+	if (adaptiveSD) System.out.print(" with eps=" + eps+", geps="+geps);
 	else  System.out.print(" rep=" + learnRep);
 
 	System.out.println();
@@ -375,7 +377,7 @@ public class Driver {
 	    if (useBXR) {
 		p1 =  DataSourceParser.parseFile(in1);
 		suite =  p1.suite;
-		suite.addBXRLearner(new String[] {inMatrix}, eps);
+		suite.addBXRLearner(new String[] {inMatrix}, eps );
 		Logging.info("Reusing BXR model file " + in1);
 	    } else {
 		// Reading a complete learner complex (i.e., a
@@ -499,7 +501,7 @@ public class Driver {
 	    // call BXR once; it knows how to iterate
 	    algo.absorbExample(p1.data, 0, p1.data.size());
 	} else 	if (adaptiveSD) {
-	    algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps);
+	    algo.runAdaptiveSD(p1.data, 0, p1.data.size(), eps, geps);
 	} else {	
 	    if (algo instanceof NormalizedKnnLearner) {
 		// speed it up on repetitive data

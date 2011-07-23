@@ -98,7 +98,13 @@ i.e. for the learner to modify its inner state based on them), or
 "apply" it to a data point (i.e. to have the learner classify the data
 point, using the model it has built so far). Training and applying can
 be done any number of times, in any order.
+
+<li>An optional set of <a href="api/edu/dimacs/mms/boxer/Priors.html">Priors</a>
+conceptually controls a penalty term subtracted from the
+log-likelihood that BOXER's PLRM learners maximize.
+
 </ul>
+
 
 <p>
 All BOXER objects described above can be initialized based on a
@@ -195,6 +201,18 @@ It is also possible that an application won't need to create a suite
 explicitly, because it is going to read a "learner complex" - an XML
 element containing the description of a learner complete with the
 suite it operates on; that situation is discussed below.
+
+<h3>Supplying a set of Priors</h3>
+
+<p>A set of priors can be associated with a suite. This should be done
+after the suite has been created, but before learners have been added.
+It will affect all PLRM learners associated with the suite. (In
+practice, though, only TruncatedGradient learners - including the
+Adaptive Steepest Descent method provided there - care for priors;
+other types of learners ignore them).
+
+<p>See <a href="api/edu/dimacs/mms/boxer/Priors.html">Priors</a> for more information on using them.
+
 
 <h3>Creating a Learner on an existing Suite</h3> 
 

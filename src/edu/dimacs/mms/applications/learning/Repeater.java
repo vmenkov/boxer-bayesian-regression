@@ -49,7 +49,9 @@ import edu.dimacs.mms.boxer.util.CMD;
 
      <li>adaptive: if true (and sd is also true), run SD with adaptive learning rate (ASD) to convergence
 
-     <li>eps=1e-8: convergence criterion for ASD
+     <li>eps=1e-8: convergence criterion for ASD (|delta L|)
+
+     <li>geps=0: alternative convergence criterion for ASD (|grad L|)
 
      </ul>
 
@@ -59,7 +61,7 @@ public class Repeater {
 
     
     static boolean emulateSD = false, adaptiveSD=false;
-    static double eps;
+    static double eps, geps;
  
 
     static void usage() {
@@ -122,6 +124,7 @@ public class Repeater {
 	emulateSD = ht.getOption("sd", false);
 	adaptiveSD = ht.getOption("adaptive", false);
 	eps = ht.getOptionDouble("eps", 1e-8);
+	geps = ht.getOptionDouble("geps", 0);
 
 	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
 
@@ -142,7 +145,7 @@ public class Repeater {
 			   (cyclic? "Cyclic mode" :
 			    "Random mode with "+nRandom+"repeats")+
 			   ", M="+M +", sd="+emulateSD+", adaptiveSD="+adaptiveSD+
-			   (adaptiveSD? " with eps=" + eps : "") +
+			   (adaptiveSD? " with eps=" + eps + ", geps=" +geps: "") +
 			   ", out="+out);
 	System.out.println("[VERSION] " + Version.version);
 
@@ -365,9 +368,7 @@ public class Repeater {
 		if (!(algo instanceof TruncatedGradient)) throw new  IllegalArgumentException("In the 'emulate SD' mode only TG is supported");
 
 		if (adaptiveSD) {
-		    boolean doAdaptive=true;
-		    boolean doBonus=true;
-		    algo.runAdaptiveSD(train, 0, train.size(), eps, doAdaptive, doBonus);
+		    algo.runAdaptiveSD(train, 0, train.size(), eps, geps);
 		} else {
 		    if (i1 % train.size() != 0 ||i2 % train.size() != 0) throw new AssertionError("emulateSD: i1, i2 not multiple of the train set size");
 		    int repeat = (i2-i1) / train.size();
