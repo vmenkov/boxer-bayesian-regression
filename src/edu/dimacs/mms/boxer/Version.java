@@ -39,11 +39,12 @@ package edu.dimacs.mms.boxer;
     0.9.001 - 2011-07-11  A major reorg for Truncation and Priors; added Gaussian priors. Not tested yet.
     0.9.002 - 2011-07-13  Gaussian priors etc., all tested
     0.9.003 - 2011-07-19  Laplacian prior integrated into ASD
+    0.9.004 - 2011-08-14  added applications.examples
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.9.003";
+    public final static String version = "0.9.004";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

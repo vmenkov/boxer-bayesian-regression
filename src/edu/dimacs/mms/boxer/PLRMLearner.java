@@ -2,6 +2,7 @@ package edu.dimacs.mms.boxer;
 
 import java.util.HashMap;
 import java.util.Vector;
+import java.io.PrintWriter;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -250,6 +251,132 @@ public abstract class PLRMLearner extends Learner {
 			throw new IllegalArgumentException("Element " + e.getTagName() + " is not supposed to contain child element " +  n.getNodeName());
 		    }
 		}
+	    }
+	}
+
+	/** Saves the model (i.e., matrix W) in the same format as used
+	    by BXRclassify.
+
+	    Based on the following example (in relaity, with more features and
+	    more decimal digits):
+<pre>
+Multinomial logistic regression model format: sparse 3.0 produced by BXRtrain version 3.1
+endofheader
+modelname tiny1.train.bxrdata.model
+betaClassSparse WIDGET @constant:1.81e-02 Size:-1.26e-01 Heat:2.07e-01 ....
+betaClassSparse GADGET @constant:-1.80e-02 Size:1.26e-01 Heat:-2.07e-01 ....
+</pre>
+ */
+	public void saveAsBXRModel(PrintWriter out, String modelname) {
+	    out.flush();
+	    out.println("Multinomial logistic regression model format: sparse 3.0 produced by BOXER " +  algoName() + " version " + Version.version);
+	    out.println("endofheader");
+	    out.println("modelname "+ modelname);
+
+	    double [][] a = Matrix.transpose( w.toArray());
+	    for(int i=0; i<a.length; i++) {
+		out.print("betaClassSparse " + dis.getClaById(i).getName());
+		for(int j=0; j<a[i].length; j++) {
+		    if (a[i][j]==0) continue;
+		    String f= suite.getDic().getLabel(j);
+		    if (f.equals( FeatureDictionary.DUMMY_LABEL )) {
+			f = "@constant";
+		    }
+		    out.print(" " + f + ":" + a[i][j]);
+		}
+		out.println();
+	    }
+	    out.flush();
+	}
+
+	/** Saves the model as BBR (Bayesian Binary Regression) model.
+	    Of course, this only makes sense if this discrimination is
+	    binary, i.e. only has 2 classes.
+
+	    @param positiveClassName It is expected that this name
+	    will be found among the names of the discirmination's two
+	    classes. Its column will be interpreted as the "positive"
+	    one.
+	 */
+	public void saveAsBBRModel(PrintWriter out, String modelname,
+				   String positiveClassName) {
+	    /** Verify that the current model can be interpreted as a
+	     * binary model */
+	    if (dis.claCount()!=2) {
+		throw new IllegalArgumentException("Discrimination " + dis + " is not binary; class count = " + dis.claCount());
+	    }
+	    Discrimination.Cla positiveCla = dis.getCla(positiveClassName);
+	    if (positiveCla == null) {
+		throw new IllegalArgumentException("Discrimination " + dis + " is not have a class named " + positiveClassName);
+	    }
+	    int pos = positiveCla.getPos();
+
+
+	    if (!suite.getDic().isDummy(0)) {
+		throw new IllegalArgumentException("Expected that the 0th feature is the 'dummy' one");
+	    }
+
+	    double [][] q = w.toArray();
+	    double[] beta = new double[q.length];
+	    for(int i=0; i<q.length; i++) {
+		double[] row =  setArrayMinLength(q[i], 2);
+		beta[i] = (row[pos] - row[1-pos])/2;
+	    }	    
+
+
+    
+	    out.flush();
+	    out.println("Bayesian Binary Regression ver 2");
+	    out.println("tfMethod 0");
+	    out.println("idfMethod 0");
+	    out.println("cosineNormalize 0");
+
+	    out.print("featRestrict ");
+	    // skip the dummy feature (no. 0)
+	    for(int i=1; i<q.length; i++) {
+		if (beta[i]!=0)  out.print(" " +i);
+	    }
+	    out.println();
+
+	    out.println("endofheader");
+
+	    out.println("modelname "+ modelname);
+	    out.println("topic <class>");
+	    out.println("modeltype 1 1 0 0"); 
+	    out.println("design 0");
+
+	    out.print("topicFeats");
+	    // skip the dummy feature (no. 0)
+	    for(int i=1; i<q.length; i++) {
+		if (beta[i]!=0)  out.print(" " +i);
+	    }
+	    out.println();
+	    out.print("beta");
+	    for(int i=1; i<q.length; i++) {
+		if (beta[i]!=0) {
+		    out.print(" " +beta[i]);
+		}
+	    } 
+	    // the dummy feature goes at the end of the line
+	    out.print(" " +beta[0]);
+	    out.println();
+
+	    out.println("threshold 0.0");
+	    out.println("endoftopic");
+
+	    out.flush();    
+	}
+
+	/** Sort of like "resize the array if needed". */
+	private  double[] setArrayMinLength(double[] q, int n)  {
+	    if (q==null) {
+		return new double[n];
+	    } else if (q.length < n) {
+		double[] row = new double[2];
+		for(int j=0; j<q.length; j++) row[j] = q[j];
+		return row;
+	    } else {
+		return q;
 	    }
 	}
 

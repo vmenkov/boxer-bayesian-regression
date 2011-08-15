@@ -5,7 +5,7 @@ individual priors file, because priors override g but make use of
 theta. -->
 <learner algorithm="boxer.TruncatedGradient" name="Simple_SGD_learner" version="0.9.001">
    <parameters>
-                <parameter name="theta" value="Infinity"/>
+                <parameter name="theta" value="0"/> <!-- "Infinity"/ -->
                 <parameter name="eta" value="0.01"/>
                 <parameter name="g" value="0"/>
                 <parameter name="k" value="1"/>

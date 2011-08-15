@@ -1,0 +1,41 @@
+# This is a labeled data file in the format used by 
+# BXRtrain and BXRclassify (www.bayesianregression.org).
+#
+# The file contains 7 training examples for a 2-class problem where 
+# the two classes are WIDGET and GADGET.  Each example is represented 
+# by the value of 3 features, with feature identifiers Size, Heat, Mass. 
+#
+# If an example does not have a featID:featvalue pair for a particular
+# feature ID, the value of that feature for that example should be assumed
+# to be 0.  Note in particular that the first example has no 
+# featID:featvalue pairs, and thus is assumed to have a value of 
+# 0 for all features.  
+#
+# We precede each example by a comment of the form 
+#       ID: <identifier> 
+# These lines are treated as comments by some of the above programs,
+# but can be picked up as example IDs by BXRclassify which mentioned 
+# them in its output. 
+# 
+# To aid the use of this file in debugging, we encode the example
+# ID and the feature ID into the feature value as well, when the 
+# feature has a nonzero value for an example.  
+#
+# This file encodes the same set of examples as tiny1.train.bbrdata
+# (but uses symbolic class and feature IDs), and
+# tiny.train.boxerdata
+#
+# ID: TinyDoc1
+WIDGET
+# ID: TinyDoc2
+GADGET  Size:2.1
+# ID: TinyDoc3
+WIDGET  Size:3.1  Heat:3.2
+# ID: TinyDoc4
+GADGET  Size:4.1 
+# ID: TinyDoc5
+WIDGET  Size:5.1  Heat:5.2  Mass:5.3 
+# ID: TinyDoc6
+GADGET  Size:6.1 
+# ID: TinyDoc7
+WIDGET  Heat:7.2  Mass:7.3 
