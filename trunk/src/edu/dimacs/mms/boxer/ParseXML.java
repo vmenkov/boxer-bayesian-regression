@@ -48,16 +48,16 @@ public class ParseXML {
     /** XML atributes for various XML elements */
     public static class ATTR {
 	public final static String LABEL_ATTR[] = {"dis", "class"};
-	final static String FEATURE_ATTR[] = {"name", "value"};
+	public final static String FEATURE_ATTR[] = {"name", "value"};
 	/** Used by many elements, includeing DataPoint and Learner */
-	final static String NAME_ATTR = "name";
+	public final static String NAME_ATTR = "name";
 	/** For the Suite element */	
-	final static String
+	public final static String
 	    VERSION_ATTR = "version";
 	//SUITE_NAME_ATTR = "suitename",
 	/** For the "suite" element */
-	static class SUITE {
-	    final static String 
+	public static class SUITE {
+	    public final static String 
 		NC_TRAIN = "nctrain",
 		NC_TEST = "nctest",
 		ND_TRAIN = "ndtrain",
@@ -67,8 +67,8 @@ public class ParseXML {
 		HOW_TO_HANDLE_MISSING_IDS = "HowToHandleMissingIDs";	    
 	}
 	/** Attributes For the Discrimination element */
-	static class DISCR {
-	    final static String 
+	public static class DISCR {
+	    public final static String 
 		CLASS_STRUCTURE = "classstructure",
 		DEFAULT_CLASS = "defaultclass",
 		LEFTOVERS_CLASS = "leftoversclass",
@@ -76,11 +76,11 @@ public class ParseXML {
 	    //COMMITTED = "committed",
 		QREL = "qrel";
 	    /** value is "true" if this is the fallback discr of the suite */
-	    final static String FALLBACK = "fallback";
+	    public final static String FALLBACK = "fallback";
 	}
 	/** Attributes specifically for the Learner element */
-	static class LEARNER {
-	    final static String ALGORITHM = "algorithm";	    
+	public static class LEARNER {
+	    public final static String ALGORITHM = "algorithm";	    
 	}
     }
 
@@ -122,6 +122,21 @@ public class ParseXML {
 	return e;
     }
 
+
+    /** Uses a DOMParser to convert a string (containing an external
+     * representation of an XML document) into an Element object. This
+     * is purely a "convenience method" (for use in some
+     * applications), and is not essential.
+     */
+    static public Element parseStringToElement(String s)
+	throws IOException, SAXException {
+	DOMParser parser = new DOMParser();
+	StringReader r = new StringReader( s);
+	parser.parse( new org.xml.sax.InputSource(r));
+	Document doc = parser.getDocument();
+	Element e = doc.getDocumentElement();
+	return e;
+    }
 
     /** Builds a vector of DataPoints out of the content of an XML file 
 	@param fname The name of the file to read
@@ -243,7 +258,7 @@ public class ParseXML {
 			    clav.add(c);
 			    if (isDefinitional && suite.isFallback(c.getDisc())) {
 			    //!c.isDefault()
-			    // Fallback discr is meant to ony receive default
+			    // Fallback discr is meant to only receive default
 			    // updates
 				throw new  BoxerXMLException("Data point '"+dpName+"' contains an explicit class label "+c+" for the fallback discrimination, which is prohibited");
 			    }

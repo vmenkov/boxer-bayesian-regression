@@ -1,0 +1,43 @@
+# This is a labeled data file in the format used by BBRtrain and
+# BBRclassify, and also compatible with BMRtrain, BMRclassify,
+# BXRtrain, BXRclassify.  All these programs are described at
+# www.bayesianregression.org
+#
+# The file contains 7 training examples for a 2-class problem where 
+# the two classes are +1 and and -1.  Each example is represented 
+# by the value of 3 features, with feature identifiers 1, 2, and 3.  
+#
+# If an example does not have a featID:featvalue pair for a particular
+# feature ID, the value of that feature for that example should be assumed
+# to be 0.  Note in particular that the first example has no 
+# featID:featvalue pairs, and thus is assumed to have a value of 
+# 0 for all features.  
+#
+# We precede each example by a comment of the form 
+#       ID: <identifier> 
+# These lines are treated as comments by some of the above programs,
+# but can be picked up as example IDs by BXRclassify which mentioned 
+# them in its output. 
+# 
+# To aid the use of this file in debugging, we encode the example
+# ID and the feature ID into the feature value as well, when the 
+# feature has a nonzero value for an example.  
+#
+# This file encodes the same set of examples as tiny1.train.bxrdata
+# and tiny.train.boxerdata, with the exception that those files
+# use symbolic class and feature IDs. 
+#
+# ID: TinyDoc1
++1 
+# ID: TinyDoc2
+-1  1:2.1
+# ID: TinyDoc3
++1  1:3.1  2:3.2
+# ID: TinyDoc4
+-1  1:4.1 
+# ID: TinyDoc5
++1  1:5.1  2:5.2  3:5.3 
+# ID: TinyDoc6
+-1  1:6.1 
+# ID: TinyDoc7
++1  2:7.2  3:7.3 

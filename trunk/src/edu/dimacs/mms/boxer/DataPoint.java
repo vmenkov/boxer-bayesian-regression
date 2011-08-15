@@ -369,12 +369,12 @@ public class DataPoint implements Measurable  {
 	@throws BoxerXMLException If the data point name is
 	inappropriate, as per {@link edu.dimacs.mms.boxer.IDValidation}
     */
-    static public DataPoint makeDataPoint(HashMap <String, Integer> words, 
+    static public DataPoint makeDataPoint(HashMap <String, Double> words, 
 			       FeatureDictionary dic, String name) throws BoxerXMLException {
        
 	Vector <FVPair> v=new  Vector <FVPair>();
 	for( String z : words.keySet()) {
-	    v.add(new FVPair(dic.getIdAlways(z), (double)words.get(z).intValue()));
+	    v.add(new FVPair(dic.getIdAlways(z), words.get(z).doubleValue()));
 	}
 	return new DataPoint(v, dic, name);
    }
@@ -430,7 +430,7 @@ public class DataPoint implements Measurable  {
        @return A vector of classes, including both stored and added
        default classes. For efficiency's sake, when no default classes
        need to be added, this would be just the stored vector of
-       classes - which means that the caller should never modified
+       classes - which means that the caller should never modify
        this vector later on.
       */
      public  Vector<Discrimination.Cla> getClasses(Suite suite) {

@@ -98,6 +98,9 @@ public class BetaMatrix extends Matrix  {
      */
     boolean looksLikeFallback(Discrimination dis) {
 	int n = dis.claCount();
+	if (dis.getDefaultCla()==null) {
+	    throw new IllegalArgumentException("No default class in discrimination " + dis);
+	}
 	int defPos = dis.getDefaultCla().getPos();	
 	for( Vector<Coef> v:  matrix) {
 	    if (v==null) continue;
@@ -237,6 +240,7 @@ public class BetaMatrix extends Matrix  {
 	}
 	return w; // new DenseMatrix(w);
     }
+   
 
     /** Get a row of the matrix whose columns are beta vectors.
 	This gives us all the active classes for a given feature.

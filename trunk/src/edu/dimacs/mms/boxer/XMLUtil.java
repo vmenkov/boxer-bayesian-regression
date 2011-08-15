@@ -1,13 +1,13 @@
 package edu.dimacs.mms.boxer;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 
 /** Constants and auxiliary methods for producing and parsing XML files. 
  */
@@ -30,11 +30,27 @@ public class XMLUtil {
 	return x!=null && x.trim().length()>0;
     }
 
-    /** An auxiliary method for Learner.saveAsXML() etc;
+   /** An auxiliary method for Learner.saveAsXML() etc;
      * saves a prepared XML doc into a file */
     public static void writeXML(Document xmldoc, String fname) {
 	try {
 	    FileOutputStream fos = new FileOutputStream(fname);
+	    writeXML( xmldoc.getDocumentElement(), fos);
+	    fos.close();
+	} catch (IOException ex) {
+	    System.err.println("Exception when trying to write XML file " + fname + "\n" + ex);
+	}
+    }
+
+    /** An auxiliary method for Learner.saveAsXML() etc;
+     * saves a prepared XML doc into a stream */
+    public static void writeXML(Document xmldoc, OutputStream fos) {
+	writeXML( xmldoc.getDocumentElement(), fos);
+    }
+
+    public static void writeXML(Element e, OutputStream fos) {
+	try {
+	    //	    FileOutputStream fos = new FileOutputStream(fname);
 	    OutputFormat of = new OutputFormat("XML","utf-8",true);
 	    of.setIndent(1);
 	    of.setIndenting(true);
@@ -42,10 +58,11 @@ public class XMLUtil {
 	    XMLSerializer serializer = new XMLSerializer(fos,of);
 	    // As a DOM Serializer
 	    serializer.asDOMSerializer();
-	    serializer.serialize( xmldoc.getDocumentElement() );
-	    fos.close();
+	    serializer.serialize( e );
+	    fos.flush();
+	    //fos.close();
 	} catch (IOException ex) {
-	    System.err.println("Exception when trying to write XML file " + fname + "\n" + ex);
+	    System.err.println("Exception when trying to write XML document out:\n" + ex);
 	}
     }
 
@@ -147,7 +164,6 @@ public class XMLUtil {
 	String a = e.getAttribute(aname);
 	return  (XMLUtil.nonempty(a)) ?  Boolean.parseBoolean(a) : defValue;
     }
-
 
 }
 

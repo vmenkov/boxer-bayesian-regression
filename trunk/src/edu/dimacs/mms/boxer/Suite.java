@@ -147,7 +147,7 @@ public class Suite {
 
      /** This flag, which only should be set in the constructor,
      * controls whether "simple labels" (without explicitly given
-     * discrimination names are acepted in XML datasets, and if so,
+     * discrimination names) are accepted in XML datasets, and if so,
      * how they are interpreted.
      */
     final SupportsSimpleLabels  supportsSimpleLabels;
@@ -352,6 +352,7 @@ public class Suite {
     /** Is there a polytomous discrimination designated for
      * accommodating simple labels?
      */
+    /*
     private Discrimination obsolete_lookupSimplePolytomousDiscr() {
 
 	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) return null;
@@ -364,21 +365,28 @@ public class Suite {
 	} else {
 	    throw new AssertionError("Where's my simple polytomous discrimination? I need a non-fallback discrimination with a default class!");
 	}
-    }	
+    }
+    */	
 
-    /** If we're in the Simple Labels Polytomous mode, returns the
-     * suite's only non-fallback discrimination.
+    /** If this suite is in the Simple Labels Polytomous mode, returns the
+	suite's only non-fallback discrimination. 
+	@throws IllegalArgumentException If this suite isn't in the
+	Simple Labels Polytomous mode.
      */
     Discrimination lookupSimplePolytomousDisc() {
 	if (supportsSimpleLabels!=SupportsSimpleLabels.Polytomous) throw new IllegalArgumentException("This suite is not set up with the SupportsSimpleLabels.Polytomous mode");
 
 	Discrimination d = lookupSimpleDisc();
 
+	// maybe not needed... 2011-08-10
+	/*
 	if (d.claCount() > 0 && d.getDefaultCla() != null)  {
 	    return d;
 	} else {
 	    throw new AssertionError("Where's my simple polytomous discrimination? I need a non-fallback discrimination with a default class!");
 	}
+	*/
+	return d;
 
     }
 
@@ -682,7 +690,7 @@ public class Suite {
     */
     private void verifySimpleLabelConditions(Discrimination d, boolean isFallback) {
 	if (supportsSimpleLabels ==  SupportsSimpleLabels.No) {
-	    // no restrictions
+	    // no restrictions exist
 	} else if (supportsSimpleLabels==SupportsSimpleLabels.MultipleBinary){
 	    if (isFallback) {
 		if (!d.isSimpleBinaryFallback()) {
@@ -702,9 +710,12 @@ public class Suite {
 		if (disCnt() > (fallback==null? 0:1)) {
 		    throw new IllegalArgumentException("Cannot add discrimination " + d + " to this suite, because this suite has the SupportsSimpleLabels="+supportsSimpleLabels+ " property, and only one non-fallback discrimination is allowed in this mode");		    
 		} else {
+		    // maybe not needed. 2011-08-10
+		    /**
 		    if (d.claCount() == 0 && d.getDefaultCla() == null)  {
 			throw new IllegalArgumentException("Cannot add discrimination " + d + " to this suite, because this suite has the SupportsSimpleLabels="+supportsSimpleLabels+ " property, but the new discrimination has no default class");
 		    }
+		    */
 		}
 	    }
         } else {
@@ -999,9 +1010,16 @@ Exception in thread "main" java.lang.IllegalArgumentException: Array of classes 
       away, from sysdefaults.
     @param _name The name to give to the new suite */
     public Suite(String _name) {
+	this( _name, SysDefaults.supportsSimpleLabels, SysDefaults.createNDMode);
+    }
+
+    public Suite(String _name,
+		 SupportsSimpleLabels  _supportsSimpleLabels,
+		 CreateNewDiscriminationMode _createNDMode ) 
+    {
 	name = _name;
-	supportsSimpleLabels =  SysDefaults.supportsSimpleLabels;
-	createNDMode = SysDefaults.createNDMode;
+	supportsSimpleLabels =  _supportsSimpleLabels;
+	createNDMode = _createNDMode;
 
 	// Since there is no XML suite definition (which may contain a fallback 
 	// discrimination too), we must create fallback from sysdefaults.
@@ -1383,11 +1401,11 @@ Exception in thread "main" java.lang.IllegalArgumentException: Array of classes 
     }
 
     /** Default values of discrimination properties are stored here */
-    static class SysDefaults {
-	final static Suite.DCS dcs = Suite.DCS.Fixed;
-	final static  CreateNewDiscriminationMode createNDMode =
+    public static class SysDefaults {
+	public final static Suite.DCS dcs = Suite.DCS.Fixed;
+	public final static  CreateNewDiscriminationMode createNDMode =
 	    CreateNewDiscriminationMode.AssumeDefaultHistory;
-	final static SupportsSimpleLabels  supportsSimpleLabels =
+	public final static SupportsSimpleLabels  supportsSimpleLabels =
 	    SupportsSimpleLabels.No;
     }
 

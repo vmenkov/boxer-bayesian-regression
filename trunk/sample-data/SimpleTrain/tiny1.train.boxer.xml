@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This is a labeled data file in the format used by 
+BOXER (http://code.google.com/p/boxer-bayesian-regression/).  
+
+The file contains 7 training examples for a single 2-class discrimination, 
+Tiny1, where the two classes are WIDGET and GADGET.  Each example is represented 
+by the value of 3 features, with feature identifiers Size, Heat, Mass. 
+If an example does not have a (featID, featvalue pair) for a particular
+feature ID, the value of that feature for that example should be assumed
+to be 0.  Note in particular that the first example has no 
+(featID, featvalue pairs), and thus is assumed to have a value of 
+0 for all features.  
+
+To aid the use of this file in debugging, we encode the example
+ID and the feature ID into the feature value as well, when the 
+feature has a nonzero value for an example.  
+
+This file encodes the same set of examples as tiny1.train.bbrdata
+(but uses symbolic class and feature IDs), and
+tiny.train.bxrdata. 
+-->
+
+<dataset name="tiny1dataset" boxerversion="0.1">
+
+<datapoint name="TinyDoc1">
+  <labels>
+    <label dis="Tiny1" class="WIDGET"/>
+  </labels>
+  <features>
+  </features>
+</datapoint>
+
+<datapoint name="TinyDoc2">
+  <labels>
+    <label dis="Tiny1" class="GADGET"/>
+  </labels>
+  <features>
+      <feature name="Size" value="2.1"/> 
+  </features>
+</datapoint>
+
+
+<datapoint name="TinyDoc3">
+  <labels>
+    <label dis="Tiny1" class="WIDGET"/>
+  </labels>
+  <features>
+      <feature name="Size" value="3.1"/> 
+      <feature name="Heat" value="3.2"/> 
+  </features>
+</datapoint>
+
+<datapoint name="TinyDoc4">
+  <labels>
+    <label dis="Tiny1" class="GADGET"/>
+  </labels>
+  <features>
+      <feature name="Size" value="4.1"/> 
+  </features>
+</datapoint>
+
+
+<datapoint name="TinyDoc5">
+  <labels>
+    <label dis="Tiny1" class="WIDGET"/>
+  </labels>
+  <features>
+      <feature name="Size" value="5.1"/> 
+      <feature name="Heat" value="5.2"/> 
+      <feature name="Mass" value="5.3"/> 
+  </features>
+</datapoint>
+
+<datapoint name="TinyDoc6">
+  <labels>
+    <label dis="Tiny1" class="GADGET"/>
+  </labels>
+  <features>
+      <feature name="Size" value="6.1"/> 
+  </features>
+</datapoint>
+
+<datapoint name="TinyDoc7">
+  <labels>
+    <label dis="Tiny1" class="WIDGET"/>
+  </labels>
+  <features>
+      <feature name="Heat" value="7.2"/> 
+      <feature name="Mass" value="7.3"/> 
+  </features>
+</datapoint>
+
+</dataset>

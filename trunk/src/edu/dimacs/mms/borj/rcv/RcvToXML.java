@@ -152,7 +152,7 @@ more data ...
 	// a very primitive state machine...
 	STATE state = STATE.WANT_I;
 	int docid = -1;
-	HashMap <String, Integer> words = new HashMap <String, Integer>();
+	HashMap <String, Double> words = new HashMap <String, Double>();
 
 	while( (s=r.readLine()) != null) {
 	    s=s.trim();
@@ -201,11 +201,12 @@ more data ...
 		} else {
 		// reading doc body
 		    String q[] = s.split("\\s+");
+		    Double one = new Double(1.0);
 		    for(String z: q) {
 			if (z.equals("")) continue;
-			Integer a = words.get(z);
-			int c =  (a==null) ? 1 : a.intValue()+1;
-			words.put( z, new Integer(c));
+			Double a = words.get(z);
+			a = (a==null)? one :  new Double(a.doubleValue()+1);
+			words.put( z, a);
 		    }
 		}
 	    }
