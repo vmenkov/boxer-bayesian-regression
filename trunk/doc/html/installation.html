@@ -3,7 +3,7 @@
 <body>
 <h1>BOXER and BORJ installation notes - binary distribution</h1>
 
-<em>Updated 2010-12-03</em>
+<em>Updated 2010-08-04</em>
 
 
 <p>This document is intended for those users who have downloaded the
@@ -22,27 +22,35 @@ instructions instead.</p>
 <p>The BOXER+BORJ binary distribution includes the pre-compilied code
 for BOXER, BORJ, and a few other applications (boxer.jar), some
 thrid-party jar files, documentation, and a sample script for running
-BORJ (tiny-sample/test.sh, or test.bat)
-</p>
+BORJ (tiny-sample/test.sh, or test.bat).  <em> DDL to VM: Is the first
+part of the sentence meant to mean that the precompiled code for BOXER,
+BORJ, and a few other applications are all in the file boxer.jar? If so,
+it would be more clear to say: The BOXER+BORJ binary distribution
+includes the file boxer.jar (containing the pre-compilied code for
+BOXER, BORJ, and a few other applications), as well as some thrid-party
+jar files, documentation, and a sample scripts for running BORJ under
+Unix (tiny-sample/test.sh) and Windows (tiny-sample/test.bat).</em> </p>
 
 <h2>Prerequisites</h2>
 
 <h3>Java (JRE)</h3>
-<p>
-BOXER has been compiled with Java 1.5, which means that you need this
-version, or any later version of Java to use the precompiled BOXER
-binaries. To run BORJ (or any other precompiled application that uses
-BOXER) you just need the JRE (Jave Runtime Environment). If you write
-your own Java application to use BOXER, you need the full JDK (Java
-Development Kit) to compile it, just as it is the case with any Java
-progream.</p>
 
-<p>If you don't know whether JRE/JDK is already installed on your
-computer, you can type on the Linux/UNIX command line,
+<p> BOXER has been compiled with Java 1.5, which means that you need
+this version (or any later version) of Java to use the precompiled BOXER
+binaries.  To run BORJ (or any other precompiled application that uses
+BOXER) you just need the JRE (Java Runtime Environment) from Java. If
+you wish to write and run your own Java application that uses the BOXER
+library, you need the full JDK (Java Development Kit) to compile your
+program, and then the JRE to run your compiled program, as is true of 
+any Java program.</p>
+
+<p>If you don't know whether the JRE and/or JDR are already installed on
+your computer, or what version you have if so, you can type on the
+Linux/UNIX command line
 <pre>
   java -version
 </pre>
-If the the Java interpreter (the program called "java") is already
+If the Java interpreter (the program called "java") is already
 installed and is in your path, you'll get a message from it, including
 its version number.
 </p>
@@ -63,9 +71,30 @@ JDK with
 </pre>
 </p>
 
-<p>
-Naturally, if you already have full Java EE (which is JDK + some additional
+<p>As another example, the Apple Mac OS X versions up to 10.6 ("Snow
+Leopard") shipped with the Java Platform, Standard Edition for Mac OS X.
+As 
+<a
+href="http://developer.apple.com/library/mac/#documentation/Java/Conceptual/Java14Development/01-JavaOverview/JavaOverview.html#//apple_ref/doc/uid/TP40001883-SW1"> 
+described by Apple
+</a>, this software
+"includes all the components  you would normally associate with the Java
+SE Runtime Environment (JRE) as well as the Java SE Development Kit
+(JDK)."  Typing
+<pre>
+  java -version
+</pre>
+on the command line under version 10.6.7 of OS X produces a message such as
+<pre>
+<p>java version "1.6.0_20"</p>
+<p>Java(TM) SE Runtime Environment (build 1.6.0_20-b02-279-10M3065)</p>
+<p>Java HotSpot(TM) 64-Bit Server VM (build 16.3-b01-279, mixed mode)</p>
+</pre> 
+
+
+<p>Naturally, if you already have full Java EE (which is JDK + some additional
 libraries and tools) it would do as well.</p>
+
 
 <p>If you want to use BOXER with an earlier version of Java than 1.5, you can
 also download the BOXER source code and try to re-compile it with your

@@ -1,40 +1,32 @@
 /**
-      This application demonstrates using BOXER with flat files in
-       standard BOXER formats.  We do the following:
+      This application demonstrates using BOXER when the input is a
+      flat file of labeled training data in standard BOXER format.
 
-       <ol>
-            
-       <li>
-       We use BOXER method ParseXML.readDataFileXML to read
-            the file "tiny1.train.boxer.xml" (supplied with the BOXER
-            distribution) and convert the training examples in the
-            file to a vector of DataPoint objects. The file contains
-            training examples in XML format that have been labeled
-            with respect to a single binary discrimination.
-
-	    <li>
-            We use BOXER method Learner.absorbExample() to train a
-            Learner associated with the Suite (in this case a Suite
-            containing only a single binary PLRM). 
-
-	    <li>
-            We use BOXER method Suite.serializeLearnerComplex() to
-	    write a serialized version of the trained Suite as a
-	    printed XML element to the specified output.
-
-	    </ol>
-
-	    <p>
+<p> 
        Usage:
 <pre>
-            java edu.dimacs.mms.applications.examples.SimpleTrain_BOXERfiles [INPUT [OUTFILE]]
+            java edu.dimacs.mms.applications.examples.SimpleTrain_BOXERfiles [INFILE [OUTFILE]]
 </pre>
-       where OUTFILE is optional.  If omitted the output is written
-       to standard output, typically your screen.
+
+       where INFILE and OUTFILE are optional. 
+
+<p> 
+       If INFILE is present, the training data is read from that
+       file. Otherwise it is read from the file "tiny1.train.boxer.xml"
+       in the current working directory.
+
+       If OUTFILE is present, the XML representation of the Suite
+       (which includes the Discrimination definition and the trained
+       model for that Discrimination) is written to that file.
+       Otherwise it is written to standard output (usually the
+       screen).
 */
 
-package edu.dimacs.mms.applications.examples;
 
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+package edu.dimacs.mms.applications.examples;
 
 import java.util.*;
 import java.io.*;
@@ -58,41 +50,86 @@ public class SimpleTrain_BOXERfiles {
 	System.exit(1);
     }
 
+    /* *********************  START OF main() *******************************/
+
+    /* main() does the work of this class.  It is the method executed
+    when you run 
+             java SimpleTrain_BOXERfiles 
+    from the command line. */
     static public void main(String argv[]) 
 	throws IOException, org.xml.sax.SAXException, BoxerException {
 
+        /* See package-info.java for a discussion of the default input
+	   file, tiny1.train.boxer.xml. */ 
 	String infile = (argv.length>0) ? argv[0] : "tiny1.train.boxer.xml";
 	String outfile = (argv.length>1) ? argv[1] : null;
 	if (argv.length > 2) usage("Too many arguments");
 	
-	Suite suite = new Suite("A_default_suite");	    
 
-	/** Reading training data from file. Since the input file has
-	    the .xml extension, readDataFileMultiformat() will invoke
-	    ParseXML.readDataFileXML(infile, suite, true);
-	 */
-	Vector<DataPoint> train = 
-	    ParseXML.readDataFileMultiformat(infile, suite, true);
+        /* A Suite in BOXER contains a set of Discriminations and a
+	   set of Learners that can produce predictive models for
+	   those Discriminations.  Here we create a new Suite with
+	   default characteristics and give it the name "demo_suite". */ 
+	Suite my_suite = new Suite("demo_suite");	    
 
-	//DataPoint.saveAsXML(train, 0, train.size(), "boxer",  "train-out.boxer.xml");
-	/** Add a simple TruncatedGradient learner. Normally, you'd
-	    read the learner's specification from an XML file. */
-	Learner algo = new TruncatedGradient(suite);
-	algo.absorbExample(train);
 
-	/** save the entire model */
-	if (outfile!=null) {
-	    suite.serializeLearnerComplex(outfile); 
-	} else {
-	    org.w3c.dom.Document doc = suite.serializeLearnerComplex();
+        /* The input file should be a BOXER format labeled data file.
+            We use BOXER method ParseXML.readDataFileXML to read that
+            file and convert the training examples in it to a vector
+            of DataPoint objects.  The final argument 'true' indicates
+            that the data should be treated as *definitional*,
+            i.e. that discrimination and class names encountered in
+            the data should be added to my_suite. */
+	Vector<DataPoint> parsed_data = 
+	    ParseXML.readDataFileXML(infile, my_suite, true);
+
+
+
+	/* Add a simple TruncatedGradient learner with default
+	   properties to my_suite.  In real applications it's more
+	   common to initialize the learner with specifications read
+	   from an XML file */ 
+	Learner my_learner = new TruncatedGradient(my_suite);
+
+
+        /* The BOXER method Learner.absorbExample makes one pass of
+	   online learning over all the labeled examples, in the order
+	   they appear in parsed_data.  
+
+	   Note that each class label within BOXER format data (as
+	   provided in the input file in this case) specifies both the
+	   class the example belongs to, and the discrimination that
+	   that class is drawn from. So even if the suite included
+	   multiple Discriminations, there would be no ambiguity about
+	   which Discriminations are updated for each training
+	   example. */ 
+	my_learner.absorbExample(parsed_data);
+
+
+	/* We write the Suite and the state of the associated Learner
+	    in BOXER's XML format. If an output file is specified, we
+	    use the BOXER method serializeLearnerComplex to write that
+	    information directly to a file.  Otherwise we used the
+	    BOXER method serializeLearnerComplex to serialize to an
+	    in-memory XML document, and dump that document to standard
+	    output (usually the screen) using BOXER method
+	    writeXML. */ 
+	if (outfile != null) {
+	    my_suite.serializeLearnerComplex(outfile); 
+	} 
+	else {
+	    org.w3c.dom.Document doc = my_suite.serializeLearnerComplex();
 	    XMLUtil.writeXML(doc, System.out);
 	}
     }
+    /* *********************  END OF main() *******************************/
+
 }
 
 
 /*
-Copyright 2011, Rutgers University, New Brunswick, NJ.
+Copyright 2011, Rutgers University, New Brunswick, NJ, and David D. Lewis, 
+David D. Lewis Consulting, Chicago, IL. 
 
 All Rights Reserved
 

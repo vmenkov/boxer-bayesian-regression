@@ -49,20 +49,33 @@ document, and the value corresponding to each feature (term) is the
 frequency (numbers of occurrences) of that term in the document,
 possibly normalized in some way.
 
-<li>A <a href="api/edu/dimacs/mms/boxer/Discrimination.html">Discrimination</a> describes a
-way to partition the universe of objects (data points) into a number of
-non-intersecting classes. A classification may be binary (having just
-two classes) or polytmous (more than two classes). For example, one
-may classify a set of mushrooms a binary classification consist of two
-classes {"POISONOUS", "NON-POISONOUS"} or a polytomous classification
-with three classes {"EDIBLE", "INEDIBLE-BUT-NOT-POISONOUS",
-"POISONOUS"}.
+<li>A <a
+href="api/edu/dimacs/mms/boxer/Discrimination.html">Discrimination</a>
+describes a way to partition the universe of objects (data points) into
+a set of classes (not to be confused with Java classes) which are
+mutually exclusive and collectively exhaustive. In other words, each
+object belons to exactly one class. Discriminations may be binary
+(having just two classes) or polytomous (usually referring to more than
+two classes, but we will allow the term to be used for 2 class
+discriminations as well). For example, one might want to make classify
+each of a set of mushrooms into one of the two classes, for instance
+{"POISONOUS", "NON-POISONOUS"} or {"EDIBLE", "INEDIBLE").  Those would
+be two alternative binary discriminations useful in different
+circumstances. On the other hand, we could classify the mushrooms with
+respect to a polytomous discrimination with three classes {"EDIBLE",
+"INEDIBLE-BUT-NOT-POISONOUS", "POISONOUS"}.
 
 <p>
-In BOXER, a discrimination may, beside the list of classes, also
-contain some additional information helpful in interpreting input data
-effectvely and efficiently, namely, the names of the discrimination's
-"default class" and/or the "leftovers class".
+In BOXER, it is possible to specify a discrimination extensionally, i.e.
+by providing a list of the names of its classes. It is also possible to allow 
+BOXER to discover some or all of the names of the classes in a discrimination by observing
+them in data which has been labeled with respect to that
+discrimination.  A BOXER Discrimination object allows several ways of
+specifying the relationship between class names observed in data and
+the classes that make up the discrimination.  It also allows specifying
+the names of two classes, the "default class" and the "leftovers class"
+which can be represented in the data in a special fashion.  For
+more on defining Discriminations see ????. 
 
 <li>A <a href="api/edu/dimacs/mms/boxer/Suite.html">Suite</a> is a collection of several
 independent discriminations, each of which is meant to partition the
