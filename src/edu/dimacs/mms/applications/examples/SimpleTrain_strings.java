@@ -1,5 +1,32 @@
-package edu.dimacs.mms.applications.examples;
+/**   This application demonstrates using BOXER with training data
+      supplied as XML in the form of a standard Java string.  The
+      trained model is also produced as a standard Java string
+      containing the XML for a learner complex in standard BOXER
+      format.  That string is then written to a file, but one could
+      imagine passing it to some other application.
 
+      The XML stored in the string is the same XML that appears
+      in the sample file        "tiny1.train.boxer.xml" that is the default argument to  SimpleTrain_BOXERfiles. 
+
+<p>
+       Usage:
+<pre>
+            java edu.dimacs.mms.applications.examples.SimpleTrain_strings [OUTFILE]
+</pre>
+       where OUTFILE is optional.  
+
+       If OUTFILE is present, the XML representation of the Suite
+       (which includes the Discrimination definition and the trained
+       model for that Discrimination) is written to that file.
+       Otherwise it is written to standard output (usually the
+       screen).
+*/
+
+
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+package edu.dimacs.mms.applications.examples;
 
 import java.util.*;
 import java.io.*;
@@ -9,42 +36,6 @@ import org.w3c.dom.Element;
 import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.boxer.util.*;
 
-
-/**
-      This application demonstrates using BOXER with flat files in
-       standard BOXER formats.  We do the following:
-
-       <ol>
-            
-       <li> The training data in this version is represented as the
-        string of characters for the equivalent XML, and created by
-        concatenating several objects of class java.lang.string.  The
-        string contains the same XML as occurs in the file
-        "tiny1.train.boxer.xml" used in SimpleTrain_BOXERfiles.  We
-        use BOXER methods ParseXML.parseStringToElement() and
-        ParseXML.parseDatasetElement() to convert the string into a
-        vector of DataPoint objects.
-
-	<li>
-	We use BOXER method Learner.absorbExample() to train a
-	Learner associated with the Suite (in this case a Suite
-	containing only a single binary PLRM). 
-	
-	<li>
-	We use BOXER method Suite.serializeLearnerComplex() to
-	write a serialized version of the trained Suite as a
-	printed XML element to the specified output.
-
-	</ol>
-
-	<p>
-       Usage:
-<pre>
-            java edu.dimacs.mms.applications.examples.SimpleTrain_strings [OUTFILE]
-</pre>
-       where OUTFILE is optional.  If omitted the output is written
-       to standard output, typically your screen.
-*/
 
 public class SimpleTrain_strings {
 
@@ -61,31 +52,74 @@ public class SimpleTrain_strings {
 	System.exit(1);
     }
 
+
+    /* *********************  START OF main() *******************************/
+
+    /* main() does the work of this class.  It is the method executed
+    when you run 
+             java SimpleTrain_DOM
+    from the command line. */
+
     static public void main(String argv[]) 
 	throws IOException, org.xml.sax.SAXException, BoxerException {
 
 	String outfile = (argv.length>0) ? argv[0] : null;
 	if (argv.length > 1) usage("Too many arguments");
-	
-	Suite suite = new Suite("A_default_suite");	    
 
-	/** Reading training data from a string */
-	Element e = ParseXML.parseStringToElement( xmlText);
-	Vector<DataPoint> train = ParseXML.parseDatasetElement(e, suite, true);
+        /* A Suite in BOXER contains a set of Discriminations and a
+	   set of Learners that can produce predictive models for
+	   those Discriminations.  Here we create a new Suite with
+	   default characteristics and give it the name "demo_suite". */ 
+	Suite my_suite = new Suite("demo_suite");	    
 
-	/** Add a simple TruncatedGradient learner. Normally, you'd
-	    read the learner's specification from an XML file. */
-	Learner algo = new TruncatedGradient(suite);
-	algo.absorbExample(train);
+	/* We convert the XML in the string into an object that
+	   implements the Element interface from the org.w3c.dom
+	   package */ 
+	Element e = ParseXML.parseStringToElement(xmlText);
 
-	/** save the entire model */
-	if (outfile!=null) {
-	    suite.serializeLearnerComplex(outfile); 
-	} else {
-	    org.w3c.dom.Document doc = suite.serializeLearnerComplex();
+        /*  We use BOXER method ParseXML.parseDatasetElement to parse
+            the Element we just created and convert the training
+            examples in it to a vector of DataPoint objects.  The
+            final argument 'true' indicates that the data should be
+            treated as *definitional*, i.e. that discrimination and
+            class names encountered in the data should be added to
+            my_suite. */
+ 	Vector<DataPoint> parsed_data = ParseXML.parseDatasetElement(e, my_suite, true);
+
+	/* Add a simple TruncatedGradient learner with default
+	   properties to my_suite.  In real applications it's more
+	   common to initialize the learner with specifications read
+	   from an XML file */ 
+	Learner my_learner = new TruncatedGradient(my_suite);
+
+
+        /* The BOXER method Learner.absorbExample makes one pass of
+	   online learning over all the labeled examples, in the order
+	   they appear in parsed_data.  
+
+	   Note that each class label within BOXER format data (as
+	   provided in the string in this case) specifies both the
+	   class the example belongs to, and the discrimination that
+	   that class is drawn from. So even if the suite included
+	   multiple Discriminations, there would be no ambiguity about
+	   which Discriminations are updated for each training
+	   example. */ 
+	my_learner.absorbExample(parsed_data);
+
+        /* DDL : i've written vladimir about creating a string first */ 
+	if (outfile != null) {
+	    /** Write the LearnerComplex in XML form to the specified file. */
+	    my_suite.serializeLearnerComplex(outfile); 
+	} 
+	else {
+	    /** Convert the LearnerComplex to an XML document, and write it to standard output */ 
+	    org.w3c.dom.Document doc = my_suite.serializeLearnerComplex();
 	    XMLUtil.writeXML(doc, System.out);
 	}
     }
+    /* *********************  END OF main() *******************************/
+
+
 
     /** An XML document (complete with comments!) as a String */
     static final String xmlText = 
@@ -191,7 +225,8 @@ public class SimpleTrain_strings {
 
 
 /*
-Copyright 2011, Rutgers University, New Brunswick, NJ.
+Copyright 2011, Rutgers University, New Brunswick, NJ, and David D. Lewis, 
+David D. Lewis Consulting, Chicago, IL. 
 
 All Rights Reserved
 

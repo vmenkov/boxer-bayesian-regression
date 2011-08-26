@@ -1,73 +1,65 @@
-package edu.dimacs.mms.applications.examples;
+/**    This application demonstrates how to use BOXER with an
+       application that reads labeled training data from a flat file
+       in BBR format, and writes a trained binary logistic regression
+       file to a model file in BBR format.
 
+       By "BBR format" we mean the file formats used by the Bayesian
+       logistic regression programs BBRtrain and BBRclassify.  BBR
+       format is also compatible with BMRtrain, BMRclassify, BXRtrain
+       and BXRclassify. All six of these programs are discussed at
+       http://www.bayesianregression.org/.)
+
+       Because the BBR data and model formats only supports numeric
+       class labels and feature IDs, the trained logistic regression
+       model that this application produces has different class labels
+       and feature IDs than the models produced by the other
+       SimpleTrain_* applications.
+
+       The BBR model format also allows nonzero coefficients for only
+       one of the two classes, so the coefficients in the BBR model
+       file produced by this application are different from those in
+       the BOXER Suite file.  In fact the coefficient for a feature in
+       the BBR model file is equal to the coefficient of that feature
+       for class +1 in the BOXER file, minus the coefficient for that
+       feature for class -1 in the BOXER file. The result is a model
+       that makes exactly the same predictions as the model in the
+       BOXER file.
+
+<p>
+       Usage:
+<pre>
+            java edu.dimacs.mms.applications.examples.SimpleTrain_BBRfiles [INFILE [BBR_OUTFILE [BOXER_OUTFILE]]]
+</pre>
+       where INFILE, BBR_OUTFILE, and BOXER_OUTFILE are optional. 
+
+<p> 
+       If INFILE is present, the training data is read from that
+       file. Otherwise it is read from the file "tiny1.train.bbrdata"
+       in the current working directory.
+
+<p> 
+       If BBR_OUTFILE is present, the trained logistic regression
+       model is written to that file. Otherwise it is written to
+       standard output (usually the screen).
+
+<p>
+       If BOXER_OUTFILE is present, the XML representation of the
+       Suite (which includes the Discrimination definition and the
+       trained model for that Discrimination) is written to that file.
+       Otherwise it is written to standard output.
+
+*/
+
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+package edu.dimacs.mms.applications.examples;
 
 import java.util.*;
 import java.io.*;
 
 import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.boxer.util.*;
-
-/**
-      This application shows the basics of using BOXER with training
-       data residing in a flat file in the format used by the
-       Bayesian logistic regression software BBRtrain, BBRclassify.
-       The format is also usable by BMRtrain, BMRclassify, BXRtrain
-       and BXRclassify. All these programs are discussed at
-       http://www.bayesianregression.org/.  The format is also
-       compatible with SVMlight (http://svmlight.joachims.org/) and a
-       number of other learning programs.  Because this format only
-       supports numeric class labels and feature IDs the trained PLRM
-       we produce in this case has different class labels and feature
-       IDs from the models produced by the other SimpleTrain_*
-       applications.  The coefficients of the model are identical,
-       however.
-
-<p>
-       We do the following:
-
-<ol>
-
-<li> We use BOXER method BXRReader.readDataFileBMR to read the input
-            file "tiny1.train.bbrdata" (supplied with the BOXER
-            distribution) and convert the training examples in the
-            file to a vector of DataPoint objects. (Note that this is
-            the same method that is used to read data in BXR format).
-            The file contains training examples in BBR format that
-            have been labeled with respect to a single binary
-            discrimination.
-
-<li> 
-            We use BOXER method TruncatedGradient.absorbExample() to
-            train a learner model associated with the suite (in this case 
-	    a Suite containing only a single binary PLRM).
-
-	    <li> 
-
-
-	    <li> We use BOXER method
-             PLRMLearner.PLRMLearnerBlock.saveAsBBRModel() to write
-             the single binary logistic regression model in the
-             trained Suite to output in the proper format for models
-             used by BBRclassify.  Note that the BBR format only
-             supports binary logistic regression models with a
-             reference class.  </ol>
-
-<p>
-       Usage:
-<pre>
-            java edu.dimacs.mms.applications.examples.SimpleTrain_BBRfiles [INPUT [BBR_OUTFILE [BOXER_OUTFILE]]]
-</pre>
-       where INFILE,  BBR_OUTFILE, and BOXER_OUTFILE are optional. 
-
-<p>
-       If INFILE is ommitted, the training set is read from "tiny1.train.bbrdata".
-
-<P>
-       If BBR_OUTFILE is omitted, the BBR model is written to standard
-
-<P>
-       If BOXER_OUTFILE is omitted, the XML output is written to standard
-       output, typically your screen.  */
 
 
 public class SimpleTrain_BBRfiles {
@@ -85,72 +77,146 @@ public class SimpleTrain_BBRfiles {
 	System.exit(1);
     }
 
+
+    /* *********************  START OF main() *******************************/
+
+    /* main() does the work of this class.  It is the method executed
+    when you run 
+             java SimpleTrain_BBRfiles 
+    from the command line. */
     static public void main(String argv[]) 
 	throws IOException, org.xml.sax.SAXException, BoxerException {
 
-	String infile = (argv.length>0) ? argv[0] : "tiny1.train.bbrdata";
-	String bbrOutfile = (argv.length>1) ? argv[1] : infile + ".model";
-	String boxerOutfile = (argv.length>2) ? argv[2] : null;
+
+        /* See package-info.java for a discussion of the default input
+	   file, tiny1.train.bbrdata. */ 
+	String infile       = (argv.length > 0) ? argv[0] : "tiny1.train.bbrdata";
+	String bbrOutfile   = (argv.length > 1) ? argv[1] : infile + ".model";
+	String boxerOutfile = (argv.length > 2) ? argv[2] : null;
 	if (argv.length > 3) usage("Too many arguments");
-	
-	Suite suite = new Suite("Simple_polytomous",	    
+
+
+        /* A Suite in BOXER contains a set of Discriminations and a
+	   set of Learners that can produce predictive models for
+	   those Discriminations.  Here we create a new Suite and give
+	   it the name "demo_suite". */ 
+        /* DDL to self: I wrote Vladimir about why the extra arguments are needed here. */ 
+	Suite my_suite = new Suite("demo_suite",	    
 				Suite.SupportsSimpleLabels.Polytomous,
 				Suite.SysDefaults.createNDMode);
 
-	/** We will be parsing a BBR file (not too different from BXR)
-	    that has no discrimination names, just class names (which
-	    happen to be "+1" and "-1", this being BBR). Thus the
-	    suite should have exactly one discrimination, in whose
-	    term labels will be interpreted.
-	 */
-	Discrimination dis = suite.addDiscrimination("main");
 
-	/** Reading training data from file. Since the input file has
-	    the .xml extension, readDataFileMultiformat() will invoke
-	    ParseXML.readDataFileXML(infile, suite, true);
-	 */
-	Vector<DataPoint> train = 
-	    //	    ParseXML.readDataFileMultiformat(infile, suite, true);
-	    BXRReader.readDataFileBMR(infile, suite, true);
-
-	//DataPoint.saveAsXML(train, 0, train.size(), "bbr",  "train-out.bbr.xml");
+	/* Each record in a BBR format labeled data file specifies
+           which of two classes to which a particular vector belongs,
+           but not specify a discrimination name.  Therefore, in
+           contrast to the sample applications that work with BOXER
+           format data, we need to create and name the Discrimination
+           explicitly.  We name it "Tiny1" to correspond to the
+           Discrimination name that's encoded in the BOXER format data
+           in other examples. */ 
+	Discrimination dis = my_suite.addDiscrimination("Tiny1");
 
 
-	/* Add a simple TruncatedGradient learner. Normally, you'd
-	    read the learner's specification from an XML file, instead
-	    of using the defaults. */
-	Learner algo = new TruncatedGradient(suite);
-	algo.absorbExample(train);
+        /* infile should be a BBR format labeled data file.  We use
+            BOXER method BXRReader.readDataFileBMR to read that file
+            and convert the training examples in the file to a vector
+            of DataPoint objects. (Note that this method is able to
+            read data files in BBR, BMR, and BXR format.)  The final
+            argument 'true' indicates that the data should be treated
+            as *definitional*, i.e. that discrimination and class
+            names encountered in the data should be added to
+            my_suite. */
 
-	/* // this is how to get a much better learner
-	String learnerFile = "../learners/tg0-learner-param-eta=0.01.xml";
-	Learner algo = suite.addLearner(ParseXML.readFileToElement(new File( learnerFile )));
-	algo.runAdaptiveSD(train, 0, train.size(), 1e-6, 0);
-	*/
+	/* (DDL to self: see my questions to Vladimir about when the
+	    class labels become part of the Discrimination, and how we
+	    know which Discrimination provides the context to interpret
+	    the labels.) */
 
-	/* Save the model in BBR format, same as produced by BBRtrain */
+        /* DDL to VM: As I mentioned in my email, the method should be 
+	    renamed to readDataFileBXR. */ 
+	Vector<DataPoint> parsed_data = BXRReader.readDataFileBMR(infile, my_suite, true); 
+
+	    
+	/* Add a simple TruncatedGradient learner with default
+	   properties to my_suite.  In real applications it's more
+	   common to initialize the learner with specifications read
+	   from an XML file */ 
+	Learner my_learner = new TruncatedGradient(my_suite);
+
+
+        /* Run the learner on the training data.  For Learners such
+	    as TruncatedGradient that implement online algorithms,
+	    absorbExample takes only one pass over the training
+	    data. (DDL to self: see my questions to vladimir about how
+	    the bbr file gets associated with a particular
+	    discrimination.) */ 
+	my_learner.absorbExample(parsed_data);
+
+
+        /* We write the trained model in BBR format.  This is done in 
+	    in four steps. */ 
+
+        /* 1. Get from my_learner the PLRMLearnerBlock for the single
+	    Discrimination ("Tiny1") that we did training for.  A
+	    LearnerBlock in general stores the state of a Learner with
+	    respect to a single Discrimination.  For the
+	    TruncatedGradient learner we know that the LearnerBlock is
+	    more specifically a PLRMLearnerBlock. */ 
 	PLRMLearner.PLRMLearnerBlock block =
-	    (PLRMLearner.PLRMLearnerBlock) algo.findBlockForDis(dis);
+	    (PLRMLearner.PLRMLearnerBlock) my_learner.findBlockForDis(dis);
+
+        /* 2. A standard Java idiom for preparing to write to a file. */ 
 	PrintWriter w = new PrintWriter(new FileWriter(bbrOutfile));
-	// the "positive" class is named "+1" in the input
+
+        /* 3. Part of the state of a PLRMLearnerBlock is the
+	    coefficient vector for the last version of the PLRM
+	    produced.  PLRMLearnerBlock's method saveAsBBRModel writes 
+	    that coefficient vector to BBR format file.  Note that
+	    other information stored in a PLRMLearnerBlock has no
+	    equivalent in a BBR format file, and so is not written. 
+
+	    Also note that the BBR model file format only supports
+	    binary logistic regression models where the two classes
+	    are named "1" ("+1" is treated as equivalent to 1) and
+	    "-1". The method saveAsBBRModel can write any binary
+	    logistic regression model to BBR model file format. It
+	    simply requires that it is told which of the two classes
+	    become the class "+1" in the BBR model file. The other
+	    class, whatever its name, becomes the class "-1" in the
+	    BBR model file.  In our case this requirement of
+	    saveAsBBRModel may seem redundant since the classes were
+	    already named "-1" and "+1", but that's how saveAsBBRModel
+	    works. */
 	block.saveAsBBRModel(w, bbrOutfile, "+1");
+
+        /* 4. Having written the file, we close down the writer. */ 
 	w.close();
 
-	/** save the suite and the model in BOXER's XML format */
-	if (boxerOutfile!=null) {
-	    suite.serializeLearnerComplex(boxerOutfile); 
-	} else {
-	    org.w3c.dom.Document doc = suite.serializeLearnerComplex();
+
+	/* We also write the Suite and the state of the associated Learner
+	    in BOXER's XML format. If an output file is specified, we
+	    use the BOXER method serializeLearnerComplex to write that
+	    information directly to a file.  Otherwise we used the
+	    BOXER method serializeLearnerComplex to serialize to an
+	    in-memory XML document, and dump that document to standard
+	    output (usually the screen) using BOXER method
+	    writeXML. */ 
+	if (boxerOutfile != null) {
+	    my_suite.serializeLearnerComplex(boxerOutfile); 
+	} 
+	else {
+	    org.w3c.dom.Document doc = my_suite.serializeLearnerComplex();
 	    XMLUtil.writeXML(doc, System.out);
 	}
 
-
     }
+    /* *********************  END OF main() *******************************/
 }
 
 
 /*
-Copyright 2011, Rutgers University, New Brunswick, NJ.
+Copyright 2011, Rutgers University, New Brunswick, NJ, and David D. Lewis, 
+David D. Lewis Consulting, Chicago, IL. 
 
 All Rights Reserved
 
