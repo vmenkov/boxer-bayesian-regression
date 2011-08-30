@@ -1,3 +1,16 @@
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+package edu.dimacs.mms.applications.examples;
+
+import java.util.*;
+import java.io.*;
+
+import org.w3c.dom.Element;
+
+import edu.dimacs.mms.boxer.*;
+import edu.dimacs.mms.boxer.util.*;
+
 
 /**
 
@@ -44,21 +57,6 @@
        Otherwise it is written to standard output (usually the
        screen).
 */
-
-
-/* The first statement in a Java file is the package statement.  The
-one above declares that the code in this file is part of the package
-edu.dimacs.mms.applications.examples. */ 
-package edu.dimacs.mms.applications.examples;
-
-import java.util.*;
-import java.io.*;
-
-import org.w3c.dom.Element;
-
-import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.boxer.util.*;
-
 
 
 

@@ -1,3 +1,14 @@
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+package edu.dimacs.mms.applications.examples;
+
+import java.util.*;
+import java.io.*;
+
+import edu.dimacs.mms.boxer.*;
+import edu.dimacs.mms.boxer.util.*;
+
 /**    This application demonstrates how to use BOXER with an
        application that reads labeled training data from a flat file
        in BBR format, and writes a trained binary logistic regression
@@ -49,17 +60,6 @@
        Otherwise it is written to standard output.
 
 */
-
-/* The first statement in a Java file is the package statement.  The
-one above declares that the code in this file is part of the package
-edu.dimacs.mms.applications.examples. */ 
-package edu.dimacs.mms.applications.examples;
-
-import java.util.*;
-import java.io.*;
-
-import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.boxer.util.*;
 
 
 public class SimpleTrain_BBRfiles {

@@ -5,8 +5,11 @@
        more about Java and BOXER you will likely find the comments
        here and in the sample applications annoyingly overdetailed! 
 
+<h3>
        1. The SimpleTrain_* Applications
+</h3>
 
+<p>
        Each application with a name of the form SimpleTrain_* uses the
        BOXER API to train a two-class PLRM (polytomous logistic
        regression model) on labeled data.  The default training data
@@ -18,6 +21,7 @@
        capabilities can be accessed through a variety of different
        input and output methods.
 
+<p>
        Where possible each application uses the same format (e.g. a
        string, a file, etc.)  for both input of the training data and
        output of the trained model.  In real applications one could of
@@ -26,6 +30,7 @@
        in-memory string, but writing the trained PLRM directly to a
        file.
 
+<p>
        In addition to producing the trained logistic regression model
        in an application-specific format, each of the applications
        also produces the Suite containing the trained model (as well
@@ -34,29 +39,31 @@
        that the same result is produced in all cases (with one
        exception noted in SimpleTrain_BBRfiles.java).
 
+<p>
        If you would like to verify that the same Suite is produced in 
        all cases, open a command line window and change your
        working directory to 
-
+<pre>
             .../boxer-bayesian-regression/sample-data/SimpleTrain
- 
+</pre>
        where boxer-bayesian-regression is the directory where the
        BOXER distribution has been installed.  The above directory
        contains the same training data file in different formats. Then
        issue these six commands
-
+<pre>
             java -cp DIR edu.dimacs.mms.applications.examples.SimpleTrain_BOXERfiles
             java -cp DIR edu.dimacs.mms.applications.examples.SimpleTrain_DOM
             java -cp DIR edu.dimacs.mms.applications.examples.SimpleTrain_DataPoints
             java -cp DIR edu.dimacs.mms.applications.examples.SimpleTrain_strings
             java -cp DIR edu.dimacs.mms.applications.examples.SimpleTrain_BBRfiles
             java -cp DIR edu.dimacs.mms.applications.examples.SimpleTrain_BXRfiles
-
+</pre>
        where DIR is the directory in which you have installed the 
        BOXER source.  DIR should contain only a directory named "edu". 
        Alternately you can add DIR to the appropriate environment 
        variable for the Java classpath on your system. 
 
+<p>
        In the first four cases, the output (which you can see on the
        screen, or redirect to a file) is exactly the same: the BOXER
        XML representation of a trained Suite.  For
@@ -65,11 +72,13 @@
        regression model in BBR (or BXR) format, as well as the BOXER
        representation of the Suite.  
 
+<p>
        In the case of BBR, the Suite representation uses integer class
        names and feature IDs, because the BBR format for training data
        files does not support symbolic names.  Otherwise the
        Suite representation is identical to the other cases.
 
+<p>
        None of the applications use a Suite definition or Prior
        definition as a starting point.  Almost all aspects of learning
        therefore occur as specified by the BOXER defaults, and the

@@ -1,9 +1,23 @@
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+
+package edu.dimacs.mms.applications.examples;
+
+import java.util.*;
+import java.io.*;
+
+import edu.dimacs.mms.boxer.*;
+import edu.dimacs.mms.boxer.util.*;
+
+
 
 /**    This application demonstrates how to use BOXER when reading
        labeled training data from a flat file in BXR format, and
        writing a trained binary logistic regression file to a model
        file in BXR format.
 
+<p>
        By "BXR format" we mean the file formats used by the Bayesian
        logistic regression programs BXRtrain and BXRclassify
        (http://www.bayesianregression.org/). 
@@ -31,19 +45,6 @@
        trained model for that Discrimination) is written to that file.
        Otherwise it is written to standard output.
 */
-
-
-/* The first statement in a Java file is the package statement.  The
-one above declares that the code in this file is part of the package
-edu.dimacs.mms.applications.examples. */ 
-
-package edu.dimacs.mms.applications.examples;
-
-import java.util.*;
-import java.io.*;
-
-import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.boxer.util.*;
 
 
 public class SimpleTrain_BXRfiles {
