@@ -25,7 +25,7 @@ are included in this distribution as well.
 
 To use BOXER and BOXER applications you need to have a Java virtual
 machine (e.g., in the form of Sun's JRE) installed on your computer.
-If you don't know what a JRE is, please view  the documentation in
+If you don't know what the JRE is, please view  the documentation in
 the file doc/html/installation.html  with your web browser.
 
 For more details on BOXER, BORJ, and other applications, please view

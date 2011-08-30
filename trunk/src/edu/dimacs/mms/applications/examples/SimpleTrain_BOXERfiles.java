@@ -1,3 +1,14 @@
+/* The first statement in a Java file is the package statement.  The
+one above declares that the code in this file is part of the package
+edu.dimacs.mms.applications.examples. */ 
+package edu.dimacs.mms.applications.examples;
+
+import java.util.*;
+import java.io.*;
+
+import edu.dimacs.mms.boxer.*;
+import edu.dimacs.mms.boxer.util.*;
+
 /**
       This application demonstrates using BOXER when the input is a
       flat file of labeled training data in standard BOXER format.
@@ -15,25 +26,13 @@
        file. Otherwise it is read from the file "tiny1.train.boxer.xml"
        in the current working directory.
 
+<p>
        If OUTFILE is present, the XML representation of the Suite
        (which includes the Discrimination definition and the trained
        model for that Discrimination) is written to that file.
        Otherwise it is written to standard output (usually the
        screen).
 */
-
-
-/* The first statement in a Java file is the package statement.  The
-one above declares that the code in this file is part of the package
-edu.dimacs.mms.applications.examples. */ 
-package edu.dimacs.mms.applications.examples;
-
-import java.util.*;
-import java.io.*;
-
-import edu.dimacs.mms.boxer.*;
-import edu.dimacs.mms.boxer.util.*;
-
 
 public class SimpleTrain_BOXERfiles {
 
