@@ -6,8 +6,6 @@ package edu.dimacs.mms.applications.examples;
 import java.util.*;
 import java.io.*;
 
-import org.w3c.dom.Element;
-
 import edu.dimacs.mms.boxer.*;
 import edu.dimacs.mms.boxer.util.*;
 

@@ -133,9 +133,18 @@ public class Suite {
     }
 
     /** A flag of this type (which may occur in Suite definition)
-     * controls whether "simple labels" (without explicitly given
-     * discrimination names) are acepted in XML datasets, and if so,
-     * how they are interpreted
+      controls whether "simple labels" (without explicitly given
+      discrimination names) are accepted in dataset files
+      (XML/BBR/BXR etc), and if so, how they are interpreted. 
+
+      <p>
+      When dealing with BBR/BXR files, it is appropriate to use
+      SupportsSimpleLabels.Polytomous, since the file is always meant
+      to desribe a simple a single discriminations. With XML files,
+      the usual semantics is for the discrimination name to be
+      explicitly provided in each data point (thus, one would use
+      SupportsSimpleLabels.No), but both other semantics are also
+      possible, depending on the use case.
      */
     public static enum SupportsSimpleLabels {
 	No,
@@ -1013,6 +1022,18 @@ Exception in thread "main" java.lang.IllegalArgumentException: Array of classes 
 	this( _name, SysDefaults.supportsSimpleLabels, SysDefaults.createNDMode);
     }
 
+    /** Creates a suite with (mostly) default properties, but with a
+	few options, as explained below.
+	
+	@param _supportsSimpleLabels Specifies how BOXER will handle
+	data set files that only have class names, without
+	discrimination names
+
+	@param _createNDMode Specifies how BOXER handles new discrimination
+	names encountered in data set files.
+
+	@param _name The name to give to the new suite 
+     */
     public Suite(String _name,
 		 SupportsSimpleLabels  _supportsSimpleLabels,
 		 CreateNewDiscriminationMode _createNDMode ) 

@@ -105,15 +105,25 @@ public class SimpleTrain_strings {
 	   example. */ 
 	my_learner.absorbExample(parsed_data);
 
-        /* DDL : i've written vladimir about creating a string first */ 
+        /* Serialize the suite into an XML document */
+
+	org.w3c.dom.Document doc = my_suite.serializeLearnerComplex();
+
+	/* Print the XML document into a string */
+	StringWriter sw = new StringWriter();
+	XMLUtil.writeXML(doc, new PrintWriter(sw));
+	String s = sw.toString();
+
 	if (outfile != null) {
-	    /** Write the LearnerComplex in XML form to the specified file. */
-	    my_suite.serializeLearnerComplex(outfile); 
-	} 
-	else {
-	    /** Convert the LearnerComplex to an XML document, and write it to standard output */ 
-	    org.w3c.dom.Document doc = my_suite.serializeLearnerComplex();
-	    XMLUtil.writeXML(doc, System.out);
+	    /** Write the string to the specified file. */
+	    FileWriter fw = new FileWriter(outfile);
+	    PrintWriter pw = new PrintWriter(fw);
+	    pw.println(s);
+	    pw.flush();
+	    fw.close();
+	} else {
+	    /** Write the string  to standard output */ 
+	    System.out.println(s);
 	}
     }
     /* *********************  END OF main() *******************************/

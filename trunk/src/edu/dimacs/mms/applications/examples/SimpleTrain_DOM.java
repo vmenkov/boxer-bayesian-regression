@@ -64,9 +64,6 @@ public class SimpleTrain_DOM {
     }
 
 
-    /* We will be storing the assembed data set in this object. */ 
-    private static Document xmldoc;
-
 
     /* *********************  START OF main() *******************************/
 
@@ -88,24 +85,15 @@ public class SimpleTrain_DOM {
 	Suite my_suite = new Suite("demo_suite");	    
 
 
-	/* The first line creates, and sets xmldoc, to an object of
-	   the implementation class for the Document interface, using
-	   the implementation from org.apache.xerces.dom.DocumentImpl.
-	   This makes the application dependent on Xerces, but then
-	   much of the XML processing within BOXER itself is dependent
-	   on Xerces.  (If there is sufficient interest, we may create
-	   sample applications which show how to handle data received
-	   as an Element created using a non-Xerces implementation.
-
-           The second line then calls prepareDataSetElement (defined
-           below) which uses appropriate method calls on xmldoc to
+	/* We call prepareDataSetElement (defined
+           below) which uses appropriate method calls  to
            create a labeled data set in the form of an object that
            implements the Element interface defined by the org.w3c.dom
            package.  This mimics a situation where an application
            builds (or receives from elsewhere) data sets in BOXER XML
            format (or in some other XML format transformable to BOXER
            format through some XML munging). */ 
-	xmldoc = new DocumentImpl();
+
 	Element e =  prepareDataSetElement();
 
 
@@ -169,18 +157,30 @@ public class SimpleTrain_DOM {
     /* *********************  END OF main() *******************************/
 
 
-    /* A low level XML method used by prepareDataSetElement. */ 
+    /** An auxiliary XML-assembly method used by prepareDataSetElement. */ 
     private static void  addFeatureToElement(Element e, String pair[]) {
-	 Element efeature = xmldoc.createElement( ParseXML.NODE.FEATURE);
 
-         efeature.setAttribute(ParseXML.ATTR.FEATURE_ATTR[0], pair[0]);
-         efeature.setAttribute(ParseXML.ATTR.FEATURE_ATTR[1], pair[1]);
-         e.appendChild(efeature);
+	Document xmldoc=e.getOwnerDocument();
+	Element efeature = xmldoc.createElement( ParseXML.NODE.FEATURE);
+
+	efeature.setAttribute(ParseXML.ATTR.FEATURE_ATTR[0], pair[0]);
+	efeature.setAttribute(ParseXML.ATTR.FEATURE_ATTR[1], pair[1]);
+	e.appendChild(efeature);
     }
 
    
-    /* A low level XML method used by prepareDataSetElement. */ 
-    private static Element makePoint( String name, String[][] pairs, String label) {
+    /** An auxiliary low level method used by
+	prepareDataSetElement. It creates an XML element describing a
+	single data point. 
+
+	@param xmldoc An XML Document in whose "context" the element will
+	be crteated.
+
+	@param name New data point's name
+	@param pairs (Feature_name, Feature_value) pairs for the new data point
+	@param label Class label for the new data point
+    */ 
+    private static Element makePoint(Document xmldoc, String name, String[][] pairs, String label) {
 	final String disName="Tiny1";
 	
 	Element e = xmldoc.createElement( ParseXML.NODE.DATAPOINT);
@@ -207,26 +207,37 @@ public class SimpleTrain_DOM {
 	 in tiny1.train.boxer.xml */
     private static Element prepareDataSetElement()  {
 
+	/* The first line creates an object, named xmldoc, of
+	   the implementation class for the Document interface, using
+	   the implementation from org.apache.xerces.dom.DocumentImpl.
+	   This makes the application dependent on Xerces, but then
+	   much of the XML processing within BOXER itself is dependent
+	   on Xerces.  (If there is sufficient interest, we may create
+	   sample applications which show how to handle data received
+	   as an Element created using a non-Xerces implementation.
+	*/
+	Document xmldoc = new DocumentImpl();
+
 	Vector<Element> v=new	Vector<Element>();
-	v.add(makePoint("TinyDoc1",
+	v.add(makePoint(xmldoc, "TinyDoc1",
 			new String [][] {},
 			"WIDGET"));
-	v.add(makePoint("TinyDoc2",
+	v.add(makePoint(xmldoc, "TinyDoc2",
 			new String [][] {{"Size","2.1"}},
 			"GADGET"));
-	v.add(makePoint("TinyDoc3",
+	v.add(makePoint(xmldoc, "TinyDoc3",
 			new String [][] {{"Size","3.1"},{"Heat","3.2"}},
 			"WIDGET"));
-	v.add(makePoint("TinyDoc4",
+	v.add(makePoint(xmldoc, "TinyDoc4",
 			new String [][] {{"Size","4.1"}},
 			"GADGET"));
-	v.add(makePoint("TinyDoc5",
+	v.add(makePoint(xmldoc, "TinyDoc5",
 			new String [][] {{"Size","5.1"},{"Heat","5.2"},{"Mass","5.3"}},
 			"WIDGET"));
-	v.add(makePoint("TinyDoc6",
+	v.add(makePoint(xmldoc, "TinyDoc6",
 			new String [][] {{"Size","6.1"}},
 			"GADGET"));
-	v.add(makePoint("TinyDoc7",
+	v.add(makePoint(xmldoc, "TinyDoc7",
 			new String [][] {{"Heat","7.2"},{"Mass","7.3"}},
 			"WIDGET"));
 
