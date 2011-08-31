@@ -104,7 +104,7 @@ public class SimpleTrain_BXRfiles {
 
 
         /* infile should be a BXR format labeled data file.  We use
-            BOXER method BXRReader.readDataFileBMR to read that file
+            BOXER method BXRReader.readDataFileBXR to read that file
             and convert the training examples in the file to a vector
             of DataPoint objects. (Note that this method is able to
             read data files in BBR, BMR, and BXR format.)  The final
@@ -116,10 +116,9 @@ public class SimpleTrain_BXRfiles {
 	    class labels become part of the Discrimination, and how we
 	    know which Discrimination provides the context to interpret
 	    the labels.) */
-        /* DDL to VM: As I mentioned in my email, the method should be 
-	    renamed to readDataFileBXR. */ 
+
 	Vector<DataPoint> parsed_data = 
-	    BXRReader.readDataFileBMR(infile, my_suite, true);
+	    BXRReader.readDataFileBXR(infile, my_suite, true);
 
 
 	/* Add a simple TruncatedGradient learner with default
@@ -136,8 +135,6 @@ public class SimpleTrain_BXRfiles {
 	    the bbr file gets associated with a particular
 	    discrimination.) */ 
 	my_learner.absorbExample(parsed_data);
-
-
 
         /* We write the trained model in BBR format.  This is done in 
 	    in four steps. */ 

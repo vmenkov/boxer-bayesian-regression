@@ -152,7 +152,7 @@ public class BXRReader {
 	@param fname The name of the file to read
 	@param isDefinitional Set this flag to true if you're reading the training set. This will affect the way "new categories" encountered in the file are processed
     */
-    public static Vector <DataPoint> readDataFileBMR(String fname,    
+    public static Vector <DataPoint> readDataFileBXR(String fname,    
 						     Suite suite, 
 						     boolean isDefinitional)
 	throws IOException, BoxerXMLException {

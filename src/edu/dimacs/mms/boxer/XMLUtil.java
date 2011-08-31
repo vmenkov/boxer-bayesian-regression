@@ -43,14 +43,41 @@ public class XMLUtil {
     }
 
     /** An auxiliary method for Learner.saveAsXML() etc;
-     * saves a prepared XML doc into a stream */
+      saves a prepared XML doc into a stream. This is a wrapper 
+      around {@link #writeXML(Element e, OutputStream fos)}
+    */
     public static void writeXML(Document xmldoc, OutputStream fos) {
 	writeXML( xmldoc.getDocumentElement(), fos);
     }
 
-    public static void writeXML(Element e, OutputStream fos) {
+    public static void writeXML(Document xmldoc, Writer w) {
+	writeXML( xmldoc.getDocumentElement(), w);
+    }
+
+    /** Writes an XML element into a Writer, without closing it.
+
+	This is essentially a wrapper around
+	org.apache.xml.serialize.XMLSerializer( OutputStream,
+	OutputFormat).
+     */
+    public static void writeXML(Element e, Writer w) {
 	try {
-	    //	    FileOutputStream fos = new FileOutputStream(fname);
+	    OutputFormat of = new OutputFormat("XML","utf-8",true);
+	    of.setIndent(1);
+	    of.setIndenting(true);
+	    //of.setDoctype(null,"bxr-eg.dtd");
+	    XMLSerializer serializer = new XMLSerializer(w,of);
+	    // As a DOM Serializer
+	    serializer.asDOMSerializer();
+	    serializer.serialize( e );
+	    w.flush();
+	} catch (IOException ex) {
+	    System.err.println("Exception when trying to write XML document out:\n" + ex);
+	}
+    }
+
+   public static void writeXML(Element e, OutputStream fos) {
+	try {
 	    OutputFormat of = new OutputFormat("XML","utf-8",true);
 	    of.setIndent(1);
 	    of.setIndenting(true);
@@ -60,7 +87,6 @@ public class XMLUtil {
 	    serializer.asDOMSerializer();
 	    serializer.serialize( e );
 	    fos.flush();
-	    //fos.close();
 	} catch (IOException ex) {
 	    System.err.println("Exception when trying to write XML document out:\n" + ex);
 	}
@@ -70,7 +96,7 @@ public class XMLUtil {
      a particular name
      
      @throws  BoxerXMLException if the Node is not an Element node at all,
-     or if the name of the element is * not what's expected
+     or if the name of the element is not what's expected
      */
     static public void assertName(Node /*Element*/ e, String expectedName) 
 	throws BoxerXMLException {

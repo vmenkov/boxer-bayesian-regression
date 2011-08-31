@@ -99,8 +99,19 @@ public class SimpleTrain_BBRfiles {
         /* A Suite in BOXER contains a set of Discriminations and a
 	   set of Learners that can produce predictive models for
 	   those Discriminations.  Here we create a new Suite and give
-	   it the name "demo_suite". */ 
-        /* DDL to self: I wrote Vladimir about why the extra arguments are needed here. */ 
+	   it the name "demo_suite".
+
+	   The Suite constructor has the parameter
+	   _supportsSimpleLabels =Suite.SupportsSimpleLabels.Polytomous.
+	   This means that when BOXER will read a data set file that
+	   contains discrimination names without class names (and that's
+	   exactly what BBR files are like!), it will interpret all 
+	   names as belonging to one large, multi-class ("polytomous")
+	   discrimination.
+
+	   The third parameter, _createNDMode, we keep at its default
+	   value (which is fine for this application).
+	*/
 	Suite my_suite = new Suite("demo_suite",	    
 				Suite.SupportsSimpleLabels.Polytomous,
 				Suite.SysDefaults.createNDMode);
@@ -118,7 +129,7 @@ public class SimpleTrain_BBRfiles {
 
 
         /* infile should be a BBR format labeled data file.  We use
-            BOXER method BXRReader.readDataFileBMR to read that file
+            BOXER method BXRReader.readDataFileBXR to read that file
             and convert the training examples in the file to a vector
             of DataPoint objects. (Note that this method is able to
             read data files in BBR, BMR, and BXR format.)  The final
@@ -132,9 +143,7 @@ public class SimpleTrain_BBRfiles {
 	    know which Discrimination provides the context to interpret
 	    the labels.) */
 
-        /* DDL to VM: As I mentioned in my email, the method should be 
-	    renamed to readDataFileBXR. */ 
-	Vector<DataPoint> parsed_data = BXRReader.readDataFileBMR(infile, my_suite, true); 
+	Vector<DataPoint> parsed_data = BXRReader.readDataFileBXR(infile, my_suite, true); 
 
 	    
 	/* Add a simple TruncatedGradient learner with default
@@ -187,7 +196,11 @@ public class SimpleTrain_BBRfiles {
 	    saveAsBBRModel may seem redundant since the classes were
 	    already named "-1" and "+1", but that's how saveAsBBRModel
 	    works. */
-	block.saveAsBBRModel(w, bbrOutfile, "+1");
+
+	
+	/** Just the name to write into the file */
+	final String outModelName =bbrOutfile;
+	block.saveAsBBRModel(w, outModelName, "+1");
 
         /* 4. Having written the file, we close down the writer. */ 
 	w.close();

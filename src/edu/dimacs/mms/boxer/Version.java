@@ -40,6 +40,7 @@ package edu.dimacs.mms.boxer;
     0.9.002 - 2011-07-13  Gaussian priors etc., all tested
     0.9.003 - 2011-07-19  Laplacian prior integrated into ASD
     0.9.004 - 2011-08-14  added applications.examples
+    0.9.005 - 2011-08-31  some restructuring in applications.examples (by D.Lewis); comments
 </pre>
  */
 public class Version {
