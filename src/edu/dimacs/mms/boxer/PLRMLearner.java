@@ -291,7 +291,18 @@ betaClassSparse GADGET @constant:-1.80e-02 Size:1.26e-01 Heat:-2.07e-01 ....
 
 	/** Saves the model as BBR (Bayesian Binary Regression) model.
 	    Of course, this only makes sense if this discrimination is
-	    binary, i.e. only has 2 classes.
+	    binary, i.e. only has exactly 2 classes.
+	    <p>
+
+	    In the BBR model, only one column beta is written; probabilities
+	    are computed as
+	    <pre>
+	    P("+1"|x) = exp( beta*x) / ( 1 +  exp( beta*x))
+	    P("-1"|x) =  1  / ( 1 +  exp( beta*x))
+	    </pre>
+	    Thus, the beta we need to write out here is simply the difference
+	    between the PLRM matrix column for the class that's identified as
+	    "+1" and the other the column for the other class.
 
 	    @param positiveClassName It is expected that this name
 	    will be found among the names of the discirmination's two
@@ -320,9 +331,8 @@ betaClassSparse GADGET @constant:-1.80e-02 Size:1.26e-01 Heat:-2.07e-01 ....
 	    double[] beta = new double[q.length];
 	    for(int i=0; i<q.length; i++) {
 		double[] row =  setArrayMinLength(q[i], 2);
-		beta[i] = (row[pos] - row[1-pos])/2;
+		beta[i] = (row[pos] - row[1-pos]);
 	    }	    
-
 
     
 	    out.flush();
