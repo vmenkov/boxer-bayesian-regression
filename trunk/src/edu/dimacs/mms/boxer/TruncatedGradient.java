@@ -137,10 +137,11 @@ public class TruncatedGradient extends PLRMLearner {
 	    trunc.applyTruncationToAllRows(); 
 	}
 
-	/** Like {@link #absorbExample(Vector<DataPoint>,int,int)}, but emulating the SD (Steepest Descent)
-	    method. That is, all gradients are computed first, and then
-	    applied at once. This method was added for experiments
-	    that compare SGD with SD.
+	/** Like {@link #absorbExample(Vector,int,int)},
+	    but emulating the SD (Steepest Descent) method. That is,
+	    all gradients are computed first, and then applied at
+	    once. This method was added for experiments that compare
+	    SGD with SD.
 
 	    <p>If the learning rate is <em>very</em> small, the result
 	    of calling absorbExamplesSD on a vector of data points

@@ -79,15 +79,26 @@ import edu.dimacs.mms.boxer.util.CMD;
 
 <h3>More examples</h3>
 
-Running Adaptive Steepest Descent.
+<p>
+Running Adaptive Steepest Descent (ASD)
 <pre>
-java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=0.00001  -Dr=428 -DM=428 $rep read-suite:$d/train-suite
-.xml read-learner:sgd-learner-param-eta=0.01.xml train:$d/train.xml:$d/train-scores.out  test:$d/test.xml:$d/test-scores.out >& $d/gazet
-teer.log
+java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=0.00001 \
+edu.dimacs.mms.applications.learning.Repeater read-suite:train-suite.xml \
+read-learner:sgd-learner-param-eta=0.01.xml train:train.xml  test:test.xml
+</pre>
+   
+<p>  
+Running ASD with a Laplacean penalty
+<pre>
+java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=0.00001 \
+edu.dimacs.mms.applications.learning.Repeater read-suite:train-suite.xml \
+read-priors:../priors/laplace-overall-priors.10000.xml  \
+read-learner:sgd-learner-param-eta=0.01.xml train:train.xml  test:test.xml
+</pre>
 
-     
-     
-
+<p> The only priors supported by ASD are Gaussian and Laplacean priors
+with a zero mode and the same variance for all matrix elements. As an example, see
+<a href="../../../../../../laplace-overall-priors.10000.xml">laplace-overall-priors.10000.xml</a>.
 
  */
 public class Repeater {
