@@ -171,7 +171,7 @@ public class ParseXML {
 	from the extension of the file name, ".xml" being XML and
 	everything else being BXR/BMR. This is basically a wrapper around
 	{@link #readDataFileXML( String, Suite, boolean)} and 
-	{@link BXRReader#readDataFileBMR( String, Suite, boolean)} 
+	{@link  BXRReader#readDataFileBXR( String, Suite, boolean)} 
      */
     public static Vector <DataPoint> readDataFileMultiformat(String fname,    
 						     Suite suite, 

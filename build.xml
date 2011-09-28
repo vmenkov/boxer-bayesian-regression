@@ -137,6 +137,11 @@ code. -->
   <copy todir="${boxer.doc}/html">
     <fileset dir="sample-data/" includes="sample.xml,sample-suite-out.xml,eg-learner-param-1.xml"/>
   </copy>
+  <copy todir="${boxer.doc}/html">
+    <fileset dir="sample-data/priors" includes="laplace-overall-priors.10000.xml"/>
+  </copy>
+
+
 
   <javadoc packagenames="edu.dimacs.mms.*"
 	   sourcepath="${src}"
@@ -144,11 +149,13 @@ code. -->
 	   author="true"
            version="true"
            use="true"
-	   link="http://java.sun.com/j2se/1.5.0/docs/api/"
 	   header="&lt;em&gt;BOXER ${boxer.ver}&lt;/em&gt;"   
 	   windowtitle="BOXER ${boxer.ver} API" 
 	   overview="doc/html/api/overview.html">
+    <!-- link="http://java.sun.com/j2se/1.5.0/docs/api/" -->   
     <classpath refid="classpath"/>
+    <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
+    <link href="http://download.oracle.com/javaee/5/api/package-list"/>
   </javadoc>
 
   <echo message="Documentation has been assembled in ${boxer.doc}"/>
