@@ -2,7 +2,7 @@ package edu.dimacs.mms.boxer.util;
 
 import java.util.*;
 
-/** An auxiliary class used in command line parsing in borj.Driver and a few other BOXER applications. */
+/** An auxiliary class used in command line parsing by borj.Driver, learning.Repeater, and a few other BOXER applications. */
 public class CMD {
     /** All command-line commands acceptable by the Driver */
     public final static String 

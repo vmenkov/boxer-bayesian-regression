@@ -1,15 +1,15 @@
 /**
 Auxiliary classes for applications using BOXER.
 
-Classes in this package are not used by BOXER; but a number of our
-applications using BOXER API (BORJ and others) are using these classes
+Classes in this package are not used by BOXER itself. A number of our
+applications using BOXER API (BORJ, Repeater, and others) are using these classes
 for various auxiliary purposes.
 
 */
 package edu.dimacs.mms.boxer.util;
 
 /*
-Copyright 2009, Rutgers University, New Brunswick, NJ.
+Copyright 2009-2011, Rutgers University, New Brunswick, NJ.
 
 All Rights Reserved
 

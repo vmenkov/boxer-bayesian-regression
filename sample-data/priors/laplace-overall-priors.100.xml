@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This priors definition file specifies only one prior: Laplacean  prior with var=1, to be used for all PLRM matrix elements.  -->
+<priors name="UniformGaussian" version="0.9.001">
+    <cross-discrimination>
+      <!--   The "cross-discrimination" section contains priors that apply
+	     in all discriminations -->
+        <overall>
+	  <!-- The one Level-1 prior is  located here. 
+	    -->
+            <prior absolute="true" mode="0.0" skew="0" type="l" var="100"/>
+        </overall>
+    </cross-discrimination>
+</priors>

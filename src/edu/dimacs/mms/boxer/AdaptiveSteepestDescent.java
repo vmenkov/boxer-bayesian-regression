@@ -54,10 +54,10 @@ class AdaptiveSteepestDescent  {
 			    Vector<DataPoint> xvec, int i1, int i2, 
 			    double eps, double gradEps, 
 			    boolean doAdaptive, boolean doBonus)    {
-	prior = verifyPriors( _block.trunc);
 	block = _block;
 	w = block.w;
 	dis = block.dis;
+	prior = verifyPriors( _block.trunc);
     
 	final int n=i2-i1;
 
@@ -67,7 +67,7 @@ class AdaptiveSteepestDescent  {
 
 	System.out.println("[SD] Adaptive SD with convergence criteria: |delta L|<=eps=" + eps+", |grad L|<=geps=" + gradEps);
 	System.out.println("[SD] Adaptive="+doAdaptive+", bonus=" + doBonus);
-	System.out.println("[SD] Maximizing f(B)=L-P, with L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n);
+	System.out.println("[SD] Maximizing f(B)=L-P, where:\n[SD] L=(1/n)*sum_{j=1..n} log(C_{correct(x_j)}|x_j), n="+n);
 
 	// The inverse of the Gaussian prior's variance (if applicable)
 	final double ivar = (prior !=null && prior instanceof GaussianPrior) ? 1/prior.avar : 0;

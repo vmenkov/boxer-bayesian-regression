@@ -15,7 +15,7 @@ import edu.dimacs.mms.boxer.util.CMD;
 
      <p>
      Usage:<br>
-     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-priors:priors.xml] [read-learner:learner-param.xml] train:train-set.xml[:train-scores.dat] test:test-set.xml[:test-scores.dat]
+     java  Repeater [-Dsd=true|false] [-Dr=1000] [-DM=10] [-Ddic=dic.xml] [read-suite:suite.xml] [read-priors:priors.xml] [read-learner:learner-param.xml] train:train-set.xml[:train-scores-out.dat] test:test-set.xml[:test-scores-out.dat]
 
      <p>
      Sample usage:
@@ -23,7 +23,7 @@ import edu.dimacs.mms.boxer.util.CMD;
      <pre>
      set driver=edu.dimacs.mms.applications.learning.Repeater
      java $opt -Dout=${out} -DM=10 -Dr=5000 -Drandom=$nr -Dsd=false -Dverbosity=0 $driver \
-       read-suite: SimpleTestSuite.xml    read-learner: $learner  \
+       read-suite: SimpleTestSuite.xml  [read-priors:priors.xml]  read-learner: $learner  \
        train: SimpleTestData-part-1.xml  test: SimpleTestData-part-2.xml 
      </pre>
 
@@ -34,26 +34,59 @@ import edu.dimacs.mms.boxer.util.CMD;
      <li>r: The length of the training sequence that will be presented
 	to the learner. This value may be (and typically will be) greater
 	than the size of the training set, as examples may be
-	presented repeatedly.
-
+	presented repeatedly. For SD, this must be a multiple of the training set's 
+	size (or it will be upped to the next multiple). For ASD, it's simply ignored,
+	as the process is run to convergence based on eps.
 
      <li>random: Number of random sequences (1 or more) with which to
      run experiments. If 0 is given instead, it means that there will
      be only one sequence, and it will be <strong>non-random</strong>,
      cyclic one.
 
-     <li>M: frequency of checkpoints. (I.e., how often to pause
-     training and test the classifier against the training and test set)
+     <li>M: M Distance between intermediate checkpoints during
+     training, After processing each M examples, the classifier's
+     quality is measured and reported.  For SD, this must be a
+     multtiple of the training set's size (or it will be upped to the
+     next multiple). If the parameter is omitted, or 0 is entered,
+     <tt>M</tt> will be set to the same value as <tt>r</tt> (i.e., no
+     intermediate checkpoints). For ASD, <tt>M</tt> is simply ignored,
+     because, instead of making a pre-set number of iterations, we run
+     the process to convergence based on <tt>eps</tt>, and
+     there is no intermediate checkpointing.
 
-     <li>sd: if true, we emulate the Steepest Descent (SD), a batch method. The default is false.
+     <li>sd: if true, we emulate the Steepest Descent (SD), a batch
+     method. The default is false.
 
-     <li>adaptive: if true (and sd is also true), run SD with adaptive learning rate (ASD) to convergence
+     <li>adaptive: if true, we will run SD with adaptive learning rate
+     (ASD) to convergence. This parameter may only be set to true if
+     <tt>sd</tt> is set to true as well. The default is false.
 
-     <li>eps=1e-8: convergence criterion for ASD (|delta L|)
-
+     <li>eps=1e-8: convergence criterion for ASD (|delta L|). Not
+     applicable to other methods. Convergence may be quite slow at
+     1e-8, and a higher value (1e-4 ... 1e-6) may often be quite
+     adequate.
+ 
      <li>geps=0: alternative convergence criterion for ASD (|grad L|)
 
+     <li>dic=feature_dictionary_file_name.xml: You can use this if
+     it's desired to use a pre-existing feature dictionary file, This
+     option does not affect computations, but ensures that the numeric
+     feature IDs are associated with symbolic feature names in a
+     specified way. This may be useful for interoperability of the Repeater
+     with other applications.
+
      </ul>
+
+<h3>More examples</h3>
+
+Running Adaptive Steepest Descent.
+<pre>
+java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=0.00001  -Dr=428 -DM=428 $rep read-suite:$d/train-suite
+.xml read-learner:sgd-learner-param-eta=0.01.xml train:$d/train.xml:$d/train-scores.out  test:$d/test.xml:$d/test-scores.out >& $d/gazet
+teer.log
+
+     
+     
 
 
  */
@@ -126,16 +159,15 @@ public class Repeater {
 	eps = ht.getOptionDouble("eps", 1e-8);
 	geps = ht.getOptionDouble("geps", 0);
 
-	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true");
+	if (adaptiveSD && !emulateSD) usage("-Dadaptive=true may only be used with -Dsd=true. This is what's used for ASD.");
 
-	int M =ht.getOption("M", 1);	
-	int r =ht.getOption("r", 1000);
+	int M =ht.getOption("M", 0);	
+	int r =ht.getOption("r", 0);
 	int nRandom= ht.getOption("random", 0);
 	boolean cyclic = (nRandom <= 0);  // cyclic (non-random) mode
 	if (cyclic) nRandom = 1;
 	
 	long start= (long)ht.getOption("start", 0);
-
 	
 	out =ht.getOption("out", ".");	
 	if (out.equals("")) out=".";
@@ -144,7 +176,8 @@ public class Repeater {
 	System.out.println("BOXER Repeater: " + 
 			   (cyclic? "Cyclic mode" :
 			    "Random mode with "+nRandom+"repeats")+
-			   ", M="+M +", sd="+emulateSD+", adaptiveSD="+adaptiveSD+
+			   (adaptiveSD? "" : ", r="+r+", M="+M ) +
+			   ", sd="+emulateSD+", adaptiveSD="+adaptiveSD+
 			   (adaptiveSD? " with eps=" + eps + ", geps=" +geps: "") +
 			   ", out="+out);
 	System.out.println("[VERSION] " + Version.version);
@@ -259,7 +292,16 @@ public class Repeater {
 	@param r The length of the training examples sequence to be
 	presented to the learner. This value may be (and typically is)
 	greater than the size of the training set, as examples may be
-	presented repeatedly.
+	presented repeatedly.  For SD, this must be a multiple of the training set's 
+	size (or it will be upped to the next multiple). For ASD, it's simply ignored,
+	as the process is run to convergence based on eps.
+
+	@param M Distance between checkpoints, After processing each M
+	examples, the classifier's quality is measured and reported.
+	For SD, this must be a multtiple of the training set's size
+	(or it will be upped to the next multiple). For ASD, it's
+	simply ignored, as the process is run to convergence based on
+	eps, and there is no intermediate checkpointing.
 
 	@param seed The seed for random number generator, determining
 	the order in which training examples are presented to the
@@ -286,10 +328,6 @@ public class Repeater {
 				       int M, int r, long seed )
 	throws java.io.IOException,  org.xml.sax.SAXException, BoxerXMLException {
 
-	if (emulateSD && !adaptiveSD && M%train.size() != 0) {
-		throw new IllegalArgumentException("In the 'emulate SD' mode the checkpoint distance M must be a multiple of the data set size ("+train.size()+")");
-	}
-
 	// Any "read-learner" commmands?
 	if (learnerXML != null) {
 	    suite.addLearner(learnerXML);
@@ -299,7 +337,6 @@ public class Repeater {
 	    System.out.println("Default model name: " + model);
 	    if (model.equals("eg")) {
 		Learner algo = new ExponentiatedGradient(suite);
-		//usage("eg Not supported now");
 	    } else 	if (model.equals("tg")) {
 		Learner algo = new TruncatedGradient(suite);
 	    } else 	if (model.equals("trivial")) {
@@ -308,7 +345,6 @@ public class Repeater {
 		usage("Unknown model `"+model+"'");
 	    }
 	}
-
 
 	int nLearners =  suite.getLearnerCount();
 	if (nLearners != 1) throw new AssertionError("nLearners="+nLearners+" There must be exactly one learner!");
@@ -330,16 +366,31 @@ public class Repeater {
 	    if (verbose) System.out.println(train.elementAt(i));
 	}
 
-	int[] trainSizes =  new int[ r / M ];
+	if (emulateSD) {
+	    if (adaptiveSD) {
+		// repetition here is controlled by eps, and not by r, which is 
+		// not applicable. We notionally set M=r=train.size(), to ensure just 
+		// one call. No intermediate checkpointing is supported either.
+		M = r = train.size();
+	    } else {
+		// M and r must be a multiple of train.size(). Raise them accordingly, if needed.
+		r =train.size() * ( (r-1)/train.size() + 1);
+		M =train.size() * ( (M-1)/train.size() + 1);
+	    }
+	} else {
+	    if (M==0 || M>r) {
+		M=r; // no intermediate checkpoints
+	    } 
+	}
+
+	// Checkpoints when classifier's quality is measured. 
+	int[] trainSizes =  new int[ r / M];
+	for(int k=0; k< r/M; k++)  trainSizes[k] = (k+1)*M;
 
 	Random gen = (seed<0) ? null : new Random(seed); 
-
 	if (emulateSD && gen != null) {
 	    throw new IllegalArgumentException("In the 'emulate SD' mode we CANNOT randomize!");
 	}
-
-
-	for(int k=0; k< trainSizes.length; k++)  trainSizes[k] = (k+1)*M;
 
 	// train
 	if (Suite.verbosity>0) memory("Read train set; starting to train");
@@ -472,7 +523,6 @@ public class Repeater {
 
 	    }
 
-
 	    if (sw1 != null) sw1.close();
 	    if (sw2 != null) sw2.close();
 
@@ -570,13 +620,13 @@ public class Repeater {
 
     /** Computes log of each array element */
    private static double [][] logProb(double[][] prob) {
-       final double M = -100;
+       final double MIN = -100;
        double [][] probLog = new double[prob.length][];
        for(int j=0; j<prob.length;j++) {
 	    double [] v = prob[j];
 	    probLog[j] = new double[v.length];
 	    for( int k=0; k< v.length; k++) {
-		probLog[j][k] = (v[k]==0) ? M : Math.log(v[k]);
+		probLog[j][k] = (v[k]==0) ? MIN : Math.log(v[k]);
 	    }
 	}
 	return probLog;

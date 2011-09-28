@@ -134,6 +134,8 @@ public class Priors {
 	thing exists; null otherwise.
      */
     Prior getTheOnlyPrior(Discrimination dis) {
+	if (discPriors==null) throw new AssertionError("No discPriors");
+	if (dis==null) throw new IllegalArgumentException("dis==null");
 	DiscPriorSet dps =  discPriors.get( dis.getName());
 	return (dps!=null) ?
 	    dps.getTheOnlyPrior() : crossDisc.getTheOnlyPrior();
