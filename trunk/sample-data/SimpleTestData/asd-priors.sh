@@ -19,10 +19,14 @@ if (!(-d $d)) then
 endif
 
 set eps=1e-5
+#set var=1.0
+set var=10000
 
 #-- Classifier run
 echo "Using the following JVM options: ${opt}"
-/usr/bin/time java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=${eps}  -Dr=264 -DM=264 $rep read-suite:SimpleTestSuite.xml read-learner:sgd-learner-param-eta=0.01.xml \
+/usr/bin/time java $opt -Dverbosity=1 -Dsd=true -Dadaptive=true -Drandom=0 -Deps=${eps}   $rep read-suite:SimpleTestSuite.xml \
+read-priors:../priors/laplace-overall-priors.${var}.xml \
+read-learner:../learners/tg0-learner-param-eta=0.01.xml \
 train:SimpleTestData-part-1.xml:$d/train-scores.out  \
-test:SimpleTestData-part-2.xml:$d/test-scores.out   >& $d/asd-eps=${eps}.log
+test:SimpleTestData-part-2.xml:$d/test-scores.out   >& $d/asd-eps=${eps}-var=${var}.log
 

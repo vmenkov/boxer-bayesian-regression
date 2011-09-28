@@ -41,11 +41,12 @@ package edu.dimacs.mms.boxer;
     0.9.003 - 2011-07-19  Laplacian prior integrated into ASD
     0.9.004 - 2011-08-14  added applications.examples
     0.9.005 - 2011-08-31  some restructuring in applications.examples (by D.Lewis); comments
+    0.9.006 - 2011-09-27  simplified semantics of r and M in applications.learning.Repeater
 </pre>
  */
 public class Version {
     /** The version number of the BOXER library and BOXER applications */
-    public final static String version = "0.9.004";
+    public final static String version = "0.9.006";
 
     /** Compares two version number (described as strings). 
 	@return a negative number if the first argument is smaller, a positive if the second is smaller; 0 if they are the same.

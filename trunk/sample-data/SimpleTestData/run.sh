@@ -41,7 +41,8 @@ endif
 # source ./set.sh
 set driver=edu.dimacs.mms.applications.learning.Driver
 set main=${home}/boxer
-set cp=${main}/classes:${main}/lib/xercesImpl.jar
+set cp=${main}/classes:${main}/lib/xercesImpl.jar:${main}/lib/xml-apis.jar
+
 set opt="-Xmx256m -cp ${cp}"
 
 set d=${main}/boxer-bayesian-regression/sample-data/SimpleTestData
@@ -52,11 +53,11 @@ cp $learner $out
 #-- -Dmodel=eg
 
 
-#time java $opt -Dout=${out} -DM=1 -Dverbosity=0 $driver \
-#    read-suite: SimpleTestSuite.xml    read-learner: $learner \
-#   train: SimpleTestData.xml : ${out}/myscores.txt > ${out}/run.log
+time java $opt -Dout=${out} -DM=1 -Dverbosity=0 $driver \
+    read-suite: SimpleTestSuite.xml    read-learner: $learner \
+   train: SimpleTestData.xml : ${out}/myscores.txt > ${out}/run.log
 
-select.pl $out
+../scripts/select.pl $out
 
 set title=`echo $base | perl -pe 's/-/ /g; s/_/\./g'`
 perl -pe "s/Title/$title/" cmd.gnu > ${out}/cmd.gnu
