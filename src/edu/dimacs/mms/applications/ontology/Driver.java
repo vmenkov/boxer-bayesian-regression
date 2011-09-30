@@ -308,7 +308,7 @@ public class Driver {
 	emulateSD = ht.getOption("learn.sd", false);
 	adaptiveSD = ht.getOption("learn.adaptive", false);
 	eps = ht.getOptionDouble("learn.eps", 1e-8);
-	eps = ht.getOptionDouble("learn.geps", 0);
+	geps = ht.getOptionDouble("learn.geps", 0);
 
 	if (useBXR && (emulateSD || adaptiveSD)) usage("SD options, or priors, are not compatible with BXR");
 
