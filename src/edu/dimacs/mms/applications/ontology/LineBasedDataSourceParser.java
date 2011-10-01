@@ -33,6 +33,8 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 
 	Logging.info("LineBasedDataSourceParser.readData("+fname+", "+addColumns+", "+colPrefix+")");
 
+	if (dis==null) throw new AssertionError("initDis() had to be called before readData()");
+
 	try {
 	    LineNumberReader r = new LineNumberReader( new FileReader(fname));
 	    String s;
@@ -52,7 +54,8 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 	    }
 
 	    // interpret column names as class names
-	    String disName = baseName(fname);
+	    //String disName = baseName(fname);
+	    String disName = dis.getName();
 
 	    for(int i=0; i<hv.size(); i++) {
 		if (inputOptions.isExcludableCol(i+1)) continue;
@@ -62,8 +65,9 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 		if (addColumns) {
 		    // Record the new class in the discrimination AND in the suite
 		    // Logging.info("disName="+ disName+"; Parser: for col="+i+", add class named " + colName);	
-		    //suite.addClass( disName, colName);
-		    suite.getClaAlways( disName, colName, true);
+		    suite.addClass( disName, colName);
+		    //Discrimination.Cla c = suite.getClaAlways( disName, colName, true);
+		    //if (c==null) throw new AssertionError("Failed to create class for " + disName + ":" + colName);
 		} else {
 		    
 		    // Verify the existence of each named column
