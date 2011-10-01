@@ -381,7 +381,7 @@ public class Driver {
 		Logging.info("Reusing BXR model file " + in1);
 	    } else {
 		// Reading a complete learner complex (i.e., a
-		// pre-computed model), and then reading the orignal data
+		// pre-computed model), and then reading the original data
 		// source on which that learner has been trained (which
 		// we'll need for normalization)
 		
@@ -520,7 +520,10 @@ public class Driver {
     }
 
     /** Scores examples from p2 with the learner that has been trained in 
-	p1 */
+	p1.
+	@param p1 DS1, with already trained classifier
+	@param in2 The file from where we need to read DS2
+    */
     private static void scoreTestSet( DataSourceParser p1,
 				      String in2,  Aux1 sp) 
  throws IOException, BoxerException , org.xml.sax.SAXException {
@@ -660,7 +663,7 @@ public class Driver {
 	    System.out.println("Matching method: SYM1");
 
 	    final String  prefix1 = "DS1_", prefix2= "DS2_";
-	    
+
 	    // Create a single suite for bothe data sources, and read
 	    // the first data source in
 	    System.out.println("Reading DS1 from file: "+in1);

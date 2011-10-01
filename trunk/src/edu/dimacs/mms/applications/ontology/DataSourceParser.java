@@ -97,6 +97,9 @@ abstract class DataSourceParser {
     }
 
 
+    /**  @param reuseSuiteOn If true, simply verify that the Suite of this DS already
+     *  contains a discrimination matching fname. If false, create such a discrimination.
+     */
     private void initDis(String fname, boolean reuseSuiteOn) throws BoxerXMLException {
 
 	String disName = baseName(fname);
