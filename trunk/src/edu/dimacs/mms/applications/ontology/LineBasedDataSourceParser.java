@@ -62,7 +62,8 @@ abstract class LineBasedDataSourceParser extends DataSourceParser {
 		if (addColumns) {
 		    // Record the new class in the discrimination AND in the suite
 		    // Logging.info("disName="+ disName+"; Parser: for col="+i+", add class named " + colName);	
-		    suite.addClass( disName, colName);
+		    //suite.addClass( disName, colName);
+		    suite.getClaAlways( disName, colName, true);
 		} else {
 		    
 		    // Verify the existence of each named column
