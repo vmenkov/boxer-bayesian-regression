@@ -143,7 +143,8 @@ public class SimpleTrain_DOM {
            For this simple demonstration, however, we just write the
            XML for the LearnerComplex to a file, or to standard
            output, as in our other sample applications.  Note that the
-           methods used a slightly different, since we've already
+           methods used are slightly different than in the other sample
+	   applications, since in this case we've already
            serialized the LearnerComplex as an Element.*/ 
 	if (outfile != null) {
 	    FileOutputStream os = new FileOutputStream(outfile);    

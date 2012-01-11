@@ -91,7 +91,7 @@ public class SimpleTrain_BBRfiles {
         /* See package-info.java for a discussion of the default input
 	   file, tiny1.train.bbrdata. */ 
 	String infile       = (argv.length > 0) ? argv[0] : "tiny1.train.bbrdata";
-	String bbrOutfile   = (argv.length > 1) ? argv[1] : infile + ".model";
+	String bbrOutfile   = (argv.length > 1) ? argv[1] : null; 
 	String boxerOutfile = (argv.length > 2) ? argv[2] : null;
 	if (argv.length > 3) usage("Too many arguments");
 
@@ -110,7 +110,8 @@ public class SimpleTrain_BBRfiles {
 	   discrimination.
 
 	   The third parameter, _createNDMode, we keep at its default
-	   value (which is fine for this application).
+	   value.  Since we won't be attempting to create a new 
+	   discrimination, it isn't relevant. 
 	*/
 	Suite my_suite = new Suite("demo_suite",	    
 				Suite.SupportsSimpleLabels.Polytomous,
@@ -162,32 +163,30 @@ public class SimpleTrain_BBRfiles {
 	my_learner.absorbExample(parsed_data);
 
 
-        /* We write the trained model in BBR format.  This is done in 
-	    in four steps. */ 
 
-        /* 1. Get from my_learner the PLRMLearnerBlock for the single
-	    Discrimination ("Tiny1") that we did training for.  A
-	    LearnerBlock in general stores the state of a Learner with
-	    respect to a single Discrimination.  For the
-	    TruncatedGradient learner we know that the LearnerBlock is
-	    more specifically a PLRMLearnerBlock. */ 
+
+        /* We write the trained model in BBR format. First we get from
+            my_learner the PLRMLearnerBlock for the single
+            Discrimination ("Tiny1") that we did training for.  A
+            LearnerBlock in general stores the state of a Learner with
+            respect to a single Discrimination.  For the
+            TruncatedGradient learner we know that the LearnerBlock is
+            more specifically a PLRMLearnerBlock. */ 
 	PLRMLearner.PLRMLearnerBlock block =
 	    (PLRMLearner.PLRMLearnerBlock) my_learner.findBlockForDis(dis);
 
-        /* 2. A standard Java idiom for preparing to write to a file. */ 
-	PrintWriter w = new PrintWriter(new FileWriter(bbrOutfile));
 
-        /* 3. Part of the state of a PLRMLearnerBlock is the
+        /*  Part of the state of a PLRMLearnerBlock is the
 	    coefficient vector for the last version of the PLRM
 	    produced.  PLRMLearnerBlock's method saveAsBBRModel writes 
-	    that coefficient vector to BBR format file.  Note that
+	    that coefficient vector to a specified output.  Note that
 	    other information stored in a PLRMLearnerBlock has no
 	    equivalent in a BBR format file, and so is not written. 
 
 	    Also note that the BBR model file format only supports
 	    binary logistic regression models where the two classes
 	    are named "1" ("+1" is treated as equivalent to 1) and
-	    "-1". The method saveAsBBRModel can write any binary
+	    "-1". The method saveAsBBRModel() can write any binary
 	    logistic regression model to BBR model file format. It
 	    simply requires that it is told which of the two classes
 	    become the class "+1" in the BBR model file. The other
@@ -197,14 +196,17 @@ public class SimpleTrain_BBRfiles {
 	    already named "-1" and "+1", but that's how saveAsBBRModel
 	    works. */
 
-	
-	/** Just the name to write into the file */
-	final String outModelName =bbrOutfile;
-	block.saveAsBBRModel(w, outModelName, "+1");
-
-        /* 4. Having written the file, we close down the writer. */ 
-	w.close();
-
+	 /* If an output file was specified, we write to that file.
+	   Otherwise we write to standard output. */ 
+	final String outModelName = "Tiny1"; 
+	if (bbrOutfile != null) {
+	    PrintWriter w = new PrintWriter(new FileWriter(bbrOutfile));
+	    block.saveAsBBRModel(w, outModelName, "+1");
+	    w.close();
+	} 
+	else {
+            block.saveAsBBRModel(new PrintWriter(System.out), outModelName, "+1");
+	}
 
 	/* We also write the Suite and the state of the associated Learner
 	    in BOXER's XML format. If an output file is specified, we
