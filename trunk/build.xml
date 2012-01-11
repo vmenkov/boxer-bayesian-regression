@@ -151,7 +151,8 @@ code. -->
            use="true"
 	   header="&lt;em&gt;BOXER ${boxer.ver}&lt;/em&gt;"   
 	   windowtitle="BOXER ${boxer.ver} API" 
-	   overview="doc/html/api/overview.html">
+	   overview="doc/html/api/overview.html"
+           access="private">
     <!-- link="http://java.sun.com/j2se/1.5.0/docs/api/" -->   
     <classpath refid="classpath"/>
     <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
