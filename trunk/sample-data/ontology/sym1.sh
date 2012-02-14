@@ -33,11 +33,11 @@ set sym=sym2
 
 set eps=1e-8
 set log=${sym}-safe-vs-sent.log
-set dir=matrix-${sym}-safe-vs-sent.${eps}
+set dir=matrix-${sym}-safe-vs-sent2.${eps}
 
 (/usr/bin/time java $opt -Dverbosity=1  -Dlearn.rep=1 -Dlearner=notg-learner-param-eta=0_001.xml -Dlearn.sd=true -Dlearn.adaptive=true -Dlearn.eps=${eps} \
--Dinput.gram=0 -Dinput.empty.skip=false -Dinput.empty.special=true \
-$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/Sent2010.12.21WITS_2006_04.500-600.txt  > $log) >& time.txt
+-Dinput.gram=2 -Dinput.empty.skip=false -Dinput.empty.special=true \
+$onto ${sym}:$wits/safeWITS_2006_03.1-100.txt:$wits/Sent2010.12.21WITS_2006_04.500-600.txt  >& $log) >& time.txt
 
 cp $log $log.bak
 
