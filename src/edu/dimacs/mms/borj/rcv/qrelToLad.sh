@@ -21,5 +21,12 @@ edu.dimacs.mms.borj.rcv.RcvToLAD \
 ${home}/rcv-lad/regions.sampled.ids \
 ${rcv}/lyrl2004_tokens_train.dat 
 
+
+#--  this is for the name file
+time java $opt -Dqrel=true -Dfrom=1 -Dto=2000 -Dd=${home}/rcv-lad -Dout=out-lad-both.dat \
+edu.dimacs.mms.borj.rcv.RcvToLAD \
+${home}/rcv-lad/regions.sampled.ids \
+${rcv}/lyrl2004_tokens_train.dat 
+
 #time java $opt -Dfrom=544179 -Dto=545178 edu.dimacs.mms.borj.rcv.RcvToLAD ${out}/rcv-boxer-ids-random.txt 
 

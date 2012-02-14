@@ -113,6 +113,9 @@ public class RcvToLAD {
 			   " documents to file " + out);
 	//DataPoint.saveAsXML( v, setName, out);
 	saveAsLAD(v, suite, out);
+	if (v.size()>0) {
+	    saveDicAsNam(v.elementAt(0).getDic(), "rcv.nam");
+	}
     }
 
     static void saveAsLAD(Vector<DataPoint> v, Suite suite, String fname) throws IOException {
@@ -138,6 +141,19 @@ public class RcvToLAD {
   
     }
 
+    /** */
+    static void saveDicAsNam(FeatureDictionary dic, String fname) throws IOException {
+	PrintWriter pw = new PrintWriter(new FileWriter(fname));
+	pw.println("0 " + REGION +" cat");
+	for(int i=1;i<dic.getDimension() ; i++) {
+	    pw.println("" + i +  " " + dic.getLabel(i) + " int");
+	}
+		       
+	   
+	pw.flush();
+	pw.close();
+    
+    }
 
 
 }
