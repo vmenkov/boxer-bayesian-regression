@@ -224,7 +224,7 @@ val1|val2|...|val_N
    <li>-Dinput.empty.skip=false|true If true, empty cells are ignored
    (no vectors are created for them). The default is false.
 
-   <li>-DemptySpecial=true|false If true, a special feature is used to
+   <li>-D.input.empty.special=true|false If true, a special feature is used to
    mark empty cells. The default is true.
 
    </ul>

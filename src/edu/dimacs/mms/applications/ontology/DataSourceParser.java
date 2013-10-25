@@ -65,6 +65,7 @@ abstract class DataSourceParser {
 	throws BoxerXMLException {
 	if (dic!=null && reuseSuite!=null) throw new  IllegalArgumentException("At most, only one of dic and reuseSuite should be non-null");
 
+
 	DataSourceParser p = null;
 
 	if (fname.toLowerCase().endsWith(".csv")) {
@@ -101,6 +102,7 @@ abstract class DataSourceParser {
      *  contains a discrimination matching fname. If false, create such a discrimination.
      */
     private void initDis(String fname, boolean reuseSuiteOn) throws BoxerXMLException {
+
 
 	String disName = baseName(fname);
 	if (reuseSuiteOn) {
