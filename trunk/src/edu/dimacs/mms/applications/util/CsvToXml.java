@@ -10,9 +10,9 @@ import org.xml.sax.SAXException;
 import edu.dimacs.mms.boxer.*;
 
 /** A utility for converting a CSV file (one data point per line) into
-    a BOXER-format XML dataset file. Each line of the CSV file is
-    converted into a data point object; various fields of the record
-    are interpreted
+    either a BOXER-format XML dataset file or a BMR file. Each line of
+    the CSV file is converted into a data point object; various fields
+    of the record are interpreted
 
     <h3> Usage </h3>
     <pre>

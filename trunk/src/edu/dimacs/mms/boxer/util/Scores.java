@@ -4,9 +4,10 @@ import java.util.*;
 import edu.dimacs.mms.boxer.*;
 
 /** A Scores instance contains scoring data (obtained with a
- * particular learner) for the entire suite. This is a handy class in 
- * applications that keep track on the learner's performance on
- * a dataset.
+ * particular learner) for the entire suite. Various methods are
+ * provided to compute various aggregate metrics based on them. This
+ * is a handy class in applications that keep track of the learner's
+ * performance on a dataset.
  */
 public class Scores extends Vector<ScoreEntry[]> {
 
