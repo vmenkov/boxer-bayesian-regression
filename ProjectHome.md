@@ -1,0 +1,1 @@
+BOXER is a Java library for online anytime machine learning of polytomous logistic regression models. The BOXER (standing, more or less, for Bayesian Online EXtensible Regression) library supports online, anytime fitting of polytomous logistic regression models, as well as their use as multiclass classifiers.
